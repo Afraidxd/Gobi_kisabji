@@ -22,6 +22,6 @@ else:
     UPDATE_CHAT = "Divine_x_soul"
     BOT_USERNAME = "Grabyourcar_bot"
     CHARA_CHANNEL_ID = -1002146480192
-    LOGGER_ID = -1002081390216
+    LOGGER_ID = -1001949570336
     api_id = 20756810
     api_hash = "7af61b35db3a1c79f7e4c727fa95831e"
