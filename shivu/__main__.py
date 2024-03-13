@@ -23,8 +23,6 @@ sent_characters = {}
 first_correct_guesses = {}
 message_counts = {}
 
-
-
 for module_name in ALL_MODULES:
     imported_module = importlib.import_module("shivu.modules." + module_name)
 
@@ -247,3 +245,13 @@ def main() -> None:
 if __name__ == "__main__":
     shivuu.start()
     main()
+
+
+
+
+
+
+
+        
+
+    
