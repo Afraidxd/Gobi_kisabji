@@ -8,7 +8,7 @@ from html import escape
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram import Update
-from telegram.ext import CommandHandler, CallbackContext, MessageHandler, filters, CallbackQuery
+from telegram.ext import CommandHandler, CallbackContext, MessageHandler, filters, CallbackQueryHandler
 
 from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu
 from shivu import application, PHOTO_URL, SUPPORT_CHAT, UPDATE_CHAT, BOT_USERNAME, db, GROUP_ID, LOGGER
