@@ -11,24 +11,17 @@ if env:
     mongo_url = os.environ.get("MONGODB_URL")
     if os.environ.get("PHOTO_URL") != None:
         PHOTO_URL = os.environ.get("PHOTO_URL") 
-    else:
-        PHOTO_URL = ["https://telegra.ph/file/b925c3985f0f325e62e17.jpg", "https://telegra.ph/file/4211fb191383d895dab9d.jpg"]
-    SUPPORT_CHAT = os.environ.get("SUPPORT_CHAT")
-    UPDATE_CHAT = os.environ.get("UPDATE_CHAT")
-    BOT_USERNAME = os.environ.get("BOT_USERNAME")
-    CHARA_CHANNEL_ID = os.environ.get("CHARA_CHANNEL_ID")
-    api_id = os.environ.get("api_id")
-    api_hash = os.environ.get("api_hash")
 else:
     OWNER_ID = 6942997609
-    sudo_users = ["6942997609", "6046482147"]
-    GROUP_ID = -100
-    TOKEN = "6695037673:AAFxvZkhSf9K0M29U_cL-cgeiZYGnZoeVOY"
-    mongo_url = "mongodb://localhost:27017/"
-    PHOTO_URL = ["https://telegra.ph/file/b925c3985f0f325e62e17.jpg", "https://telegra.ph/file/4211fb191383d895dab9d.jpg"]
-    SUPPORT_CHAT = "Collect_em_support"
-    UPDATE_CHAT = "Collect_em_support"
-    BOT_USERNAME = "Collect_Em_AllBot"
-    CHARA_CHANNEL_ID = -1002081390216
+    sudo_users = ["7192194961", "6919722801", "5757833536", "5516379068"]
+    GROUP_ID = -1002081390216
+    TOKEN = "7152549014:AAGQl39KqsCe7g8_oZO2tFa12tZOAIP75tY"
+    mongo_url = "mongodb+srv://manojmandal283:tq3vFczbP01ythdH@spoiled.bp4imnq.mongodb.net/?retryWrites=true&w=majority"
+    PHOTO_URL = ["https://telegra.ph/file/80f138e2c439dacef0b50.jpg", "https://telegra.ph/file/58035100017429d86e4fa.jpg", "https://telegra.ph/file/3e60781a66abeb5ace0ac.jpg"]
+    SUPPORT_CHAT = "Geek_verse"
+    UPDATE_CHAT = "Divine_x_soul"
+    BOT_USERNAME = "Grabyourcar_bot"
+    CHARA_CHANNEL_ID = -1001949570336
+    LOGGER_ID = -1002081390216
     api_id = 20756810
     api_hash = "7af61b35db3a1c79f7e4c727fa95831e"
