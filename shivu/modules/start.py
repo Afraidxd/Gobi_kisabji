@@ -1,0 +1,111 @@
+import importlib
+import time
+import random
+import re
+import asyncio
+from html import escape 
+
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import Update
+from telegram.ext import CommandHandler, CallbackContext, MessageHandler, filters, CallbackQueryHandler
+
+from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu
+from shivu import application, PHOTO_URL, SUPPORT_CHAT, UPDATE_CHAT, BOT_USERNAME, db, GROUP_ID, LOGGER
+from shivu import pm_users as collection 
+from shivu.modules import ALL_MODULES
+
+async def start(update: Update, context: CallbackContext) -> None:
+    user_id = update.effective_user.id
+    first_name = update.effective_user.first_name
+    username = update.effective_user.username
+
+    user_data = await collection.find_one({"_id": user_id})
+
+    if user_data is None:
+
+        await collection.insert_one({"_id": user_id, "first_name": first_name, "username": username})
+
+        await context.bot.send_message(chat_id=GROUP_ID, text=f"<a href='tg://user?id={user_id}'>{first_name}</a> STARTED THE BOT", parse_mode='HTML')
+    else:
+
+        if user_data['first_name'] != first_name or user_data['username'] != username:
+
+            await collection.update_one({"_id": user_id}, {"$set": {"first_name": first_name, "username": username}})
+
+
+
+    if update.effective_chat.type== "private":
+
+
+        caption = f"""
+        ***Hey there! {update.effective_user.first_name} 🌻***
+              
+***i Am Grab 'Car Grabber Bot.. Add Me in You're Group And I will send Random Cars in group after every 100 messages and who guessed that car name Correct.. I will add That 🚗 in That user's Collection.. Tap on help Button To See All Commands***
+               """
+        keyboard = [
+            [InlineKeyboardButton("Add Me", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
+            [InlineKeyboardButton("Help", callback_data='help'),
+             InlineKeyboardButton("Support", url=f'https://t.me/{SUPPORT_CHAT}')],
+            [InlineKeyboardButton("OWNER", url=f'https://t.me/ownerxd')],
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        photo_url = random.choice(PHOTO_URL)
+
+        await context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo_url, caption=caption, reply_markup=reply_markup, parse_mode='markdown')
+
+    else:
+        photo_url = random.choice(PHOTO_URL)
+        keyboard = [
+
+            [InlineKeyboardButton("Help", callback_data='help'),
+             InlineKeyboardButton("Support", url=f'https://t.me/{SUPPORT_CHAT}')],
+
+        ]
+
+        reply_markup = InlineKeyboardMarkup(keyboard)
+        await context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo_url, caption="I am alive",reply_markup=reply_markup )
+
+async def button(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == 'help':
+        help_text = """
+    ***Help Section :***
+    
+***/guess: To Guess character (only works in group)***
+***/fav: Add Your fav***
+***/trade : To trade Characters***
+***/gift: Give any Character from Your Collection to another user.. (only works in groups)***
+***/collection: To see Your Collection***
+***/topgroups : See Top Groups.. Ppl Guesses Most in that Groups***
+***/top: Too See Top Users***
+***/ctop : Your ChatTop***
+***/changetime: Change Character appear time (only works in Groups)***
+   """
+        help_keyboard = [[InlineKeyboardButton("Back", callback_data='back')]]
+        reply_markup = InlineKeyboardMarkup(help_keyboard)
+
+        await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=help_text, reply_markup=reply_markup, parse_mode='markdown')
+
+    elif query.data == 'back':
+
+        caption = f"""
+        ***Hey there! {update.effective_user.first_name}*** 🌻
+        
+***i Am Car Grabber bot.. Add Me in You're Group And I will send Random Car in group after every 100 messages and who guessed that car 🚗 name Correct.. I will add That car 🏎 in That user's Collection.. Tap on help Button To See All Commands***
+        """
+        keyboard = [
+            [InlineKeyboardButton("Add Me", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
+            [InlineKeyboardButton("Help", callback_data='help'),
+             InlineKeyboardButton("Support", url=f'https://t.me/{SUPPORT_CHAT}')],
+            [InlineKeyboardButton("OWNER", url=f'https://t.me/ownerxd')],
+        ]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=caption, reply_markup=reply_markup, parse_mode='markdown')
+
+application.add_handler(CallbackQueryHandler(button, pattern='^help$|^back$', block=False))
+start_handler = CommandHandler('start', start, block=False)
+application.add_handler(start_handler)
