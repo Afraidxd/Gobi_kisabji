@@ -14,7 +14,7 @@ if env:
 else:
     OWNER_ID = 6942997609
     sudo_users = ["7192194961", "6919722801", "5757833536", "5516379068", "6942997609"]
-    GROUP_ID = -1002124319306
+    GROUP_ID = -1002081390216
     TOKEN = "7152549014:AAGQl39KqsCe7g8_oZO2tFa12tZOAIP75tY"
     mongo_url = "mongodb+srv://manojmandal283:tq3vFczbP01ythdH@spoiled.bp4imnq.mongodb.net/?retryWrites=true&w=majority"
     PHOTO_URL = ["https://telegra.ph/file/80f138e2c439dacef0b50.jpg", "https://telegra.ph/file/58035100017429d86e4fa.jpg", "https://telegra.ph/file/3e60781a66abeb5ace0ac.jpg"]
@@ -22,6 +22,6 @@ else:
     UPDATE_CHAT = "Divine_x_soul"
     BOT_USERNAME = "Grabyourcar_bot"
     CHARA_CHANNEL_ID = -1002124319306
-    LOGGER_ID = -1002124319306
+    LOGGER_ID = -1002081390216
     api_id = 20756810
     api_hash = "7af61b35db3a1c79f7e4c727fa95831e"
