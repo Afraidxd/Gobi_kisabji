@@ -13,7 +13,7 @@ from shivu import user_collection, collection, application, db
 
 # collection
 db.characters.create_index([('id', ASCENDING)])
-db.characters.create_index([('company, ASCENDING)])
+db.characters.create_index([('company', ASCENDING)])
 db.characters.create_index([('img_url', ASCENDING)])
 
 # user_collection
