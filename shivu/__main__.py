@@ -1,17 +1,26 @@
 import importlib
-import time
-import random
-import re
+import logging 
+from telegram import InputMediaPhoto
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultPhoto, InputTextMessageContent, InputMediaPhoto
+from telegram import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardMarkup, InlineKeyboardButton
 import asyncio
-from html import escape 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from itertools import groupby
 from telegram import Update
-from telegram.ext import CommandHandler, CallbackContext, MessageHandler, filters, CallbackQueryHandler
-
-from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu
-from shivu import application, PHOTO_URL, SUPPORT_CHAT, UPDATE_CHAT, BOT_USERNAME, db, GROUP_ID, LOGGER
-from shivu import pm_users as collection 
+from motor.motor_asyncio import AsyncIOMotorClient 
+from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, filters
+from telegram.ext import InlineQueryHandler,CallbackQueryHandler, ChosenInlineResultHandler
+from pymongo import MongoClient, ReturnDocument
+import urllib.request
+import random
+from datetime import datetime, timedelta
+from threading import Lock
+import time
+import re
+import math
+import html
+from collections import Counter 
+from shivu import db, collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection
+from shivu import application, shivuu, LOGGER 
 from shivu.modules import ALL_MODULES
 
 
@@ -22,6 +31,7 @@ last_characters = {}
 sent_characters = {}
 first_correct_guesses = {}
 message_counts = {}
+
 
 for module_name in ALL_MODULES:
     imported_module = importlib.import_module("shivu.modules." + module_name)
@@ -246,12 +256,3 @@ if __name__ == "__main__":
     shivuu.start()
     main()
 
-
-
-
-
-
-
-        
-
-    
