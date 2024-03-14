@@ -78,6 +78,7 @@ async def inlinequery(update: Update, context: CallbackContext) -> None:
         results.append(
             InlineQueryResultPhoto(
                 thumbnail_url=character["img_url"],
+                
                id=f"{character['id']}_{time.time()}",
                 photo_url=character['img_url'],
                 caption=caption,
