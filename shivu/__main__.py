@@ -138,7 +138,7 @@ async def guess(update: Update, context: CallbackContext) -> None:
         return
 
 
-    name_parts = last_characters[chat_id]['name'].lower().split()
+    name_parts = last_characters[chat_id]['car name'].lower().split()
 
     if sorted(name_parts) == sorted(guess.split()) or any(part == guess for part in name_parts):
 
