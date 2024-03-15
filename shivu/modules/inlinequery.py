@@ -31,8 +31,8 @@ async def inlinequery(update: Update, context: CallbackContext) -> None:
 
             results = []
             for character in characters:
-                anime_characters_guessed = sum(c['anime'] == character['anime'] for c in user['characters'])
-                total_anime_characters = await collection.count_documents({'anime': character['anime']})
+                anime_characters_guessed = sum(c['company'] == character['company'] for c in user['characters'])
+                total_anime_characters = await collection.count_documents({'company': character['anime']})
 
                 rarity = character.get('rarity', "Don't have rarity.. ")
 
