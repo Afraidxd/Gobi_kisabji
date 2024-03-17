@@ -1,36 +1,63 @@
+import sys
 from telegram import Update
-from telegram.ext import CallbackContext, CommandHandler 
+from telegram.ext import Updater, CommandHandler, CallbackContext
+import pymongo
+import config
 
-from shivu import application, top_global_groups_collection, pm_users, OWNER_ID 
+# Connect to MongoDB
+client = pymongo.MongoClient(config.MONGO_URI)
+db = client[config.MONGO_DB]
 
-async def broadcast(update: Update, context: CallbackContext) -> None:
-    
-    if update.effective_user.id != OWNER_ID:
-        await update.message.reply_text("You are not authorized to use this command.")
-        return
+# Define the command handler functions
+def is_owner(update: Update):
+return update.message.from_user.id == config.OWNER_ID
 
-    message_to_broadcast = update.message.reply_to_message
+def ban_user(update: Update, context: CallbackContext):
+if not is_owner(update):
+ update.message.reply_text("You are not authorized to use this command.")
+ return
+user_id = update.message.reply_to_message.from_user.id
+collection = db["banned_users"]
+collection.insert_one({"user_id": user_id})
+update.message.reply_text("User banned successfully.")
 
-    if message_to_broadcast is None:
-        await update.message.reply_text("Please reply to a message to broadcast.")
-        return
+def unban_user(update: Update, context: CallbackContext):
+if not is_owner(update):
+ update.message.reply_text("You are not authorized to use this command.")
+ return
+user_id = update.message.reply_to_message.from_user.id
+collection = db["banned_users"]
+collection.delete_many({"user_id": user_id})
+update.message.reply_text("User unbanned successfully.")
 
-    all_chats = await top_global_groups_collection.distinct("group_id")
-    all_users = await pm_users.distinct("_id")
+def get_banlist(update: Update, context: CallbackContext):
+if not is_owner(update):
+ update.message.reply_text("You are not authorized to use this command.")
+ return
+collection = db["banned_users"]
+banned_users = collection.find()
+banlist = [str(user["user_id"]) for user in banned_users]
+update.message.reply_text(f"Banned Users: {', '.join(banlist)}")
 
-    shuyaa = list(set(all_chats + all_users))
+def check_ban(update: Update, context: CallbackContext):
+user_id = update.message.from_user.id
+collection = db["banned_users"]
+banned_user = collection.find_one({"user_id": user_id})
+if banned_user:
+ update.message.reply_text("You are banned.")
+else:
+ update.message.reply_text("You are not banned.")
 
-    failed_sends = 0
+# Create an updater and dispatcher
+updater = Updater(config.BOT_TOKEN)
+dispatcher = updater.dispatcher
 
-    for chat_id in shuyaa:
-        try:
-            await context.bot.forward_message(chat_id=chat_id,
-                                              from_chat_id=message_to_broadcast.chat_id,
-                                              message_id=message_to_broadcast.message_id)
-        except Exception as e:
-            print(f"Failed to send message to {chat_id}: {e}")
-            failed_sends += 1
+# Add the command handlers to the dispatcher
+dispatcher.add_handler(CommandHandler("ban", ban_user))
+dispatcher.add_handler(CommandHandler("unban", unban_user))
+dispatcher.add_handler(CommandHandler("banlist", get_banlist))
+dispatcher.add_handler(CommandHandler("check", check_ban))
 
-    await update.message.reply_text(f"Broadcast complete. Failed to send to {failed_sends} chats/users.")
-
-application.add_handler(CommandHandler("broadcast", broadcast, block=False))
+# Start the bot
+updater.start_polling()
+updater.idle()
