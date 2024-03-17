@@ -2,7 +2,7 @@ import sys
 from telegram import Update
 from telegram.ext import Updater, CommandHandler, CallbackContext
 import pymongo
-import config
+from shivu import config.py
 
 # Connect to MongoDB
 client = pymongo.MongoClient(config.MONGO_URI)
