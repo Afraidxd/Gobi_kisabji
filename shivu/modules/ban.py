@@ -57,7 +57,3 @@ dispatcher.add_handler(CommandHandler("ban", ban_user))
 dispatcher.add_handler(CommandHandler("unban", unban_user))
 dispatcher.add_handler(CommandHandler("banlist", get_banlist))
 dispatcher.add_handler(CommandHandler("check", check_ban))
-
-# Start the bot
-updater.start_polling()
-updater.idle()
