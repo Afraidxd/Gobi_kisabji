@@ -13,13 +13,14 @@ def is_owner(update: Update):
  return update.message.from_user.id == OWNER_ID
 
 def block_user(update: Update, context: CallbackContext):
- if not is_owner(update):
- update.message.reply_text("You are not authorized to use this command.")
- return
- user_id = update.message.reply_to_message.from_user.id
- collection = db["blocked_users"]
- collection.insert_one({"user_id": user_id})
- update.message.reply_text("User blocked successfully.")
+    if not is_owner(update):
+        update.message.reply_text("You are not authorized to use this command.")
+        return
+    user_id = update.message.reply_to_message.from_user.id
+    collection = db["blocked_users"]
+    collection.insert_one({"user_id": user_id})
+    update.message.reply_text("User blocked successfully.")
+
 
 def unblock_user(update: Update, context: CallbackContext):
  if not is_owner(update):
