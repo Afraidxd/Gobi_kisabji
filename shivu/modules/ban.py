@@ -38,5 +38,3 @@ def check_ban(client, message):
         message.reply(f"User {user_id} is banned.")
     else:
         message.reply(f"User {user_id} is not banned.")
-
-app.run()
