@@ -10,7 +10,7 @@ db = client[config.MONGO_DB]
 
 # Define the command handler functions
 def is_owner(update: Update):
-    return update.message.from_user.id == config.OWNER_ID
+return update.message.from_user.id == config.OWNER_ID
 
 def ban_user(update: Update, context: CallbackContext):
     if not is_owner(update):
