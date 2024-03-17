@@ -6,7 +6,7 @@ from shivu import OWNER_ID, mongo_url
 
 # Connect to MongoDB
 client = pymongo.MongoClient(mongo_url)
-db = client[config.MONGO_DB]
+db = client[shivu.MONGO_DB]
 
 # Define the command handler functions
 def is_owner(update: Update):
@@ -49,7 +49,7 @@ def check_block(update: Update, context: CallbackContext):
         update.message.reply_text("You are not blocked.")
 
 # Create an updater and dispatcher
-updater = Updater(config.TOKEN)
+updater = Updater(shivu.TOKEN)
 dispatcher = updater.dispatcher
 
 # Add the command handlers to the dispatcher
