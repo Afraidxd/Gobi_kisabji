@@ -1,6 +1,6 @@
 import pymongo
 from pyrogram import Client, filters
-from shivu import OWNER_ID, BOT_TOKEN, API_ID, API_HASH
+from shivu import OWNER_ID, TOKEN, API_ID, API_HASH
 
 # Connect to MongoDB
 client = pymongo.MongoClient("mongodb://localhost:27017/")
