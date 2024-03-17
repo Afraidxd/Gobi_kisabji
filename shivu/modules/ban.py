@@ -15,7 +15,7 @@ return update.message.from_user.id == config.OWNER_ID
 def ban_user(update: Update, context: CallbackContext):
 if not is_owner(update):
 update.message.reply_text("You are not authorized to use this command.")
-        return
+return
     user_id = update.message.reply_to_message.from_user.id
     collection = db["banned_users"]
     collection.insert_one({"user_id": user_id})
