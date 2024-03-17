@@ -8,7 +8,7 @@ db = client["ban_db"]
 ban_collection = db["bans"]
 
 # Initialize the Bot
-app = Client("my_bot", bot_token=BOT_TOKEN, api_id=API_ID, api_hash=API_HASH)
+app = Client("my_bot", bot_token=TOKEN, api_id=api_id, api_hash=api_hash)
 
 # Ban Command
 @app.on_message(filters.user(OWNER_ID) & filters.command("ban"))
