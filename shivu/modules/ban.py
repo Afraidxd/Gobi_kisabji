@@ -1,59 +1,42 @@
-import sys
-from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
 import pymongo
-from shivu import OWNER_ID, mongo_url
+from pyrogram import Client, filters
+from config import OWNER_ID, BOT_TOKEN, API_ID, API_HASH
 
 # Connect to MongoDB
-client = pymongo.MongoClient(mongo_url)
-db = client[config.MONGO_DB]
+client = pymongo.MongoClient("mongodb://localhost:27017/")
+db = client["ban_db"]
+ban_collection = db["bans"]
 
-# Define the command handler functions
-def is_owner(update: Update):
- return update.message.from_user.id == OWNER_ID
+# Initialize the Bot
+app = Client("my_bot", bot_token=BOT_TOKEN, api_id=API_ID, api_hash=API_HASH)
 
-def block_user(update: Update, context: CallbackContext):
-    if not is_owner(update):        update.message.reply_text("You are not authorized to use this command.")
-        return
-    user_id = update.message.reply_to_message.from_user.id
-    collection = db["blocked_users"]
-    collection.insert_one({"user_id": user_id})
-    update.message.reply_text("User blocked successfully.")
+# Ban Command
+@app.on_message(filters.user(OWNER_ID) & filters.command("ban"))
+def ban_user(client, message):
+    user_id = message.text.split(" ")[1]
+    ban_collection.insert_one({"user_id": user_id})
+    message.reply(f"User {user_id} has been banned.")
 
+# Unban Command
+@app.on_message(filters.user(OWNER_ID) & filters.command("unban"))
+def unban_user(client, message):
+    user_id = message.text.split(" ")[1]
+    ban_collection.delete_one({"user_id": user_id})
+    message.reply(f"User {user_id} has been unbanned.")
 
-def unblock_user(update: Update, context: CallbackContext):
- if not is_owner(update):
- update.message.reply_text("You are not authorized to use this command.")
- return
- user_id = update.message.reply_to_message.from_user.id
- collection = db["blocked_users"]
- collection.delete_many({"user_id": user_id})
- update.message.reply_text("User unblocked successfully.")
+# Banlist Command
+@app.on_message(filters.user(OWNER_ID) & filters.command("banlist"))
+def ban_list(client, message):
+    banned_users = [ban["user_id"] for ban in ban_collection.find()]
+    message.reply(f"Banned Users: {', '.join(banned_users)}")
 
-def get_blocklist(update: Update, context: CallbackContext):
- if not is_owner(update):
- update.message.reply_text("You are not authorized to use this command.")
- return
- collection = db["blocked_users"]
- blocked_users = collection.find()
- blocklist = [str(user["user_id"]) for user in blocked_users]
- update.message.reply_text(f"Blocked Users: {', '.join(blocklist)}")
+# Check Command
+@app.on_message(filters.command("check"))
+def check_ban(client, message):
+    user_id = message.text.split(" ")[1]
+    if ban_collection.find_one({"user_id": user_id}):
+        message.reply(f"User {user_id} is banned.")
+    else:
+        message.reply(f"User {user_id} is not banned.")
 
-def check_block(update: Update, context: CallbackContext):
- user_id = update.message.from_user.id
- collection = db["blocked_users"]
- blocked_user = collection.find_one({"user_id": user_id})
- if blocked_user:
- update.message.reply_text("You are blocked.")
- else:
- update.message.reply_text("You are not blocked.")
-
-# Create an updater and dispatcher
-updater = Updater(config.BOT_TOKEN)
-dispatcher = updater.dispatcher
-
-# Add the command handlers to the dispatcher
-dispatcher.add_handler(CommandHandler("block", block_user))
-dispatcher.add_handler(CommandHandler("unblock", unblock_user))
-dispatcher.add_handler(CommandHandler("blocklist", get_blocklist))
-dispatcher.add_handler(CommandHandler("check", check_block))
+app.run()
