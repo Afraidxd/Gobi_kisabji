@@ -1,16 +1,12 @@
+
+from os import environ, execle
 import sys
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackContext
-import pymongo
-from shivu import OWNER_ID, mongo_url
+from telegram.ext import CallbackContext
 
-# Connect to MongoDB
-client = pymongo.MongoClient(mongo_url)
-db = client[shivu.MONGO_DB]
-
-# Define the command handler functions
-def is_owner(update: Update):
-    return update.message.from_user.id == OWNER_ID
+# Assume the following functions are already defined:
+# is_owner(update) -> checks if the user is the owner
+# db -> MongoDB connection
 
 def block_user(update: Update, context: CallbackContext):
     if not is_owner(update):
@@ -27,33 +23,29 @@ def unblock_user(update: Update, context: CallbackContext):
         return
     user_id = update.message.reply_to_message.from_user.id
     collection = db["blocked_users"]
-    collection.delete_many({"user_id": user_id})
+    collection.delete_one({"user_id": user_id})
     update.message.reply_text("User unblocked successfully.")
 
-def get_blocklist(update: Update, context: CallbackContext):
+def banlist(update: Update, context: CallbackContext):
     if not is_owner(update):
         update.message.reply_text("You are not authorized to use this command.")
         return
     collection = db["blocked_users"]
-    blocked_users = collection.find()
-    blocklist = [str(user["user_id"]) for user in blocked_users]
-    update.message.reply_text(f"Blocked Users: {', '.join(blocklist)}")
+    banned_users = collection.find()
+    banned_user_ids = [str(user["user_id"]) for user in banned_users]
+    update.message.reply_text("Banned users:\n" + "\n".join(banned_user_ids))
 
-def check_block(update: Update, context: CallbackContext):
+def check(update: Update, context: CallbackContext):
     user_id = update.message.from_user.id
     collection = db["blocked_users"]
-    blocked_user = collection.find_one({"user_id": user_id})
-    if blocked_user:
-        update.message.reply_text("You are blocked.")
+    banned_user = collection.find_one({"user_id": user_id})
+    if banned_user:
+        update.message.reply_text("You are banned.")
     else:
-        update.message.reply_text("You are not blocked.")
+        update.message.reply_text("You are not banned.")
 
-# Create an updater and dispatcher
-updater = Updater(shivu.TOKEN)
-dispatcher = updater.dispatcher
-
-# Add the command handlers to the dispatcher
+# Add handlers for the commands
 dispatcher.add_handler(CommandHandler("block", block_user))
 dispatcher.add_handler(CommandHandler("unblock", unblock_user))
-dispatcher.add_handler(CommandHandler("blocklist", get_blocklist))
-dispatcher.add_handler(CommandHandler("check", check_block))
+dispatcher.add_handler(CommandHandler("banlist", banlist))
+dispatcher.add_handler(CommandHandler("checkban", check))
