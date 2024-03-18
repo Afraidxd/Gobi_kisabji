@@ -58,13 +58,14 @@ async def start(update: Update, context: CallbackContext) -> None:
         photo_url = random.choice(PHOTO_URL)
         keyboard = [
 
-            [InlineKeyboardButton("Help", callback_data='help'),
-             InlineKeyboardButton("Support", url=f'https://t.me/{SUPPORT_CHAT}')],
+            [InlineKeyboardButton("𝐇ᴇʟᴘ", callback_data='help'),
+             InlineKeyboardButton("𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/{SUPPORT_CHAT}')],
 
         ]
 
         reply_markup = InlineKeyboardMarkup(keyboard)
-        await context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo_url, caption="I am alive",reply_markup=reply_markup )
+        await context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo_url, caption="𝐯𝐫𝐨𝐨𝐨𝐨𝐨𝐨𝐨𝐦 !
+𝐈 𝐚𝐦 𝐚𝐥𝐢𝐯𝐞",reply_markup=reply_markup )
 
 async def button(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
