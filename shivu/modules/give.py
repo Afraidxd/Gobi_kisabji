@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler
 from pymongo import MongoClient
 
-from shivu import application, OWNER_ID, mongo_url
+from shivu import application, OWNER_ID, mongo_url, collection 
 
 client = MongoClient(mongo_url)
 db = client["characters"]
