@@ -1,6 +1,7 @@
 from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler
 from pymongo import MongoClient
+from shivu import db, collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection
 
 from shivu import application, OWNER_ID, mongo_url, collection 
 
