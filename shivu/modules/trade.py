@@ -11,17 +11,17 @@ async def trade(client, message):
     sender_id = message.from_user.id
 
     if not message.reply_to_message:
-        await message.reply_text("You need to reply to a user's message to trade a character!")
+        await message.reply_text("𝐘𝐨𝐮 𝐧𝐞𝐞𝐝 𝐭𝐨 𝐫𝐞𝐩𝐥𝐲 𝐭𝐨 𝐚 𝐮𝐬𝐞𝐫'𝐬 𝐦𝐞𝐬𝐬𝐚𝐠𝐞 𝐭𝐨 𝐭𝐫𝐚𝐝𝐞 𝐚 𝐜𝐚𝐫!")
         return
 
     receiver_id = message.reply_to_message.from_user.id
 
     if sender_id == receiver_id:
-        await message.reply_text("You can't trade a character with yourself!")
+        await message.reply_text("𝐘𝐨𝐮 𝐜𝐚𝐧'𝐭 𝐭𝐫𝐚𝐝𝐞 𝐚 𝐜𝐚𝐫 𝐰𝐢𝐭𝐡 𝐲𝐨𝐮𝐫𝐬𝐞𝐥𝐟!")
         return
 
     if len(message.command) != 3:
-        await message.reply_text("You need to provide two character IDs!")
+        await message.reply_text("𝐘𝐨𝐮 𝐧𝐞𝐞𝐝 𝐭𝐨 𝐩𝐫𝐨𝐯𝐢𝐝𝐞 𝐭𝐰𝐨 𝐜𝐚𝐫 𝐈𝐃𝐬!")
         return
 
     sender_character_id, receiver_character_id = message.command[1], message.command[2]
@@ -33,11 +33,11 @@ async def trade(client, message):
     receiver_character = next((character for character in receiver['characters'] if character['id'] == receiver_character_id), None)
 
     if not sender_character:
-        await message.reply_text("You don't have the character you're trying to trade!")
+        await message.reply_text("𝐘𝐨𝐮 𝐝𝐨𝐧'𝐭 𝐡𝐚𝐯𝐞 𝐭𝐡𝐞 𝐜𝐚𝐫 𝐲𝐨𝐮'𝐫𝐞 𝐭𝐫𝐲𝐢𝐧𝐠 𝐭𝐨 𝐭𝐫𝐚𝐝𝐞!")
         return
 
     if not receiver_character:
-        await message.reply_text("The other user doesn't have the character they're trying to trade!")
+        await message.reply_text("𝐓𝐡𝐞 𝐨𝐭𝐡𝐞𝐫 𝐮𝐬𝐞𝐫 𝐝𝐨𝐞𝐬𝐧'𝐭 𝐡𝐚𝐯𝐞 𝐭𝐡𝐞 𝐜𝐚𝐫 𝐭𝐡𝐞𝐲'𝐫𝐞 𝐭𝐫𝐲𝐢𝐧𝐠 𝐭𝐨 𝐭𝐫𝐚𝐝𝐞!")
         return
 
 
@@ -57,8 +57,8 @@ async def trade(client, message):
     
     keyboard = InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("Confirm Trade", callback_data="confirm_trade")],
-            [InlineKeyboardButton("Cancel Trade", callback_data="cancel_trade")]
+            [InlineKeyboardButton("𝐂𝐨𝐧𝐟𝐢𝐫𝐦 𝐓𝐫𝐚𝐝𝐞", callback_data="confirm_trade")],
+            [InlineKeyboardButton("𝐂𝐚𝐧𝐜𝐞𝐥 𝐓𝐫𝐚𝐝𝐞", callback_data="cancel_trade")]
         ]
     )
 
@@ -105,13 +105,13 @@ async def on_callback_query(client, callback_query):
         
         del pending_trades[(sender_id, receiver_id)]
 
-        await callback_query.message.edit_text(f"You have successfully traded your character with {callback_query.message.reply_to_message.from_user.mention}!")
+        await callback_query.message.edit_text(f"𝐘𝐨𝐮 𝐡𝐚𝐯𝐞 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲 𝐭𝐫𝐚𝐝𝐞𝐝 𝐲𝐨𝐮𝐫 𝐜𝐚𝐫 𝐰𝐢𝐭𝐡 {callback_query.message.reply_to_message.from_user.mention}!")
 
     elif callback_query.data == "cancel_trade":
         
         del pending_trades[(sender_id, receiver_id)]
 
-        await callback_query.message.edit_text("❌️ Sad Cancelled....")
+        await callback_query.message.edit_text("❌️ 𝐒𝐚𝐝 𝐭𝐫𝐚𝐝𝐞 𝐂𝐚𝐧𝐜𝐞𝐥𝐥𝐞𝐝......")
 
 
 
@@ -124,7 +124,7 @@ async def gift(client, message):
     sender_id = message.from_user.id
 
     if not message.reply_to_message:
-        await message.reply_text("You need to reply to a user's message to gift a character!")
+        await message.reply_text("𝐘𝐨𝐮 𝐧𝐞𝐞𝐝 𝐭𝐨 𝐫𝐞𝐩𝐥𝐲 𝐭𝐨 𝐚 𝐮𝐬𝐞𝐫'𝐬 𝐦𝐞𝐬𝐬𝐚𝐠𝐞 𝐭𝐨 𝐠𝐢𝐟𝐭 𝐚 𝐜𝐚𝐫!")
         return
 
     receiver_id = message.reply_to_message.from_user.id
@@ -132,11 +132,11 @@ async def gift(client, message):
     receiver_first_name = message.reply_to_message.from_user.first_name
 
     if sender_id == receiver_id:
-        await message.reply_text("You can't gift a character to yourself!")
+        await message.reply_text("𝐘𝐨𝐮 𝐜𝐚𝐧'𝐭 𝐠𝐢𝐟𝐭 𝐚 𝐜𝐚𝐫 𝐭𝐨 𝐲𝐨𝐮𝐫𝐬𝐞𝐥𝐟!")
         return
 
     if len(message.command) != 2:
-        await message.reply_text("You need to provide a character ID!")
+        await message.reply_text("𝐘𝐨𝐮 𝐧𝐞𝐞𝐝 𝐭𝐨 𝐩𝐫𝐨𝐯𝐢𝐝𝐞 𝐚 𝐜𝐚𝐫 𝐈𝐃!")
         return
 
     character_id = message.command[1]
@@ -146,7 +146,7 @@ async def gift(client, message):
     character = next((character for character in sender['characters'] if character['id'] == character_id), None)
 
     if not character:
-        await message.reply_text("You don't have this character in your collection!")
+        await message.reply_text("𝐘𝐨𝐮 𝐝𝐨𝐧'𝐭 𝐡𝐚𝐯𝐞 𝐭𝐡𝐢𝐬 𝐜𝐚𝐫 𝐢𝐧 𝐲𝐨𝐮𝐫 𝐆𝐚𝐫𝐚𝐠𝐞!")
         return
 
     
@@ -159,12 +159,12 @@ async def gift(client, message):
     
     keyboard = InlineKeyboardMarkup(
         [
-            [InlineKeyboardButton("Confirm Gift", callback_data="confirm_gift")],
-            [InlineKeyboardButton("Cancel Gift", callback_data="cancel_gift")]
+            [InlineKeyboardButton("𝐂𝐨𝐧𝐟𝐢𝐫𝐦 𝐆𝐢𝐟𝐭", callback_data="confirm_gift")],
+            [InlineKeyboardButton("𝐂𝐚𝐧𝐜𝐞𝐥 𝐆𝐢𝐟𝐭", callback_data="cancel_gift")]
         ]
     )
 
-    await message.reply_text(f"do You Really Wanns To Gift {message.reply_to_message.from_user.mention} ?", reply_markup=keyboard)
+    await message.reply_text(f"𝐝𝐨 𝐘𝐨𝐮 𝐑𝐞𝐚𝐥𝐥𝐲 𝐖𝐚𝐧𝐧𝐬 𝐓𝐨 𝐆𝐢𝐟𝐭 {message.reply_to_message.from_user.mention} ?", reply_markup=keyboard)
 
 @shivuu.on_callback_query(filters.create(lambda _, __, query: query.data in ["confirm_gift", "cancel_gift"]))
 async def on_callback_query(client, callback_query):
@@ -175,7 +175,7 @@ async def on_callback_query(client, callback_query):
         if _sender_id == sender_id:
             break
     else:
-        await callback_query.answer("This is not for you!", show_alert=True)
+        await callback_query.answer("𝐓𝐡𝐢𝐬 𝐢𝐬 𝐧𝐨𝐭 𝐟𝐨𝐫 𝐲𝐨𝐮!", show_alert=True)
         return
 
     if callback_query.data == "confirm_gift":
@@ -202,6 +202,6 @@ async def on_callback_query(client, callback_query):
         
         del pending_gifts[(sender_id, receiver_id)]
 
-        await callback_query.message.edit_text(f"You have successfully gifted your character to [{gift['receiver_first_name']}](tg://user?id={receiver_id})!")
+        await callback_query.message.edit_text(f"𝐘𝐨𝐮 𝐡𝐚𝐯𝐞 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲 𝐠𝐢𝐟𝐭𝐞𝐝 𝐲𝐨𝐮𝐫 𝐜𝐚𝐫 𝐭𝐨 [{gift['receiver_first_name']}](tg://user?id={receiver_id})!")
 
 
