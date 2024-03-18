@@ -1,7 +1,7 @@
 from os import environ, execle
 import sys
 from telegram import Update
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import CallbackContext, CommandHandler, Updater
 
 # Assume the following functions are already defined:
 # is_owner(update) -> checks if the user is the owner
@@ -43,9 +43,12 @@ def check(update: Update, context: CallbackContext):
     else:
         update.message.reply_text("You are not banned.")
 
+# Create an Updater instance
+updater = Updater(token='YOUR_TOKEN', use_context=True)
+
 # Create a dispatcher and add handlers for the commands
 dispatcher = updater.dispatcher
 dispatcher.add_handler(CommandHandler("block", block_user))
 dispatcher.add_handler(CommandHandler("unblock", unblock_user))
 dispatcher.add_handler(CommandHandler("banlist", banlist))
-dispatcher.add_handler(CommandHandler("checkban", check))
+dispatcher.add_handler(CommandHandler("checkban", ))
