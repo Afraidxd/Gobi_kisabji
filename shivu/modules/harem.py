@@ -15,7 +15,7 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
     user = await user_collection.find_one({'id': user_id})
     if not user:
         if update.message:
-            await update.message.reply_text('You Have Not Guessed any car Yet..')
+            await update.message.reply_text('𝐆𝐨 𝐚𝐧𝐝 𝐆𝐫𝐚𝐛 𝐒𝐨𝐦𝐞 𝐜𝐚𝐫 𝐅𝐢𝐫𝐬𝐭....')
         else:
             await update.callback_query.edit_message_text('𝐆𝐨 𝐚𝐧𝐝 𝐆𝐫𝐚𝐛 𝐒𝐨𝐦𝐞 𝐜𝐚𝐫 𝐅𝐢𝐫𝐬𝐭..')
         return
