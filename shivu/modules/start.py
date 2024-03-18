@@ -89,7 +89,7 @@ async def button(update: Update, context: CallbackContext) -> None:
 
         await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=help_text, reply_markup=reply_markup, parse_mode='markdown')
 
-    elif query.data == 'back':
+    elif query.data == '𝐁ᴀᴄᴋ ➲':
 
         caption = f"""
         ***𝐇𝐞𝐲 𝐭𝐡𝐞𝐫𝐞! {update.effective_user.first_name}*** 🌻
