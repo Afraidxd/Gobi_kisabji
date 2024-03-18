@@ -1,4 +1,4 @@
-from telegram import Update
+from telegram import Bot
 from telegram.ext import CallbackContext, CommandHandler, Updater
 from pymongo import MongoClient
 from shivu import OWNER_ID, mongo_url, TOKEN
@@ -7,7 +7,6 @@ from shivu import OWNER_ID, mongo_url, TOKEN
 client = MongoClient(mongo_url)
 db = client["bot_db"]
 blocked_users_collection = db["blocked_users"]
-
 def add_blacklist(user_id: int):
     blocked_users_collection.insert_one({"user_id": user_id})
 
@@ -52,7 +51,7 @@ def list_blacklisted_users(update: Update, context: CallbackContext):
     banned_user_ids = get_blacklisted()
     update.message.reply_text("List of Blacklisted Users:\n" + "\n".join(map(str, banned_user_ids)))
 
-# Create an Updater and pass in the bot's token using the older method
+#Create an Updater and pass in the bot's token using the older method
 updater = Updater(bot=Bot(TOKEN))
 
 # Get the dispatcher to register handlers
@@ -62,3 +61,6 @@ dispatcher = updater.dispatcher
 dispatcher.add_handler(CommandHandler("blacklist", blacklist_user))
 dispatcher.add_handler(CommandHandler("unblacklist", unblacklist_user))
 dispatcher.add_handler(CommandHandler("listblacklisted", list_blacklisted_users))
+
+# Start the Bot
+updater.start_polling()
