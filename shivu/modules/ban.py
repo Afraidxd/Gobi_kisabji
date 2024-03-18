@@ -1,48 +1,56 @@
 from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler
+from pymongo import MongoClient
 
 from shivu import application, OWNER_ID
 
-async def block_user(update: Update, context: CallbackContext) -> None:
-    if update.effective_user.id != OWNER_ID:
-        await update.message.reply_text("You are not authorized to use this command.")
-        return
+# Connect to MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client["telegram_bot"]
+ban_collection = db["ban_list"]
 
-    user_id = update.message.reply_to_message.from_user.id
-    # Update the ban list in MongoDB with the user_id to block the user
-    # Add logic to block the user in your bot
-    await update.message.reply_text(f"User {user_id} has been blocked.")
+async def block(update: Update, context: CallbackContext) -> None:
+    if update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("You are not authorized to use this command.")
+        return
 
-async def unblock_user(update: Update, context: CallbackContext) -> None:
-    if update.effective_user.id != OWNER_ID:
-        await update.message.reply_text("You are not authorized to use this command.")
-        return
+    user_id = update.message.reply_to_message.from_user.id
+    # Check if user is already blocked
+    if ban_collection.find_one({"user_id": user_id}):
+        await update.message.reply_text(f"User {user_id} is already blocked.")
+    else:
+        ban_collection.insert_one({"user_id": user_id})
+        await update.message.reply_text(f"User {user_id} has been blocked.")
 
-    user_id = update.message.reply_to_message.from_user.id
-    # Update the ban list in MongoDB to unblock the user_id
-    # Add logic to unblock the user in your bot
-    await update.message.reply_text(f"User {user_id} has been unblocked.")
+async def unblock(update: Update, context: CallbackContext) -> None:
+    if update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("You are not authorized to use this command.")
+        return
+
+    user_id = update.message.reply_to_message.from_user.id
+    # Check if user is blocked and unblock
+    result = ban_collection.delete_one({"user_id": user_id})
+    if result.deleted_count > 0:
+        await update.message.reply_text(f"User {user_id} has been unblocked.")
+    else:
+        await update.message.reply_text(f"User {user_id} is not blocked.")
 
 async def banlist(update: Update, context: CallbackContext) -> None:
-    if update.effective_user.id != OWNER_ID:
-        await update.message.reply_text("You are not authorized to use this command.")
-        return
+    if update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("You are not authorized to use this command.")
+        return
 
-    # Retrieve the ban list from MongoDB
-    # Format and send the ban list as a reply message
-    await update.message.reply_text("Ban list: <List of banned users>")
+    banned_users = [doc["user_id"] for doc in ban_collection.find()]
+    await update.message.reply_text(f"Banned Users: {', '.join(map(str, banned_users))}")
 
 async def check(update: Update, context: CallbackContext) -> None:
-    if update.effective_user.id != OWNER_ID:
-        await update.message.reply_text("You are not authorized to use this command.")
-        return
+    user_id = update.effective_user.id
+    if ban_collection.find_one({"user_id": user_id}):
+        await update.message.reply_text("You are blocked. Please ask the owner to unblock.")
+    else:
+        await update.message.reply_text("You are not blocked.")
 
-    user_id = update.message.reply_to_message.from_user.id
-    # Check if the user_id is in the ban list
-    # Reply with whether the user is blocked or not
-    await update.message.reply_text(f"User {user_id} is <Blocked/Unblocked>")
-
-application.add_handler(CommandHandler("block", block_user))
-application.add_handler(CommandHandler("unblock", unblock_user))
-application.add_handler(CommandHandler("banlist", banlist))
-application.add_handler(CommandHandler("check", check))
+application.add_handler(CommandHandler("block", block, block=False))
+application.add_handler(CommandHandler("unblock", unblock, block=False))
+application.add_handler(CommandHandler("banlist", banlist, block=False))
+application.add_handler(CommandHandler("check", check, block=False))
