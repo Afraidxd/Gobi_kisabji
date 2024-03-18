@@ -2,9 +2,9 @@ from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler
 from pymongo import MongoClient
 
-from shivu import application, OWNER_ID
+from shivu import application, OWNER_ID, mongo_url 
 
-client = MongoClient("mongodb://localhost:27017/")
+client = MongoClient("mongo_url")
 db = client["telegram_bot"]
 ban_collection = db["ban_list"]
 
