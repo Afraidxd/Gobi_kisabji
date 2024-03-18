@@ -15,9 +15,9 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
     user = await user_collection.find_one({'id': user_id})
     if not user:
         if update.message:
-            await update.message.reply_text('You Have Not Guessed any Characters Yet..')
+            await update.message.reply_text('You Have Not Guessed any car Yet..')
         else:
-            await update.callback_query.edit_message_text('You Have Not Guessed any Characters Yet..')
+            await update.callback_query.edit_message_text('You Have Not Guessed any car Yet..')
         return
 
     characters = sorted(user['characters'], key=lambda x: (x['company'], x['id']))
