@@ -18,7 +18,8 @@ def get_blacklisted():
     return [user["user_id"] for user in banned_users]
 
 def is_owner(update: Update) -> bool:
-    return update.effective_user.id == OWNER_ID
+    return update.effective_user.id == OWNER_ID
+
 
 def blacklist_user(update: Update, context: CallbackContext):
     if not is_owner(update):
