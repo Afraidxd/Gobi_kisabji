@@ -50,7 +50,7 @@ def list_blacklisted_users(update: Update, context: CallbackContext):
         update.message.reply_text("You are not authorized to use this command.")
         return
     banned_user_ids = get_blacklisted()
-    update.message.reply_text("List of Blacklisted Users:\n" + "\n".join(map(str, banned_user_ids))
+    update.message.reply_text("List of Blacklisted Users:\n" + "\n".join(map(str, banned_user_ids)))
 
 # Create an Updater and pass in the bot's token
 updater = Updater(TOKEN)
