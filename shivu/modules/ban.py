@@ -1,13 +1,10 @@
-
 from telegram import Update
 from telegram.ext import CallbackContext, CommandHandler, Updater
-
 from pymongo import MongoClient
-
-from shivu import OWNER_ID, mongo_url
+from shivu import OWNER_ID, mongo_url, TOKEN
 
 # MongoDB connection
-client = MongoClient(mongo_url)
+client = MongoClient("mongo_url")
 db = client["bot_db"]
 blocked_users_collection = db["blocked_users"]
 
@@ -46,13 +43,15 @@ def check(update: Update, context: CallbackContext):
     else:
         update.message.reply_text("You are not banned.")
 
-# Add handlers for the commands
-updater = Updater("YOUR_TOKEN", use_context=True)
+# Create an Updater and pass in the bot's token
+updater = Updater("TOKEN")
+
+# Get the dispatcher to register handlers
 dispatcher = updater.dispatcher
 
+# Add handlers for the commands
 dispatcher.add_handler(CommandHandler("block", block_user))
 dispatcher.add_handler(CommandHandler("unblock", unblock_user))
 dispatcher.add_handler(CommandHandler("banlist", banlist))
 dispatcher.add_handler(CommandHandler("check", check))
 
-print ("no")
