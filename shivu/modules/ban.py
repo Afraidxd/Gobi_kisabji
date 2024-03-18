@@ -1,4 +1,4 @@
-from telegram import Bot
+from telegram import Bot, Update
 from telegram.ext import CallbackContext, CommandHandler, Updater
 from pymongo import MongoClient
 from shivu import OWNER_ID, mongo_url, TOKEN
@@ -18,7 +18,7 @@ def get_blacklisted():
     return [user["user_id"] for user in banned_users]
 
 def is_owner(update: Update) -> bool:
-    return update.message.from_user.id == OWNER_ID
+    return update.effective_user.id == OWNER_ID
 
 def blacklist_user(update: Update, context: CallbackContext):
     if not is_owner(update):
