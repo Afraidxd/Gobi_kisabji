@@ -1,70 +1,48 @@
-from telegram import Update, Bot
-from telegram.ext import CallbackContext
-from pymongo import MongoClient
-from shivu import OWNER_ID, mongo_url, TOKEN
+from telegram import Update
+from telegram.ext import CallbackContext, CommandHandler
 
-# MongoDB connection
-client = MongoClient(mongo_url)
-db = client["bot_db"]
-blocked_users_collection = db["blocked_users"]
+from shivu import application, top_global_groups_collection, pm_users, OWNER_ID
 
-def add_blacklist(user_id: int):
-    blocked_users_collection.insert_one({"user_id": user_id})
-
-def remove_blacklist(user_id: int):
-    blocked_users_collection.delete_one({"user_id": user_id})
-
-def get_blacklisted():
-    banned_users = blocked_users_collection.find()
-    return [user["user_id"] for user in banned_users]
-
-def is_owner(update: Update) -> bool:
-    return update.message.from_user.id == OWNER_ID
-
-def blacklist_user(bot: Bot, update: Update):
-    if not is_owner(update):
-        update.message.reply_text("You are not authorized to use this command.")
+async def block_user(update: Update, context: CallbackContext) -> None:
+    if update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("You are not authorized to use this command.")
         return
-    try:
-        user_id = int(update.message.text.split(" ", maxsplit=1)[1])
-    except (IndexError, ValueError):
-        update.message.reply_text("Please provide a valid user ID.")
+
+    user_id = update.message.reply_to_message.from_user.id
+    # Update the ban list in MongoDB with the user_id
+    # Add logic to block the user in your bot
+    await update.message.reply_text(f"User {user_id} has been blocked.")
+
+async def unblock_user(update: Update, context: CallbackContext) -> None:
+    if update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("You are not authorized to use this command.")
         return
-    add_blacklist(user_id)
-    update.message.reply_text(f"User {user_id} blacklisted successfully.")
 
-def unblacklist_user(bot: Bot, update: Update):
-    if not is_owner(update):
-        update.message.reply_text("You are not authorized to use this command.")
+    user_id = update.message.reply_to_message.from_user.id
+    # Update the ban list in MongoDB to unblock the user_id
+    # Add logic to unblock the user in your bot
+    await update.message.reply_text(f"User {user_id} has been unblocked.")
+
+async def banlist(update: Update, context: CallbackContext) -> None:
+    if update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("You are not authorized to use this command.")
         return
-    try:
-        user_id = int(update.message.text.split(" ", maxsplit=1)[1])
-    except (IndexError, ValueError):
-        update.message.reply_text("Please provide a valid user ID.")
+
+    # Retrieve the ban list from MongoDB
+    # Format and send the ban list as a reply message
+    await update.message.reply_text("Ban list: <List of banned users>")
+
+async def check(update: Update, context: CallbackContext) -> None:
+    if update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("You are not authorized to use this command.")
         return
-    remove_blacklist(user_id)
-    update.message.reply_text(f"User {user_id} unblacklisted successfully.")
 
-def list_blacklisted_users(bot: Bot, update: Update):
-    if not is_owner(update):
-        update.message.reply_text("You are not authorized to use this command.")
-        return
-    banned_user_ids = get_blacklisted()
-    update.message.reply_text("List of Blacklisted Users:\n" + "\n".join(map(str, banned_user_ids)))
+    user_id = update.message.reply_to_message.from_user.id
+    # Check if the user_id is in the ban list
+    # Reply with whether the user is blocked or not
+    await update.message.reply_text(f"User {user_id} is <Blocked/Unblocked>")
 
-# Create a Bot instance
-bot = Bot(token=TOKEN)
-
-# Start the Bot
-
-
-# Poll for updates and handle commands directly
-while True:
-    updates = bot.get_updates()
-    for update in updates:
-        if update.message.text.startswith('/blacklist'):
-            blacklist_user(bot, update)
-        elif update.message.text.startswith('/unblacklist'):
-            unblacklist_user(bot, update)
-        elif update.message.text.startswith('/listblacklisted'):
-            list_blacklisted_users(bot, update)
+application.add_handler(CommandHandler("block", block_user))
+application.add_handler(CommandHandler("unblock", unblock_user))
+application.add_handler(CommandHandler("banlist", banlist))
+application.add_handler(CommandHandler("check", check))
