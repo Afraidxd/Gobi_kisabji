@@ -234,15 +234,45 @@ async def fav(update: Update, context: CallbackContext) -> None:
 
     await update.message.reply_text(f'Character {character["name"]} has been added to your favorites.')
 
+from typing import List, Optional
+
+async def give(update: Update, context: CallbackContext) -> None:
+    user_id = update.effective_user.id
+    args = context.args
+
+    if len(args) < 1:
+        await update.message.reply_text("Please provide a character ID.")
+        return
+
+    character_id = args[0]
+
+    user = await user_collection.find_one({'id': user_id})
+    if not user:
+        await user_collection.insert_one({'id': user_id, 'characters': []})
+        user = await user_collection.find_one({'id': user_id})
+
+    character = next((c for c in all_characters if c['id'] == int(character_id)), None)
+    if not character:
+        await update.message.reply_text("This character does not exist.")
+        return
+
+    user['characters'].append(character)
+    await user_collection.update_one({'id': user_id}, {'$set': {'characters': user['characters']}})
+
+    await update.message.reply_text(f"Character {character['name']} has been added to your collection.")
 
 def main() -> None:
     """Run bot."""
 
 
     application.add_handler(CommandHandler(["guess", "protecc", "collect", "grab", "hunt"], guess, block=False))
+
+application.add_handler(CommandHandler("add", give))
+
     application.add_handler(CommandHandler("fav", fav, block=False))
     application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
     application.run_polling(drop_pending_updates=True)
+
 
 if __name__ == "__main__":
     shivuu.start()
