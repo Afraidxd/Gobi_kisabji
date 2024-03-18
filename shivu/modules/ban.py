@@ -47,7 +47,7 @@ async def check(update: Update, context: CallbackContext) -> None:
     else:
         await update.message.reply_text("You are not blocked.")
 
-application.add_handler(CommandHandler("block", block, pass_args=False))
-application.add_handler(CommandHandler("unblock", unblock, pass_args=False))
-application.add_handler(CommandHandler("banlist", banlist, pass_args=False))
-application.add_handler(CommandHandler("check", check, pass_args=False))
+application.add_handler(CommandHandler("block", block, block=False))
+application.add_handler(CommandHandler("unblock", unblock, block=False))
+application.add_handler(CommandHandler("banlist", banlist, block=False))
+application.add_handler(CommandHandler("check", check, block=False))
