@@ -1,37 +1,45 @@
-from telegram import Update
-from telegram.ext import CallbackContext, CommandHandler
-from pymongo import MongoClient
-from shivu import db, collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection
-from shivu import application, shivuu, LOGGER, OWNER_ID, mongo_url 
-from shivu.modules import ALL_MODULES
-client = MongoClient("mongo_url")
-db = client["characters"]
-characters_collection = db["characters"]
+from pyrogram import filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-async def give(update: Update, context: CallbackContext) -> None:
-    if update.effective_user.id != OWNER_ID:
-        await update.message.reply_text("You are not authorized to use this command.")
+from shivu import user_collection, shivuu
+
+DEV_LIST = [6919722801, 6942997609]  # List of developer IDs
+
+@shivuu.on_message(filters.command("give"))
+async def gift(client, message):
+    if message.from_user.id not in DEV_LIST:
+        await message.reply_text("You are not authorized to use this command.")
         return
 
-    replied_user = update.message.reply_to_message.from_user
-    if replied_user is None:
-        await update.message.reply_text("Please reply to a user to give them a character.")
+    if not message.reply_to_message:
+        await message.reply_text("Please reply to a message to gift a character.")
         return
 
-    id = context.args[0] if context.args else None
+    receiver_id = message.reply_to_message.from_user.id
+    receiver_username = message.reply_to_message.from_user.username
+    receiver_first_name = message.reply_to_message.from_user.first_name
 
-    if id is None:
-        await update.message.reply_text("Please provide the ID number of the character to give.")
+    if len(message.command) != 2:
+        await message.reply_text("You need to provide a character ID!")
         return
 
-    character = characters_collection.find_one({"id": collection})
-    if character:
-        # Update the character's owner to the replied user's ID
-        characters_collection.update_one({"id": collection}, {"$set": {"owner_id": replied_user.id}})
-        response = f"Character with ID '{id}' has been given to user '{replied_user.username}'."
+    character_id = message.command[1]
+
+    gift = {
+        'receiver_id': receiver_id,
+        'receiver_username': receiver_username,
+        'receiver_first_name': receiver_first_name,
+        'character': character_id
+    }
+
+    if receiver:
+        await user_collection.update_one({'id': receiver_id}, {'$push': {'characters': gift['character']}})
     else:
-        response = f"Character with ID '{id}' not found in the database."
+        await user_collection.insert_one({
+            'id': receiver_id,
+            'username': gift['receiver_username'],
+            'first_name': gift['receiver_first_name'],
+            'characters': [gift['character']],
+        })
 
-    await update.message.reply_text(response)
-
-application.add_handler(CommandHandler("give", give))
+    await message.reply_text(f"You have successfully gifted a character to [{gift['receiver_first_name']}](tg://user?id={receiver_id})!")
