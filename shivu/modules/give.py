@@ -4,7 +4,7 @@ from pymongo import MongoClient
 from shivu import db, collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection
 from shivu import application, shivuu, LOGGER 
 from shivu.modules import ALL_MODULES
-client = MongoClient(mongo_url)
+client = MongoClient("mongo_url")
 db = client["characters"]
 characters_collection = db["characters"]
 
