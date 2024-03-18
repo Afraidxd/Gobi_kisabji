@@ -52,11 +52,10 @@ def list_blacklisted_users(update: Update, context: CallbackContext):
     banned_user_ids = get_blacklisted()
     update.message.reply_text("List of Blacklisted Users:\n" + "\n".join(map(str, banned_user_ids)))
 
-#Create an Updater and pass in the bot's token using the older method
-updater = Updater(bot=Bot(TOKEN))
-
+#Create an Updater and pass in the bot's #token using the older method
+updater = Updater(bot=Bot(TOKEN), update_queue=None)
 # Get the dispatcher to register handlers
-dispatcher = updater.dispatcher
+#dispatcher = updater.dispatcher
 
 # Add handlers for the commands
 dispatcher.add_handler(CommandHandler("blacklist", blacklist_user))
