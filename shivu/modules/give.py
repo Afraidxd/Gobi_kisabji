@@ -27,7 +27,7 @@ async def give(update: Update, context: CallbackContext) -> None:
     character = characters_collection.find_one({"id": id})
     if character:
         # Update the character's owner to the replied user's ID
-        characters_collection.update_one({"id": character_id}, {"$set": {"owner_id": replied_user.id}})
+        characters_collection.update_one({"id": id}, {"$set": {"owner_id": replied_user.id}})
         response = f"Character with ID '{character_id}' has been given to user '{replied_user.username}'."
     else:
         response = f"Character with ID '{character_id}' not found in the database."
