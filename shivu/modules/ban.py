@@ -44,7 +44,7 @@ def check(update: Update, context: CallbackContext):
         update.message.reply_text("You are not banned.")
 
 # Create an Updater instance
-updater = Updater(token='YOUR_TOKEN', use_context=True)
+updater = Updater(token='7152549014:AAGQl39KqsCe7g8_oZO2tFa12tZOAIP75tY', use_context=True)
 
 # Create a dispatcher and add handlers for the commands
 dispatcher = updater.dispatcher
