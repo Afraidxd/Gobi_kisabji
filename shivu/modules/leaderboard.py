@@ -47,7 +47,7 @@ async def ctop(update: Update, context: CallbackContext) -> None:
     ])
     leaderboard_data = await cursor.to_list(length=10)
 
-    leaderboard_message = "<b>TOP 10 USERS WHO GUESSED CHARACTERS MOST TIME IN THIS GROUP..</b>\n\n"
+    leaderboard_message = "<b>10 𝐔𝐒𝐄𝐑𝐒 𝐖𝐇𝐎 𝐆𝐑𝐀𝐁𝐁𝐄𝐃 𝐂𝐀𝐑 𝐌𝐎𝐒𝐓 𝐓𝐈𝐌𝐄 𝐈𝐍 𝐓𝐇𝐈𝐒 𝐆𝐑𝐎𝐔𝐏...</b>\n\n"
 
     for i, user in enumerate(leaderboard_data, start=1):
         username = user.get('username', 'Unknown')
@@ -72,7 +72,7 @@ async def leaderboard(update: Update, context: CallbackContext) -> None:
     ])
     leaderboard_data = await cursor.to_list(length=10)
 
-    leaderboard_message = "<b>TOP 10 USERS WITH MOST CHARACTERS</b>\n\n"
+    leaderboard_message = "<b>𝐓𝐎𝐏 10 𝐔𝐒𝐄𝐑𝐒 𝐖𝐈𝐓𝐇 𝐌𝐎𝐒𝐓 𝐂𝐀𝐑𝐒</b>\n\n"
 
     for i, user in enumerate(leaderboard_data, start=1):
         username = user.get('username', 'Unknown')
