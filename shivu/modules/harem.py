@@ -17,7 +17,7 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
         if update.message:
             await update.message.reply_text('You Have Not Guessed any car Yet..')
         else:
-            await update.callback_query.edit_message_text('You Have Not Guessed any car Yet..')
+            await update.callback_query.edit_message_text('𝐆𝐨 𝐚𝐧𝐝 𝐆𝐫𝐚𝐛 𝐒𝐨𝐦𝐞 𝐜𝐚𝐫 𝐅𝐢𝐫𝐬𝐭..')
         return
 
     characters = sorted(user['characters'], key=lambda x: (x['company'], x['id']))
@@ -33,7 +33,7 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
     if page < 0 or page >= total_pages:
         page = 0  
 
-    harem_message = f"<b>{escape(update.effective_user.first_name)}'s Harem - Page {page+1}/{total_pages}</b>\n"
+    harem_message = f"<b>{escape(update.effective_user.first_name)}'s 𝐆𝐚𝐫𝐚𝐠𝐞 - 𝐅𝐥𝐨𝐨𝐫 {page+1}/{total_pages}</b>\n"
 
     
     current_characters = unique_characters[page*15:(page+1)*15]
@@ -59,9 +59,9 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
         
         nav_buttons = []
         if page > 0:
-            nav_buttons.append(InlineKeyboardButton("⬅️", callback_data=f"harem:{page-1}:{user_id}"))
+            nav_buttons.append(InlineKeyboardButton("⤾", callback_data=f"harem:{page-1}:{user_id}"))
         if page < total_pages - 1:
-            nav_buttons.append(InlineKeyboardButton("➡️", callback_data=f"harem:{page+1}:{user_id}"))
+            nav_buttons.append(InlineKeyboardButton("⤿", callback_data=f"harem:{page+1}:{user_id}"))
         keyboard.append(nav_buttons)
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -107,7 +107,7 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
                         await update.callback_query.edit_message_text(harem_message, parse_mode='HTML', reply_markup=reply_markup)
         else:
             if update.message:
-                await update.message.reply_text("Your List is Empty :)")
+                await update.message.reply_text("𝐘𝐨𝐮𝐫 𝐆𝐚𝐫𝐚𝐠𝐞 𝐢𝐬 𝐄𝐦𝐩𝐭𝐲 :)")
 
 
 async def harem_callback(update: Update, context: CallbackContext) -> None:
@@ -123,7 +123,7 @@ async def harem_callback(update: Update, context: CallbackContext) -> None:
 
     
     if query.from_user.id != user_id:
-        await query.answer("its Not Your Harem", show_alert=True)
+        await query.answer("𝐢𝐭𝐬 𝐍𝐨𝐭 𝐘𝐨𝐮𝐫 𝐆𝐚𝐫𝐚𝐠𝐞", show_alert=True)
         return
 
     
@@ -132,7 +132,7 @@ async def harem_callback(update: Update, context: CallbackContext) -> None:
 
 
 
-application.add_handler(CommandHandler(["harem", "collection"], harem,block=False))
+application.add_handler(CommandHandler(["harem", "collection", "garage"], harem,block=False))
 harem_handler = CallbackQueryHandler(harem_callback, pattern='^harem', block=False)
 application.add_handler(harem_handler)
     
