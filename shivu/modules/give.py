@@ -24,7 +24,7 @@ async def give(update: Update, context: CallbackContext) -> None:
         await update.message.reply_text("Please provide the ID number of the character to give.")
         return
 
-    character = characters_collection.find_one({"id": character_id})
+    character = characters_collection.find_one({"id": id})
     if character:
         # Update the character's owner to the replied user's ID
         characters_collection.update_one({"id": character_id}, {"$set": {"owner_id": replied_user.id}})
