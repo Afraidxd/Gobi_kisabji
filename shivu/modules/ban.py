@@ -56,7 +56,7 @@ def list_blacklisted_users(bot: Bot, update: Update):
 bot = Bot(token=TOKEN)
 
 # Start the Bot
-updater.start_polling()
+update.start_polling()
 
 # Poll for updates and handle commands directly
 while True:
