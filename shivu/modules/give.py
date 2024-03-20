@@ -21,8 +21,8 @@ async def give_character(receiver_id, character_id):
                 f"Successfully Given To {receiver_id}\n"
                 f"Information As Follows\n"
                 f" ✅ Rarity: {character['rarity']}\n"
-                f"🫂 Anime: {character['anime']}\n"
-                f"💕 Name: {character['name']}\n"
+                f"🫂 Company: {character['anime']}\n"
+                f"💕 Car Name: {character['name']}\n"
                 f"🍿 ID: {character['id']}"
             )
 
