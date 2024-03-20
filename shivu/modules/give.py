@@ -4,7 +4,7 @@ import asyncio
 from shivu import shivuu as app
 from shivu import sudo_users
 
-DEV_LIST = [1005344893]
+DEV_LIST = [6942997609]
 
 async def give_character(receiver_id, character_id):
     character = await collection.find_one({'id': character_id})
