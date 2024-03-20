@@ -46,7 +46,7 @@ async def start(update: Update, context: CallbackContext) -> None:
         keyboard = [
             [InlineKeyboardButton("𝐀ᴅᴅ 𝐌ᴇ", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
             [InlineKeyboardButton("𝐇ᴇʟᴘ", callback_data='help'),
-             InlineKeyboardButton("𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/{SUPPORT_CHAT}')],
+             InlineKeyboardButton("𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/BotsupportXD')],
             [InlineKeyboardButton("𝗢ᴡɴᴇʀ", url=f'https://t.me/ownerxd')
            InlineKeyboardButton("𝐔ᴘᴅᴀᴛᴇ", url=f'https://t.me/BotupdateXD')],
         ]
