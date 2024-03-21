@@ -10,14 +10,17 @@ async def balance(update, context):
     # Retrieve user balance from the database (replace this with your actual database query)
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
-
+    photo_path1 = 'https://telegra.ph/file/7fd7f706c9c4e121afd19.jpg'
     if user_balance:
         balance_amount = user_balance.get('balance', 0)
-        balance_message = f"Your current balance is: {balance_amount} Tokens"
+        balance_message = f" 
+        ***𝐇𝐞𝐲 𝐭𝐡𝐞𝐫𝐞! {update.effective_user.first_name} !***
+        Your Coin Balance is: 〄{balance_amount}"
     else:
-        balance_message = "garb some slaves first."
+        balance_message = "garb some Cars first."
 
-    await update.message.reply_text(balance_message)
+    await update.message.reply_photo(photo=
+photo_path1, caption=balance_message, parse_mode='HTML')
 
 async def pay(update, context):
     sender_id = update.effective_user.id
@@ -224,6 +227,6 @@ application.add_handler(CommandHandler("propose", propose, block=False))
 
 application.add_handler(CommandHandler("sbet", sbet, block=False))
 application.add_handler(CommandHandler("bonus", daily_reward, block=False))
-application.add_handler(CommandHandler("sinv", balance, block=False))
+application.add_handler(CommandHandler("wallet", balance, block=False))
 application.add_handler(CommandHandler("spay", pay, block=False))
 application.add_handler(CommandHandler("tops", mtop, block=False))
