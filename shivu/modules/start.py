@@ -90,7 +90,7 @@ async def button(update: Update, context: CallbackContext) -> None:
         reply_markup = InlineKeyboardMarkup(help_keyboard)
 
 if query.data == 'game':
-        game_text = """
+        game_text = """
     *Game Section :*
     
 */𝗯𝗮𝗹: 𝗧𝗼 𝗖𝗵𝗲𝗰𝗸 𝗬𝗼𝘂𝗿𝗕𝗮𝗹𝗮𝗻𝗰𝗲*
