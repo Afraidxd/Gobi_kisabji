@@ -109,7 +109,7 @@ async def daily_reward(update, context):
             time_since_last_claim = datetime.utcnow() - last_claimed_date
             time_until_next_claim = timedelta(days=1) - time_since_last_claim
             formatted_time_until_next_claim = format_timedelta(time_until_next_claim)
-            await update.message.reply_text(f"You already claimed your today's reward. Come back Tomorrow!\nTime Until Next Claim: `{formatted_time_until_next_claim}`.")
+            await update.message.reply_text(f"𝗬𝗼𝘂 𝗮𝗹𝗿𝗲𝗮𝗱𝘆 𝗰𝗹𝗮𝗶𝗺𝗲𝗱 𝘆𝗼𝘂𝗿 𝘁𝗼𝗱𝗮𝘆'𝘀 𝗿𝗲𝘄𝗮𝗿𝗱. 𝗖𝗼𝗺𝗲 𝗯𝗮𝗰𝗸 𝗧𝗼𝗺𝗼𝗿𝗿𝗼𝘄!\n𝗧𝗶𝗺𝗲 𝗨𝗻𝘁𝗶𝗹 𝗡𝗲𝘅𝘁 𝗖𝗹𝗮𝗶𝗺: `{formatted_time_until_next_claim}`.")
             return
 
     await user_collection.update_one(
@@ -154,13 +154,13 @@ async def sbet(update, context):
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': won_amount + amount}})
         updated_balance = user_balance.get('balance', 0) + won_amount
         await update.message.reply_text(
-            f"𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀 𝘆𝗼𝘂 𝘄𝗼𝗻 {won_amount} coins. /n𝗬𝗼𝘂𝗿 𝗻𝗲𝘄 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝗶𝘀 {updated_balance}."
+            f"𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀 𝘆𝗼𝘂 𝘄𝗼𝗻 {won_amount} coins./n𝗬𝗼𝘂𝗿 𝗻𝗲𝘄 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝗶𝘀 {updated_balance}."
         )
     else:
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -amount}})
         updated_balance = user_balance.get('balance', 0) - amount
         await update.message.reply_text(
-            f"You bet {amount} coins and lost! You came back without {amount} coins. Your updated balance is {updated_balance}."
+            f"𝗕𝗲𝘁𝘁𝗲𝗿 𝗹𝘂𝗰𝗸 𝗻𝗲𝘅𝘁 𝘁𝗶𝗺𝗲 𝘆𝗼𝘂 𝗹𝗼𝘀𝘁{amount} coins./n𝗬𝗼𝘂𝗿 𝗻𝗲𝘄 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝗶𝘀 {updated_balance}."
         )
 
 import asyncio
@@ -179,7 +179,7 @@ async def propose(update, context):
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
     if not user_balance or user_balance.get('balance', 0) < 20000:
-        await update.message.reply_text("You need at least 20000 tokens to propose.")
+        await update.message.reply_text("𝗬𝗼𝘂 𝗻𝗲𝗲𝗱 𝗮𝘁 𝗹𝗲𝗮𝘀𝘁 𝟮𝟬𝟬𝟬𝟬 𝘁𝗼𝗸𝗲𝗻𝘀 𝘁𝗼 𝗿𝗮𝗰𝗲.")
         return
 
     # Check last propose time and cooldown
@@ -190,31 +190,31 @@ async def propose(update, context):
             remaining_cooldown = timedelta(minutes=5) - time_since_last_propose
             remaining_cooldown_minutes = remaining_cooldown.total_seconds() // 60
             remaining_cooldown_seconds = remaining_cooldown.total_seconds() % 60
-            await update.message.reply_text(f"Cooldown! Please wait {int(remaining_cooldown_minutes)}m {int(remaining_cooldown_seconds)}s before proposing again.")
+            await update.message.reply_text(f"𝗖𝗼𝗼𝗹𝗱𝗼𝘄𝗻! 𝗣𝗹𝗲𝗮𝘀𝗲 𝘄𝗮𝗶𝘁 {int(remaining_cooldown_minutes)}m {int(remaining_cooldown_seconds)}s 𝗯𝗲𝗳𝗼𝗿𝗲 𝗿𝗮𝗰𝗶𝗻𝗴 𝗮𝗴𝗮𝗶𝗻.")
             return
 
     # Deduct the propose fee of 10000 tokens
     await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -10000}})
 
     # Send the proposal message with a photo path
-    proposal_message = "✨ 𝐅𝐢𝐧𝐚𝐥𝐥𝐲 𝐭𝐡𝐞 𝐭𝐢𝐦𝐞 𝐡𝐚𝐬 𝐜𝐨𝐦𝐞 ✨"
+    proposal_message = "𝗥𝗮𝗰𝗲 𝗶𝘀 𝗴𝗼𝗶𝗻𝗴 𝘁𝗼 𝗯𝗲 𝘀𝘁𝗮𝗿𝘁"
     photo_path = 'https://graph.org/file/deda08aefd8c0e1540fcd.jpg'  # Replace with your photo path
     await update.message.reply_photo(photo=photo_path, caption=proposal_message)
 
     await asyncio.sleep(2)  # 2-second delay
 
     # Send the proposal text
-    await update.message.reply_text("𝐏𝐫𝐨𝐩𝐨𝐬𝐞𝐢𝐧𝐠 𝐡𝐞𝐫 💍")
+    await update.message.reply_text("𝗥𝗮𝗰𝗲 𝗵𝗮𝘀 𝘀𝘁𝗮𝗿𝘁𝗲𝗱 ")
 
     await asyncio.sleep(2)  # 2-second delay
 
     # Generate a random result (60% chance of rejection, 40% chance of acceptance)
     if random.random() < 0.6:
-        rejection_message = "𝐒𝐡𝐞 𝐬𝐥𝐚𝐩𝐩𝐞𝐝 𝐲𝐨𝐮 𝐚𝐧𝐝 𝐫𝐮𝐧 𝐚𝐰𝐚𝐲😂"
+        rejection_message = "𝗕𝗲𝘁𝘁𝗲𝗿 𝗹𝘂𝗰𝗸 𝗻𝗲𝘅𝘁 𝘁𝗶𝗺𝗲,𝗬𝗼𝘂 𝗹𝗼𝘀𝘁 𝘁𝗵𝗲 𝗿𝗮𝗰𝗲"
         rejection_photo_path = 'https://graph.org/file/3e392dc74f4b428828664.jpg'  # Replace with rejection photo path
         await update.message.reply_photo(photo=rejection_photo_path, caption=rejection_message)
     else:
-        await update.message.reply_text("Congratulations! She accepted you.")
+        await update.message.reply_text("𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀! 𝗬𝗼𝘂 𝘄𝗼𝗻 𝘁𝗵𝗲 𝗿𝗮𝗰𝗲.")
 
     # Update last propose time
     last_propose_times[user_id] = datetime.now()
@@ -222,8 +222,8 @@ async def propose(update, context):
 # Add the CommandHandler to the application
 application.add_handler(CommandHandler("propose", propose, block=False))
 
-application.add_handler(CommandHandler("sbet", sbet, block=False))
+application.add_handler(CommandHandler("bet", sbet, block=False))
 application.add_handler(CommandHandler("bonus", daily_reward, block=False))
-application.add_handler(CommandHandler("sinv", balance, block=False))
-application.add_handler(CommandHandler("spay", pay, block=False))
+application.add_handler(CommandHandler("bal", balance, block=False))
+application.add_handler(CommandHandler("pay", pay, block=False))
 application.add_handler(CommandHandler("tops", mtop, block=False))
