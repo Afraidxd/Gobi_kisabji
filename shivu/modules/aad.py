@@ -14,7 +14,7 @@ async def addt(update, context):
         user_id = int(context.args[0])
         amount = int(context.args[1])
     except (IndexError, ValueError):
-        await update.message.reply_text("𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝗳𝗼𝗿𝗺𝗮𝘁. 𝗨𝘀𝗮𝗴𝗲: /adt <user_id> <amount>")
+        await update.message.reply_text("𝗜𝗻𝘃𝗮𝗹𝗶𝗱 𝗳𝗼𝗿𝗺𝗮𝘁. 𝗨𝘀𝗮𝗴𝗲: /addt <user_id> <amount>")
         return
 
     # Update the user's balance with the provided amount
@@ -53,4 +53,4 @@ async def removet(update, context):
 
 # Add the command handlers to your application
 application.add_handler(CommandHandler("addt", adt, block=False))
-application.add_handler(CommandHandler("rmt", removet, block=False))
+application.add_handler(CommandHandler("removet", removet, block=False))
