@@ -17,8 +17,7 @@ async def balance(update, context):
     else:
         balance_message = "garb some Cars first."
 
-    await update.message.reply_photo(photo=
-photo_path1, caption=balance_message, parse_mode='HTML')
+        await update.message.reply_text(balance_message)
 
 async def pay(update, context):
     sender_id = update.effective_user.id
@@ -223,8 +222,8 @@ async def propose(update, context):
 # Add the CommandHandler to the application
 application.add_handler(CommandHandler("propose", propose, block=False))
 
-application.add_handler(CommandHandler("sbet", sbet, block=False))
+application.add_handler(CommandHandler("bet", sbet, block=False))
 application.add_handler(CommandHandler("bonus", daily_reward, block=False))
 application.add_handler(CommandHandler("wallet", balance, block=False))
-application.add_handler(CommandHandler("spay", pay, block=False))
+application.add_handler(CommandHandler("pay", pay, block=False))
 application.add_handler(CommandHandler("tops", mtop, block=False))
