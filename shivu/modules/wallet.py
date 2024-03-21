@@ -198,7 +198,7 @@ async def propose(update, context):
 
     # Send the proposal message with a photo path
     proposal_message = "𝗥𝗮𝗰𝗲 𝗶𝘀 𝗴𝗼𝗶𝗻𝗴 𝘁𝗼 𝗯𝗲 𝘀𝘁𝗮𝗿𝘁"
-    photo_path = 'https://telegra.ph/file/1c6616f2fb9a40ca5a2ac.jpg'  # Replace with your photo path
+    photo_path = 'https://telegra.ph/file/0df89786cfc8572d2a4cd.jpg'  # Replace with your photo path
     await update.message.reply_photo(photo=photo_path, caption=proposal_message)
 
     await asyncio.sleep(2)  # 2-second delay
