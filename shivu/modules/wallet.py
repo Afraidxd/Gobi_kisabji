@@ -92,7 +92,7 @@ async def mtop(update, context):
 
         top_users_message += f"{i}. <a href='tg://user?id={user_id}'>{full_name}</a>, 💸{user.get('balance', 0)} Tokens\n"
     # Send the photo and include the top_users_message in the caption
-    photo_path = 'https://te.legra.ph/file/ce017c623256a631be42f.jpg'
+    photo_path = 'https://telegra.ph/file/7b462d98bdafb357a57f7.jpg'
     await update.message.reply_photo(photo=photo_path, caption=top_users_message, parse_mode='HTML')
 
 
@@ -154,13 +154,13 @@ async def sbet(update, context):
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': won_amount + amount}})
         updated_balance = user_balance.get('balance', 0) + won_amount
         await update.message.reply_text(
-            f"𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀 𝘆𝗼𝘂 𝘄𝗼𝗻 {won_amount} coins./n𝗬𝗼𝘂𝗿 𝗻𝗲𝘄 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝗶𝘀 {updated_balance}."
+            f"𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀 𝘆𝗼𝘂 𝘄𝗼𝗻 {won_amount} coins.𝗬𝗼𝘂𝗿 𝗻𝗲𝘄 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝗶𝘀 {updated_balance}."
         )
     else:
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -amount}})
         updated_balance = user_balance.get('balance', 0) - amount
         await update.message.reply_text(
-            f"𝗕𝗲𝘁𝘁𝗲𝗿 𝗹𝘂𝗰𝗸 𝗻𝗲𝘅𝘁 𝘁𝗶𝗺𝗲 𝘆𝗼𝘂 𝗹𝗼𝘀𝘁{amount} coins./n𝗬𝗼𝘂𝗿 𝗻𝗲𝘄 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝗶𝘀 {updated_balance}."
+            f"𝗕𝗲𝘁𝘁𝗲𝗿 𝗹𝘂𝗰𝗸 𝗻𝗲𝘅𝘁 𝘁𝗶𝗺𝗲 𝘆𝗼𝘂 𝗹𝗼𝘀𝘁{amount} coins.𝗬𝗼𝘂𝗿 𝗻𝗲𝘄 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝗶𝘀 {updated_balance}."
         )
 
 import asyncio
@@ -220,7 +220,7 @@ async def propose(update, context):
     last_propose_times[user_id] = datetime.now()
 
 # Add the CommandHandler to the application
-application.add_handler(CommandHandler("propose", propose, block=False))
+application.add_handler(CommandHandler("race", propose, block=False))
 
 application.add_handler(CommandHandler("bet", sbet, block=False))
 application.add_handler(CommandHandler("bonus", daily_reward, block=False))
