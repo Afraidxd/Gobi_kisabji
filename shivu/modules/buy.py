@@ -55,7 +55,7 @@ async def buy(update, context):
 
     # Send the success message with the character's image attached
     await update.message.reply_text(
-        f'Success! You have purchased {character["name"]} for {coin_cost} coins.'
+        f'Success! You have purchased {character["car name"]} for {coin_cost} coins.'
     )
 
 buy_handler = CommandHandler("buy", buy, block=False)
@@ -64,9 +64,9 @@ application.add_handler(buy_handler)
 async def shop(update, context):
     # You can customize the message text based on your needs
     message_text = "Waifu shop To Buy Characters\n\n"
-    message_text += "🟢 Common: 5000 💸\n"
-    message_text += "🔵 Medium: 6000 💸\n"
-    message_text += "🟠 Rare : 7000 💸\n"
+    message_text += "⚪ Common: 5000 💸\n"
+    message_text += "🟢 Medium: 6000 💸\n"
+    message_text += "🟣 Rare : 7000 💸\n"
   
 
 # Register the new /shop command handler
