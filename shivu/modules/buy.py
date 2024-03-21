@@ -67,6 +67,8 @@ async def shop(update, context):
     message_text += "⚪ Common: 60000 💸\n"
     message_text += "🟢 Medium: 80000 💸\n"
     message_text += "🟣 Rare : 100000 💸\n"
+    message_text += "Use /buy <slave id>"
+    await update.message.reply_text(message_text)
   
 
 # Register the new /shop command handler
