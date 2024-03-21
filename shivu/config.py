@@ -15,8 +15,8 @@ else:
     OWNER_ID = 6942997609
     sudo_users = ["6734369007", "6919722801", "5757833536", "5516379068", "6942997609", "7087814148"]
     GROUP_ID = -1002081390216
-    TOKEN = "7152549014:AAGQl39KqsCe7g8_oZO2tFa12tZOAIP75tY"
-    mongo_url = "mongodb+srv://ishitaroy657boobs:6rhmZeIH8qESZmRS@waifu.hza810f.mongodb.net/"
+    TOKEN = "7121743988:AAFCSBiaKvb-eypT43RiHxhzIgMCc-v0mtU"
+    mongo_url = "mongodb+srv://manojmandal283:tq3vFczbP01ythdH@spoiled.bp4imnq.mongodb.net/?retryWrites=true&w=majority"
     PHOTO_URL = ["https://telegra.ph/file/80f138e2c439dacef0b50.jpg", "https://telegra.ph/file/58035100017429d86e4fa.jpg", "https://telegra.ph/file/3e60781a66abeb5ace0ac.jpg"]
     SUPPORT_CHAT = "Geek_verse"
     UPDATE_CHAT = "Divine_x_soul"
