@@ -130,7 +130,7 @@ def format_timedelta(td: timedelta) -> str:
 from datetime import datetime, timedelta
 
 from telegram.ext import CommandHandler
-from Grabber import application, user_collection
+from shivu import application, user_collection
 from telegram import Update
 import random
 
@@ -165,7 +165,7 @@ async def sbet(update, context):
 
 import asyncio
 from telegram.ext import CommandHandler
-from Grabber import application, user_collection
+from shivu import application, user_collection
 from telegram import Update
 import random
 from datetime import datetime, timedelta
