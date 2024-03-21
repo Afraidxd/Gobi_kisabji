@@ -10,12 +10,10 @@ async def balance(update, context):
     # Retrieve user balance from the database (replace this with your actual database query)
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
-    photo_path1 = 'https://telegra.ph/file/7fd7f706c9c4e121afd19.jpg'
+   
     if user_balance:
         balance_amount = user_balance.get('balance', 0)
-        balance_message = f"Hey User
-        {update.effective_user.first_name}!\n
-        Your Coin Balance is: 〄{balance_amount}"
+        balance_message = f"Your Coin Balance is: 〄{balance_amount}"
     else:
         balance_message = "garb some Cars first."
 
