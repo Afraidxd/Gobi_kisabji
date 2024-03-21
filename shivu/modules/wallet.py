@@ -214,44 +214,7 @@ async def propose(update, context):
         rejection_photo_path = 'https://telegra.ph/file/561d51ab44101c27bc893.jpg'  # Replace with rejection photo path
         await update.message.reply_photo(photo=rejection_photo_path, caption=rejection_message)
     else:
-         receiver_id = message.from_user.id
-        unique_characters = await get_unique_characters(receiver_id)
-        try:
-            await user_collection.update_one({'id': receiver_id}, {'$push': {'characters': {'$each': unique_characters}}})
-            img_urls = [character['img_url'] for character in unique_characters]
-            captions = [
-                f"Yo! {mention} You Won The Jackpot!\n"
-                f"Name: {character['car name']}\n"
-                f"Rarity: {character['rarity']}\n"
-                f"Anime: {character['company']}\n"
-                for character in unique_characters
-            ]
-            for img_url, caption in zip(img_urls, captions):
-                await message.reply_photo(photo=img_url, caption=caption)
-        except Exception as e:
-            print(e)
-    else:
-        receiver_id = message.from_user.id
-   
-        unique_characters = await get_unique_characters(receiver_id)
-
-        unique_characters:
-                try:
-                    await user_collection.update_one({'id': receiver_id}, {'$push': {'characters': character}})
-                except Exception as e:
-                    print(e)  # Handle the exception appropriately
-
-            img_urls = [character['img_url'] for character in unique_characters]
-            captions = [
-                f"Yo! {mention} You Won The Jackpot!\n"
-                f"Name: {character['name']}\n"
-                f"Rarity: {character['rarity']}\n"
-                f"Anime: {character['anime']}\n"
-                for character in unique_characters
-            ]
-
-            for img_url, caption in zip(img_urls, captions):
-                await message.reply_photo(photo=img_url, caption=caption)
+         await update.message.reply_text("Congratulations! You won the race.")
 
 
     # Update last propose time
