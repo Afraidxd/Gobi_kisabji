@@ -1,5 +1,5 @@
 from telegram.ext import CommandHandler
-from shivu import application, user_collection
+from Grabber import application, user_collection
 from telegram import Update
 from datetime import datetime, timedelta
 import asyncio
@@ -10,24 +10,21 @@ async def balance(update, context):
     # Retrieve user balance from the database (replace this with your actual database query)
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
-   photo_path1 = 'https://telegra.ph/file/21fa7d555a6d037327a1a.jpg'
-if user_balance:
-    balance_amount = user_balance.get('balance', 0)
-    balance_message = f"""
-    *Hey there! {update.effective_user.first_name}!*
-    Your Coin Balance is: 〄{balance_amount}
-    """
-    else:
-        balance_message = "garb some Cars first."
 
-        await update.message.reply_text(balance_message)
+    if user_balance:
+        balance_amount = user_balance.get('balance', 0)
+        balance_message = f"𝗬𝗼𝘂𝗿 𝗰𝘂𝗿𝗿𝗲𝗻𝘁 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝗶𝘀: ꜩ{balance_amount}"
+    else:
+        balance_message = "𝗚𝗮𝗿𝗯 𝘀𝗼𝗺𝗲 𝗰𝗮𝗿𝘀 𝗳𝗶𝗿𝘀𝘁."
+
+    await update.message.reply_text(balance_message)
 
 async def pay(update, context):
     sender_id = update.effective_user.id
 
     # Check if the command was a reply
     if not update.message.reply_to_message:
-        await update.message.reply_text("Please reply to a user to /pay.")
+        await update.message.reply_text("𝗣𝗹𝗲𝗮𝘀𝗲 𝗿𝗲𝗽𝗹𝘆 𝘁𝗼 𝗮 𝘂𝘀𝗲𝗿 𝘁𝗼 /pay.")
         return
 
     # Extract the recipient's user ID
@@ -35,14 +32,14 @@ async def pay(update, context):
 
     # Prevent user from paying themselves
     if sender_id == recipient_id:
-        await update.message.reply_text("You can't pay yourself.")
+        await update.message.reply_text("𝗬𝗼𝘂 𝗰𝗮𝗻'𝘁 𝗽𝗮𝘆 𝘆𝗼𝘂𝗿𝘀𝗲𝗹𝗳.")
         return
 
     # Parse the amount from the command
     try:
         amount = int(context.args[0])
         if amount <= 0:
-            raise ValueError("Amount must be greater than zero.")
+            raise ValueError("𝗔𝗺𝗼𝘂𝗻𝘁 𝗺𝘂𝘀𝘁 𝗯𝗲 𝗴𝗿𝗲𝗮𝘁𝗲𝗿 𝘁𝗵𝗮𝗻 𝘇𝗲𝗿𝗼.")
     except (IndexError, ValueError):
         await update.message.reply_text("Use /pay <amount>")
         return
@@ -75,7 +72,7 @@ async def pay(update, context):
 
     # Reply with payment success and updated balance
     await update.message.reply_text(
-        f"Payment Successful! You Paid {amount} Tokens to {update.message.reply_to_message.from_user.username}. "
+        f"𝗣𝗮𝘆𝗺𝗲𝗻𝘁 𝗦𝘂𝗰𝗰𝗲𝘀𝘀𝗳𝘂𝗹! 𝗬𝗼𝘂 𝗣𝗮𝗶𝗱 {amount} 𝗧𝗼𝗸𝗲𝗻𝘀 𝘁𝗼 {update.message.reply_to_message.from_user.username}. "
     )
 
 
@@ -84,7 +81,7 @@ async def mtop(update, context):
     top_users = await user_collection.find({}, projection={'id': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}).sort('balance', -1).limit(10).to_list(10)
 
     # Create a message with the top users
-    top_users_message = "Top 10 Users With Highest Tokens\n\n"
+    top_users_message = "𝗧𝗼𝗽 𝟭𝟬 𝗨𝘀𝗲𝗿𝘀 𝗪𝗶𝘁𝗵 𝗛𝗶𝗴𝗵𝗲𝘀𝘁 𝗧𝗼𝗸𝗲𝗻𝘀\n\n"
     for i, user in enumerate(top_users, start=1):
         first_name = user.get('first_name', 'Unknown')
         last_name = user.get('last_name', '')
@@ -120,7 +117,7 @@ async def daily_reward(update, context):
         {'$inc': {'balance': 50000}, '$set': {'last_daily_reward': datetime.utcnow()}}
     )
 
-    await update.message.reply_text("Congratulations! You claimed 50000 Tokens")
+    await update.message.reply_text("𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀! 𝗬𝗼𝘂 𝗰𝗹𝗮𝗶𝗺𝗲𝗱 𝟱𝟬𝟬𝟬𝟬 𝗧𝗼𝗸𝗲𝗻𝘀")
 
 
 def format_timedelta(td: timedelta) -> str:
@@ -144,20 +141,20 @@ async def sbet(update, context):
         if amount <= 0:
             raise ValueError("Amount must be greater than zero.")
     except (IndexError, ValueError):
-        await update.message.reply_text("Use /sbet <amount>")
+        await update.message.reply_text("Use /bet <amount>")
         return
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
     if not user_balance or user_balance.get('balance', 0) < amount:
-        await update.message.reply_text("Insufficient balance to make the bet.")
+        await update.message.reply_text("𝗜𝗻𝘀𝘂𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝘁 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝘁𝗼 𝗺𝗮𝗸𝗲 𝘁𝗵𝗲 𝗯𝗲𝘁.")
         return
     if random.random() < 0.4:
         won_amount = 2 * amount
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': won_amount + amount}})
         updated_balance = user_balance.get('balance', 0) + won_amount
         await update.message.reply_text(
-            f"You bet {amount} coins and won! You came back with {won_amount} coins. Your updated balance is {updated_balance}."
+            f"𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀 𝘆𝗼𝘂 𝘄𝗼𝗻 {won_amount} coins. /n𝗬𝗼𝘂𝗿 𝗻𝗲𝘄 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝗶𝘀 {updated_balance}."
         )
     else:
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -amount}})
@@ -225,8 +222,8 @@ async def propose(update, context):
 # Add the CommandHandler to the application
 application.add_handler(CommandHandler("propose", propose, block=False))
 
-application.add_handler(CommandHandler("bet", sbet, block=False))
+application.add_handler(CommandHandler("sbet", sbet, block=False))
 application.add_handler(CommandHandler("bonus", daily_reward, block=False))
-application.add_handler(CommandHandler("bal", balance, block=False))
-application.add_handler(CommandHandler("pay", pay, block=False))
+application.add_handler(CommandHandler("sinv", balance, block=False))
+application.add_handler(CommandHandler("spay", pay, block=False))
 application.add_handler(CommandHandler("tops", mtop, block=False))
