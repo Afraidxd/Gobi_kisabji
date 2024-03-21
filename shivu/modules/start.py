@@ -49,6 +49,7 @@ async def start(update: Update, context: CallbackContext) -> None:
              InlineKeyboardButton("𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/BotsupportXD')],
             [InlineKeyboardButton("𝗢ᴡɴᴇʀ", url=f'https://t.me/ownerxd'),
            InlineKeyboardButton("𝐔ᴘᴅᴀᴛᴇ", url=f'https://t.me/BotupdateXD')],
+           [InlineKeyboardButton("game", callback_data='game')]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         photo_url = random.choice(PHOTO_URL)
@@ -88,6 +89,21 @@ async def button(update: Update, context: CallbackContext) -> None:
         help_keyboard = [[InlineKeyboardButton("𝐁ᴀᴄᴋ ➲", callback_data='back')]]
         reply_markup = InlineKeyboardMarkup(help_keyboard)
 
+if query.data == 'game':
+        game_text = """
+    *Game Section :*
+    
+*/𝗯𝗮𝗹: 𝗧𝗼 𝗖𝗵𝗲𝗰𝗸 𝗬𝗼𝘂𝗿𝗕𝗮𝗹𝗮𝗻𝗰𝗲*
+*/𝗯𝗲𝘁: 𝗧𝗼 𝗯𝗲𝘁 𝘆𝗼𝘂𝗿 𝗰𝗼𝗶𝗻*
+*/𝗯𝗼𝗻𝘂𝘀 : 𝗧𝗼 𝗰𝗹𝗮𝗶𝗺 𝗬𝗼𝘂𝗿 𝗱𝗮𝗶𝗹𝘆 𝗯𝗼𝗻𝘂𝘀*
+*/𝗽𝗮𝘆 :  𝘁𝗼 𝗴𝗶𝘃𝗲 𝘆𝗼𝘂𝗿 𝗰𝗼𝗶𝗻 𝘁𝗼 𝗮𝗻𝗼𝘁𝗵𝗲𝗿 𝘂𝘀𝗲𝗿 *
+*/𝘁𝗼𝗽𝘀 : 𝗧𝗼 𝘀𝗲𝗲 𝘁𝗼𝗽 𝗰𝗼𝗶𝗻 𝗵𝗼𝗹𝗱𝗲𝗿𝘀*
+*/𝗿𝗮𝗰𝗲 : 𝘁𝗼 𝗿𝗮𝗰𝗲 𝗰𝗮𝗿 𝗮𝗻𝗱 𝘄𝗶𝗻 𝗿𝗮𝗻𝗱𝗼𝗺 𝗰𝗮𝗿 ( 𝗨𝗻𝗱𝗲𝗿 𝗺𝗮𝗶𝗻𝘁𝗲𝗻𝗮𝗻𝗰𝗲 𝗱𝗼𝗻'𝘁 𝘂𝘀𝗲 𝘆𝗼𝘂𝗿 𝗰𝗼𝗶𝗻 𝘄𝗶𝗹𝗹 𝗱𝗲𝗱𝘂𝗰𝘁)*
+*/𝗯𝘂𝘆 : 𝘁𝗼 𝗯𝘂𝘆 𝗰𝗮𝗿𝘀 𝘁𝗼 𝘀𝗲𝗲 𝗽𝗿𝗶𝗰𝗲𝘀 𝗱𝗼 /𝘀𝘁𝗼𝗿𝗲*
+
+game_keyboard = [[InlineKeyboardButton("𝐁ᴀᴄᴋ ➲", callback_data='back')]]
+        reply_markup = InlineKeyboardMarkup(game_keyboard)
+
         await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=help_text, reply_markup=reply_markup, parse_mode='markdown')
 
     elif query.data == 'back':
@@ -102,11 +118,13 @@ async def button(update: Update, context: CallbackContext) -> None:
             [InlineKeyboardButton("𝐇ᴇʟᴘ", callback_data='help'),
              InlineKeyboardButton("𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/{SUPPORT_CHAT}')],
             [InlineKeyboardButton("𝗢ᴡɴᴇʀ", url=f'https://t.me/ownerxd')],
+            [InlineKeyboardButton("game", callback_data='game')]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
         await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=caption, reply_markup=reply_markup, parse_mode='markdown')
 
 application.add_handler(CallbackQueryHandler(button, pattern='^help$|^back$', block=False))
+application.add_handler(CallbackQueryHandler(button, pattern='^game$|^back$', block=False))
 start_handler = CommandHandler('start', start, block=False)
 application.add_handler(start_handler)
