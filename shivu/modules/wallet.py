@@ -160,7 +160,7 @@ async def sbet(update, context):
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -amount}})
         updated_balance = user_balance.get('balance', 0) - amount
         await update.message.reply_text(
-            f"𝗕𝗲𝘁𝘁𝗲𝗿 𝗹𝘂𝗰𝗸 𝗻𝗲𝘅𝘁 𝘁𝗶𝗺𝗲 𝘆𝗼𝘂 𝗹𝗼𝘀𝘁{amount} coins.𝗬𝗼𝘂𝗿 𝗻𝗲𝘄 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝗶𝘀 {updated_balance}."
+            f"𝗕𝗲𝘁𝘁𝗲𝗿 𝗹𝘂𝗰𝗸 𝗻𝗲𝘅𝘁 𝘁𝗶𝗺𝗲 𝘆𝗼𝘂 𝗹𝗼𝘀𝘁 {amount} coins.𝗬𝗼𝘂𝗿 𝗻𝗲𝘄 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝗶𝘀 {updated_balance}."
         )
 
 import asyncio
