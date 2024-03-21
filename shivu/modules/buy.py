@@ -27,9 +27,9 @@ async def buy(update, context):
 
     # Determine the coin cost based on the rarity of the character
     rarity_coin_mapping = {
-        "🟢 Common": 5000,
-        "🔵 Medium": 6000,
-        "🟠 Rare": 7000,
+        "⚪ Common": 5000,
+        "🟢 Medium": 6000,
+        "🟣 Rare": 7000,
         
     }
 
