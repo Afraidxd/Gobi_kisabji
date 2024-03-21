@@ -47,7 +47,7 @@ async def pay(update, context):
     # Check if the sender has enough balance
     sender_balance = await user_collection.find_one({'id': sender_id}, projection={'balance': 1})
     if not sender_balance or sender_balance.get('balance', 0) < amount:
-        await update.message.reply_text("Insufficient balance to make the payment.")
+        await update.message.reply_text("𝗜𝗻𝘀𝘂𝗳𝗳𝗶𝗰𝗶𝗲𝗻𝘁 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝘁𝗼 𝗺𝗮𝗸𝗲 𝘁𝗵𝗲 𝗽𝗮𝘆𝗺𝗲𝗻𝘁.")
         return
 
     # Check last payment time and cooldown
@@ -57,7 +57,7 @@ async def pay(update, context):
         if time_since_last_payment < timedelta(minutes=10):
             cooldown_time = timedelta(minutes=10) - time_since_last_payment
             formatted_cooldown = format_timedelta(cooldown_time)
-            await update.message.reply_text(f"Cooldown! You can pay again in `{formatted_cooldown}`.")
+            await update.message.reply_text(f"𝗖𝗼𝗼𝗹𝗱𝗼𝘄𝗻! 𝗬𝗼𝘂 𝗰𝗮𝗻 𝗽𝗮𝘆 𝗮𝗴𝗮𝗶𝗻 𝗶𝗻 `{formatted_cooldown}`.")
             return
 
     # Perform the payment
