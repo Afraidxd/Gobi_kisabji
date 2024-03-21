@@ -13,7 +13,8 @@ async def balance(update, context):
     photo_path1 = 'https://telegra.ph/file/7fd7f706c9c4e121afd19.jpg'
     if user_balance:
         balance_amount = user_balance.get('balance', 0)
-        balance_message = f"Hey User {update.effective_user.first_name}!\n
+        balance_message = f"Hey User
+        {update.effective_user.first_name}!\n
         Your Coin Balance is: 〄{balance_amount}"
     else:
         balance_message = "garb some Cars first."
