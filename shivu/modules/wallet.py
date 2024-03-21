@@ -198,7 +198,7 @@ async def propose(update, context):
 
     # Send the proposal message with a photo path
     proposal_message = "𝗥𝗮𝗰𝗲 𝗶𝘀 𝗴𝗼𝗶𝗻𝗴 𝘁𝗼 𝗯𝗲 𝘀𝘁𝗮𝗿𝘁"
-    photo_path = 'https://telegra.ph/file/0df89786cfc8572d2a4cd.jpg'  # Replace with your photo path
+    photo_path = 'https://telegra.ph/file/4834a7d4e963b85626bd5.jpg'  # Replace with your photo path
     await update.message.reply_photo(photo=photo_path, caption=proposal_message)
 
     await asyncio.sleep(2)  # 2-second delay
@@ -211,7 +211,7 @@ async def propose(update, context):
     # Generate a random result (60% chance of rejection, 40% chance of acceptance)
     if random.random() < 0.6:
         rejection_message = "𝗕𝗲𝘁𝘁𝗲𝗿 𝗹𝘂𝗰𝗸 𝗻𝗲𝘅𝘁 𝘁𝗶𝗺𝗲,𝗬𝗼𝘂 𝗹𝗼𝘀𝘁 𝘁𝗵𝗲 𝗿𝗮𝗰𝗲"
-        rejection_photo_path = 'https://telegra.ph/fil/0df89786cfc8572d2a4cd.jpg'  # Replace with rejection photo path
+        rejection_photo_path = 'https://telegra.ph/file/561d51ab44101c27bc893.jpg'  # Replace with rejection photo path
         await update.message.reply_photo(photo=rejection_photo_path, caption=rejection_message)
     else:
         await update.message.reply_text("𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀! 𝗬𝗼𝘂 𝘄𝗼𝗻 𝘁𝗵𝗲 𝗿𝗮𝗰𝗲.")
