@@ -39,15 +39,15 @@ async def start(update: Update, context: CallbackContext) -> None:
 
 
         caption = f"""
-        ***Hey there! {update.effective_user.first_name} 🌻***
+        ***𝐇𝐞𝐲 𝐭𝐡𝐞𝐫𝐞! {update.effective_user.first_name} 🌻***
               
-***i Am Grab 'Car Grabber Bot.. Add Me in You're Group And I will send Random Cars in group after every 100 messages and who guessed that car name Correct.. I will add That 🚗 in That user's Collection.. Tap on help Button To See All Commands***
+***𝐢 𝐀𝐦 𝐆𝐫𝐚𝐛 '𝐂𝐚𝐫 𝐆𝐫𝐚𝐛𝐛𝐞𝐫 𝐁𝐨𝐭.. 𝐀𝐝𝐝 𝐌𝐞 𝐢𝐧 𝐘𝐨𝐮'𝐫𝐞 𝐆𝐫𝐨𝐮𝐩 𝐀𝐧𝐝 𝐈 𝐰𝐢𝐥𝐥 𝐬𝐞𝐧𝐝 𝐑𝐚𝐧𝐝𝐨𝐦 𝐂𝐚𝐫𝐬 𝐢𝐧 𝐠𝐫𝐨𝐮𝐩 𝐚𝐟𝐭𝐞𝐫 𝐞𝐯𝐞𝐫𝐲 100 𝐦𝐞𝐬𝐬𝐚𝐠𝐞𝐬 𝐚𝐧𝐝 𝐰𝐡𝐨 𝐠𝐮𝐞𝐬𝐬𝐞𝐝 𝐭𝐡𝐚𝐭 𝐜𝐚𝐫 𝐧𝐚𝐦𝐞 𝐂𝐨𝐫𝐫𝐞𝐜𝐭.. 𝐈 𝐰𝐢𝐥𝐥 𝐚𝐝𝐝 𝐓𝐡𝐚𝐭 🚗 𝐢𝐧 𝐓𝐡𝐚𝐭 𝐮𝐬𝐞𝐫'𝐬 𝐂𝐨𝐥𝐥𝐞𝐜𝐭𝐢𝐨𝐧.. 𝐓𝐚𝐩 𝐨𝐧 𝐡𝐞𝐥𝐩 𝐁𝐮𝐭𝐭𝐨𝐧 𝐓𝐨 𝐒𝐞𝐞 𝐀𝐥𝐥 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬***
                """
         keyboard = [
             [InlineKeyboardButton("𝐀ᴅᴅ 𝐌ᴇ", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
             [InlineKeyboardButton("𝐇ᴇʟᴘ", callback_data='help'),
              InlineKeyboardButton("𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/{SUPPORT_CHAT}')],
-            [InlineKeyboardButton("𝐎ᴡɴᴇʀ", url=f'https://t.me/ownerxd')],
+            [InlineKeyboardButton("𝐎ᴡɴᴇʀ", url=f'https://t.me/own𝐇𝐞𝐲 𝐭𝐡𝐞𝐫𝐞!𝐇𝐞𝐲 𝐭𝐡𝐞𝐫𝐞!erxd')],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         photo_url = random.choice(PHOTO_URL)
@@ -104,7 +104,7 @@ async def button(update: Update, context: CallbackContext) -> None:
         caption = f"""
         ***Hey there! {update.effective_user.first_name}*** 🌻
         
-***i Am Car Grabber bot.. Add Me in You're Group And I will send Random Car in group after every 100 messages and who guessed that car 🚗 name Correct.. I will add That car 🏎 in That user's Collection.. Tap on help Button To See All Commands***
+***𝐢 𝐀𝐦 𝐆𝐫𝐚𝐛 '𝐂𝐚𝐫 𝐆𝐫𝐚𝐛𝐛𝐞𝐫 𝐁𝐨𝐭.. 𝐀𝐝𝐝 𝐌𝐞 𝐢𝐧 𝐘𝐨𝐮'𝐫𝐞 𝐆𝐫𝐨𝐮𝐩 𝐀𝐧𝐝 𝐈 𝐰𝐢𝐥𝐥 𝐬𝐞𝐧𝐝 𝐑𝐚𝐧𝐝𝐨𝐦 𝐂𝐚𝐫𝐬 𝐢𝐧 𝐠𝐫𝐨𝐮𝐩 𝐚𝐟𝐭𝐞𝐫 𝐞𝐯𝐞𝐫𝐲 100 𝐦𝐞𝐬𝐬𝐚𝐠𝐞𝐬 𝐚𝐧𝐝 𝐰𝐡𝐨 𝐠𝐮𝐞𝐬𝐬𝐞𝐝 𝐭𝐡𝐚𝐭 𝐜𝐚𝐫 𝐧𝐚𝐦𝐞 𝐂𝐨𝐫𝐫𝐞𝐜𝐭.. 𝐈 𝐰𝐢𝐥𝐥 𝐚𝐝𝐝 𝐓𝐡𝐚𝐭 🚗 𝐢𝐧 𝐓𝐡𝐚𝐭 𝐮𝐬𝐞𝐫'𝐬 𝐂𝐨𝐥𝐥𝐞𝐜𝐭𝐢𝐨𝐧.. 𝐓𝐚𝐩 𝐨𝐧 𝐡𝐞𝐥𝐩 𝐁𝐮𝐭𝐭𝐨𝐧 𝐓𝐨 𝐒𝐞𝐞 𝐀𝐥𝐥 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬***
         """
         keyboard = [
             [InlineKeyboardButton("𝐀ᴅᴅ 𝐌ᴇ", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
