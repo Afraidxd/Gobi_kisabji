@@ -52,5 +52,5 @@ async def removet(update, context):
     await update.message.reply_text(f"Sucess! {amount} Tokens removed from user {user_id}. Updated balance:{updated_balance} Tokens.")
 
 # Add the command handlers to your application
-application.add_handler(CommandHandler("addt", adt, block=False))
+application.add_handler(CommandHandler("addt", addt, block=False))
 application.add_handler(CommandHandler("removet", removet, block=False))
