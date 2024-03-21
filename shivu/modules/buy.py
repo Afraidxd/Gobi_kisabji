@@ -63,7 +63,7 @@ application.add_handler(buy_handler)
 
 async def shop(update, context):
     # You can customize the message text based on your needs
-    message_text = "Waifu shop To Buy Characters\n\n"
+    message_text = "Car shop To Buy Characters\n\n"
     message_text += "⚪ Common: 60000 💸\n"
     message_text += "🟢 Medium: 80000 💸\n"
     message_text += "🟣 Rare : 100000 💸\n"
