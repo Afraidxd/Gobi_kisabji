@@ -27,9 +27,9 @@ async def buy(update, context):
 
     # Determine the coin cost based on the rarity of the character
     rarity_coin_mapping = {
-        "⚪ Common": 5000,
-        "🟢 Medium": 6000,
-        "🟣 Rare": 7000,
+        "⚪ Common": 60000,
+        "🟢 Medium": 80000,
+        "🟣 Rare": 100000,
         
     }
 
@@ -64,9 +64,9 @@ application.add_handler(buy_handler)
 async def shop(update, context):
     # You can customize the message text based on your needs
     message_text = "Waifu shop To Buy Characters\n\n"
-    message_text += "⚪ Common: 5000 💸\n"
-    message_text += "🟢 Medium: 6000 💸\n"
-    message_text += "🟣 Rare : 7000 💸\n"
+    message_text += "⚪ Common: 60000 💸\n"
+    message_text += "🟢 Medium: 80000 💸\n"
+    message_text += "🟣 Rare : 100000 💸\n"
   
 
 # Register the new /shop command handler
