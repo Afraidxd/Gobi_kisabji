@@ -44,10 +44,10 @@ async def start(update: Update, context: CallbackContext) -> None:
 ***i Am Grab 'Car Grabber Bot.. Add Me in You're Group And I will send Random Cars in group after every 100 messages and who guessed that car name Correct.. I will add That 🚗 in That user's Collection.. Tap on help Button To See All Commands***
                """
         keyboard = [
-            [InlineKeyboardButton("Add Me", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
-            [InlineKeyboardButton("Help", callback_data='help'),
-             InlineKeyboardButton("Support", url=f'https://t.me/{SUPPORT_CHAT}')],
-            [InlineKeyboardButton("OWNER", url=f'https://t.me/ownerxd')],
+            [InlineKeyboardButton("𝐀ᴅᴅ 𝐌ᴇ", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
+            [InlineKeyboardButton("𝐇ᴇʟᴘ", callback_data='help'),
+             InlineKeyboardButton("𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/{SUPPORT_CHAT}')],
+            [InlineKeyboardButton("𝐎ᴡɴᴇʀ", url=f'https://t.me/ownerxd')],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
         photo_url = random.choice(PHOTO_URL)
@@ -58,8 +58,8 @@ async def start(update: Update, context: CallbackContext) -> None:
         photo_url = random.choice(PHOTO_URL)
         keyboard = [
 
-            [InlineKeyboardButton("Help", callback_data='help'),
-             InlineKeyboardButton("Support", url=f'https://t.me/{SUPPORT_CHAT}')],
+            [InlineKeyboardButton("𝐇ᴇʟᴘ", callback_data='help'),
+             InlineKeyboardButton("𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/{SUPPORT_CHAT}')],
 
         ]
 
@@ -107,10 +107,10 @@ async def button(update: Update, context: CallbackContext) -> None:
 ***i Am Car Grabber bot.. Add Me in You're Group And I will send Random Car in group after every 100 messages and who guessed that car 🚗 name Correct.. I will add That car 🏎 in That user's Collection.. Tap on help Button To See All Commands***
         """
         keyboard = [
-            [InlineKeyboardButton("Add Me", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
-            [InlineKeyboardButton("Help", callback_data='help'),
-             InlineKeyboardButton("Support", url=f'https://t.me/{SUPPORT_CHAT}')],
-            [InlineKeyboardButton("OWNER", url=f'https://t.me/ownerxd')],
+            [InlineKeyboardButton("𝐀ᴅᴅ 𝐌ᴇ", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
+            [InlineKeyboardButton("𝐇ᴇʟᴘ", callback_data='help'),
+             InlineKeyboardButton("Support𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/{SUPPORT_CHAT}')],
+            [InlineKeyboardButton("𝐎ᴡɴᴇʀ", url=f'https://t.me/ownerxd')],
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
