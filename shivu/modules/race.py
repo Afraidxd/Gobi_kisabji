@@ -43,7 +43,7 @@ async def propose(update, context):
     await asyncio.sleep(2)  # 2-second delay
 
     # Generate a random result (60% chance of rejection, 40% chance of acceptance)
-    if random.random() < 0.4:
+    if random.random() < 0.9:
         random_reward = random.randint(30000, 90000)
         monster_image = 'https://telegra.ph/file/f95f2d9755b89e16c7123.jpg'
         await user_collection.update_one(
