@@ -30,7 +30,7 @@ async def propose(update, context):
 
     # Deduct the propose fee of 10000 tokens
     await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -10000}})
-
+         random_reward = random.randint(3000, 9000)
     # Send the proposal message with a photo path
     proposal_message = "𝗥𝗮𝗰𝗲 𝗶𝘀 𝗴𝗼𝗶𝗻𝗴 𝘁𝗼 𝗯𝗲 𝘀𝘁𝗮𝗿𝘁"
     photo_path = 'https://telegra.ph/file/4834a7d4e963b85626bd5.jpg'  # Replace with your photo path
@@ -49,7 +49,13 @@ async def propose(update, context):
         rejection_photo_path = 'https://telegra.ph/file/561d51ab44101c27bc893.jpg'  # Replace with rejection photo path
         await update.message.reply_photo(photo=rejection_photo_path, caption=rejection_message)
     else:
-              await update.message.reply_text("Congratulations! You won the race.")
+         monster_image = 'https://telegra.ph/file/f95f2d9755b89e16c7123.jpg'
+                      await user_collection.update_one(
+            {'id': user_id},
+            {'$inc': {'balance': random_reward}}
+        )
+        last_command_time[user_id] = datetime.utcnow()
+        await update.message.reply_photo(photo=monster_image, caption=f"Congratulations You won the race here is Your reward Ŧ{random_reward} tokens.")
 
     # Update last propose time
     last_propose_times[user_id] = datetime.now()
