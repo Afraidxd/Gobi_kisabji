@@ -2,36 +2,41 @@ from telegram.ext import CommandHandler
 from shivu import application, user_collection
 from telegram import Update
 from datetime import datetime, timedelta
-import asyncio
+
 # Dictionary to store last payment times
 last_payment_times = {}
 
-async def daily_reward(update, context):
+async def weekly_reward(update, context):
     user_id = update.effective_user.id
 
-    # Check if the user already claimed the daily reward today
-    user_data = await user_collection.find_one({'id': user_id}, projection={'last_daily_reward': 1, 'balance': 1})
+    # Check if the user already claimed the weekly reward this week
+    user_data = await user_collection.find_one({'id': user_id}, projection={'last_weekly_reward': 1, 'balance': 1})
 
     if user_data:
-        last_claimed_date = user_data.get('last_daily_reward')
+        last_claimed_date = user_data.get('last_weekly_reward')
 
-        if last_claimed_date and last_claimed_date.date() == datetime.utcnow().date():
-            time_since_last_claim = datetime.utcnow() - last_claimed_date
-            time_until_next_claim = timedelta(days=1) - time_since_last_claim
-            formatted_time_until_next_claim = format_timedelta(time_until_next_claim)
-            await update.message.reply_text(f"𝗬𝗼𝘂 𝗮𝗹𝗿𝗲𝗮𝗱𝘆 𝗰𝗹𝗮𝗶𝗺𝗲𝗱 𝘆𝗼𝘂𝗿 𝘁𝗼𝗱𝗮𝘆'𝘀 𝗿𝗲𝘄𝗮𝗿𝗱. 𝗖𝗼𝗺𝗲 𝗯𝗮𝗰𝗸 𝗧𝗼𝗺𝗼𝗿𝗿𝗼𝘄!\n𝗧𝗶𝗺𝗲 𝗨𝗻𝘁𝗶𝗹 𝗡𝗲𝘅𝘁 𝗖𝗹𝗮𝗶𝗺: `{formatted_time_until_next_claim}`.")
+        if last_claimed_date and last_claimed_date.isocalendar()[1] == datetime.utcnow().isocalendar()[1]:
+            days_since_last_claim = (datetime.utcnow() - last_claimed_date).days
+            days_until_next_claim = 7 - days_since_last_claim
+            formatted_days_until_next_claim = f"{days_until_next_claim} day{'s' if days_until_next_claim > 1 else ''}"
+            await update.message.reply_text(f"You have already claimed your weekly reward. Come back in {formatted_days_until_next_claim}.")
             return
 
     await user_collection.update_one(
         {'id': user_id},
-        {'$inc': {'balance': 50000}, '$set': {'last_daily_reward': datetime.utcnow()}}
+        {'$inc': {'balance': 100000}, '$set': {'last_weekly_reward': datetime.utcnow()}}
     )
 
-    await update.message.reply_text("𝗖𝗼𝗻𝗴𝗿𝗮𝘁𝘂𝗹𝗮𝘁𝗶𝗼𝗻𝘀! 𝗬𝗼𝘂 𝗰𝗹𝗮𝗶𝗺𝗲𝗱 𝟱𝟬𝟬𝟬𝟬 𝗧𝗼𝗸𝗲𝗻𝘀")
-
+    await update.message.reply_text("Congratulations! You claimed 100,000 Tokens as your weekly reward.")
 
 def format_timedelta(td: timedelta) -> str:
-    seconds = td.total_seconds()
-    hours, remainder = divmod(seconds, 3600)
+    days = td.days
+    hours, remainder = divmod(td.seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
-    return "{:02}h {:02}m {:02}s".format(int(hours), int(minutes), int(seconds))
+    
+    if days > 0:
+        return f"{days} day{'s' if days > 1 else ''} {hours:02}h {minutes:02}m {seconds:02}s"
+    else:
+        return f"{hours:02}h {minutes:02}m {seconds:02}s"
+
+application.add_handler(CommandHandler("wbonus", weekly_reward, block=False))
