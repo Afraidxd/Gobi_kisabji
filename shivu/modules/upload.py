@@ -4,7 +4,7 @@ from pymongo import ReturnDocument
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext
 
-from Grabber import application, collection, db, CHARA_CHANNEL_ID, sudo_users
+from shivu import application, collection, db, CHARA_CHANNEL_ID, sudo_users
 
 
 
