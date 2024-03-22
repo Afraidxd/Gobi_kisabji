@@ -60,8 +60,8 @@ rarity_map = (1: "⚪ Common" ,2: "🟢 Medium" ,3: "🟣 Rare" ,4: "🟡 Legend
 
         character = {
             'img_url': args[0],
-            'name': character_name,
-            'anime': anime,
+            'car name': character_name,
+            'company': anime,
             'rarity': rarity,
             'id': id
         }
