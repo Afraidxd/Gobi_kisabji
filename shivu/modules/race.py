@@ -57,7 +57,8 @@ async def propose(update, context):
     last_command_time[user_id] = datetime.utcnow()
     await update.message.reply_photo(photo=monster_image, caption=f"Congratulations You won the race here is Your reward Ŧ{random_reward} tokens.")
 
-    # Update last propose time
+#Update last propose time
+
 last_propose_times[user_id] = datetime.now()
 
 # Add the CommandHandler to the application
