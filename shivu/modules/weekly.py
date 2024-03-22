@@ -15,12 +15,12 @@ async def weekly_reward(update, context):
     if user_data:
         last_claimed_date = user_data.get('last_weekly_reward')
 
-        if last_claimed_date and last_claimed_date.isocalendar()[1] == datetime.utcnow().isocalendar()[1]:
-            days_since_last_claim = (datetime.utcnow() - last_claimed_date).days
-            days_until_next_claim = 7 - days_since_last_claim
-            formatted_days_until_next_claim = f"{days_until_next_claim} day{'s' if days_until_next_claim > 1 else ''}"
-            await update.message.reply_text(f"You have already claimed your weekly reward. Come back in {formatted_days_until_next_claim}.")
-            return
+        if last_claimed_date:
+            time_since_last_claim = datetime.utcnow() - last_claimed_date
+            if time_since_last_claim < timedelta(days=7):
+                remaining_time = timedelta(days=7) - time_since_last_claim
+                await update.message.reply_text(f"You have already claimed your weekly reward. Please come back in {format_timedelta(remaining_time)}.")
+                return
 
     await user_collection.update_one(
         {'id': user_id},
@@ -38,5 +38,6 @@ def format_timedelta(td: timedelta) -> str:
         return f"{days} day{'s' if days > 1 else ''} {hours:02}h {minutes:02}m {seconds:02}s"
     else:
         return f"{hours:02}h {minutes:02}m {seconds:02}s"
+
 
 application.add_handler(CommandHandler("wbonus", weekly_reward, block=False))
