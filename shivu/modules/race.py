@@ -43,13 +43,9 @@ async def propose(update, context):
     await asyncio.sleep(2)  # 2-second delay
 
     # Generate a random result (60% chance of rejection, 40% chance of acceptance)
-    if random.random() < 0.6:
-        rejection_message = "𝗕𝗲𝘁𝘁𝗲𝗿 𝗹𝘂𝗰𝗸 𝗻𝗲𝘅𝘁 𝘁𝗶𝗺𝗲,𝗬𝗼𝘂 𝗹𝗼𝘀𝘁 𝘁𝗵𝗲 𝗿𝗮𝗰𝗲"
-        rejection_photo_path = 'https://telegra.ph/file/561d51ab44101c27bc893.jpg'  # Replace with rejection photo path
-        await update.message.reply_photo(photo=rejection_photo_path, caption=rejection_message)
-       
-        else:
-    random_reward = random.randint(30000, 90000)
+    if random.random() < 0.4:
+
+random_reward = random.randint(30000, 90000)
     monster_image = 'https://telegra.ph/file/f95f2d9755b89e16c7123.jpg'
     await user_collection.update_one(
         {'id': user_id},
@@ -57,6 +53,13 @@ async def propose(update, context):
     )
     last_command_time[user_id] = datetime.utcnow()
     await update.message.reply_photo(photo=monster_image, caption=f"Congratulations You won the race here is Your reward Ŧ{random_reward} tokens.")
+else:
+        rejection_message = "𝗕𝗲𝘁𝘁𝗲𝗿 𝗹𝘂𝗰𝗸 𝗻𝗲𝘅𝘁 𝘁𝗶𝗺𝗲,𝗬𝗼𝘂 𝗹𝗼𝘀𝘁 𝘁𝗵𝗲 𝗿𝗮𝗰𝗲"
+        rejection_photo_path = 'https://telegra.ph/file/561d51ab44101c27bc893.jpg'  # Replace with rejection photo path
+        await update.message.reply_photo(photo=rejection_photo_path, caption=rejection_message)
+       
+        
+    
 
 #Update last propose time
 
