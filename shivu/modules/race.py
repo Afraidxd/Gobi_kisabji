@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 
 # Dictionary to store last propose times
 last_propose_times = {}
+last_command_time = {}
 
 async def propose(update, context):
     # Check if the user has 20000 tokens
