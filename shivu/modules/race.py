@@ -3,6 +3,7 @@ from telegram.ext import CommandHandler
 from shivu import application, user_collection, collection
 from telegram import Update
 import random
+import math
 from datetime import datetime, timedelta
 
 # Dictionary to store last propose times
