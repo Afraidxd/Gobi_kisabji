@@ -47,7 +47,7 @@ async def propose(update, context):
         rejection_message = "𝗕𝗲𝘁𝘁𝗲𝗿 𝗹𝘂𝗰𝗸 𝗻𝗲𝘅𝘁 𝘁𝗶𝗺𝗲,𝗬𝗼𝘂 𝗹𝗼𝘀𝘁 𝘁𝗵𝗲 𝗿𝗮𝗰𝗲"
         rejection_photo_path = 'https://telegra.ph/file/561d51ab44101c27bc893.jpg'  # Replace with rejection photo path
         await update.message.reply_photo(photo=rejection_photo_path, caption=rejection_message)
-    else:
+       else:
     random_reward = random.randint(30000, 90000)
     monster_image = 'https://telegra.ph/file/f95f2d9755b89e16c7123.jpg'
     await user_collection.update_one(
