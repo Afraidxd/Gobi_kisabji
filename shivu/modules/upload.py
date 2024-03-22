@@ -122,7 +122,7 @@ async def update(update: Update, context: CallbackContext) -> None:
             return
 
         # Check if field is valid
-        valid_fields = ['img_url', 'name', 'anime', 'rarity']
+        valid_fields = ['img_url', 'car name', 'company', 'rarity']
         if args[1] not in valid_fields:
             await update.message.reply_text(f'Invalid field. Please use one of the following: {", ".join(valid_fields)}')
             return
