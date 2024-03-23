@@ -1,21 +1,28 @@
 from pyrogram import Client, filters
-from shivu import db, collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection
-import asyncio
-from shivu import shivuu as app
+from shivu import db, collection
 
-async def get_character(receiver_id, character_id):
-    character = await collection.find_one({'id': character_id})
+app = Client("my_account")
 
-    if character:
-        try:
-            
+@app.on_message(filters.command("get", prefixes="/"))
+async def get_character_info(client, message):
+    try:
+        character_id = int(message.text.split()[1])  # Extract character ID from the message
+        character = await collection.find_one({'id': character_id})
 
+        if character:
             img_url = character['img_url']
             caption = (
-                f"Successfully Given To {receiver_id}\n"
+                f"Successfully Given To {message.chat.id}\n"
                 f"Information As Follows\n"
                 f" ✅ Rarity: {character['rarity']}\n"
                 f"🫂 Company: {character['company']}\n"
                 f"💕 Car Name: {character['car name']}\n"
                 f"🍿 ID: {character['id']}"
             )
+
+            # Send the car information as a message
+            await client.send_photo(message.chat.id, photo=img_url, caption=caption)
+        else:
+            await message.reply("Character not found.")
+    except IndexError:
+        await message.reply("Please provide a valid character ID.")
