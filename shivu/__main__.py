@@ -116,7 +116,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption="""A New Car Has Just Appeared Use /guess [name]
+        caption="""A New Car Has Just Appeared Use /guess [name] ["car name"]
 And Add This car In Your Collection""",
         parse_mode='Markdown')
 
