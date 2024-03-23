@@ -27,4 +27,3 @@ async def get_character_info(client, message):
             await message.reply("Character not found.")
     except IndexError:
         await message.reply("Please provide a valid character ID.")
-app.run()
