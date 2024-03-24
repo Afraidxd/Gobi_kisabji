@@ -110,13 +110,13 @@ async def button(update: Update, context: CallbackContext) -> None:
     await query.answer()
 
     if query.data == 'help':
+        # Add your help functionality here
 
     if query.data == 'car_name':
+        chat_id = query.message.chat_id
         character = last_characters.get(chat_id)
         if character:
             await query.answer(f"The car name is: {character['car name']}")
-        else:
-            await query.answer("No car name available.")
 
 
 async def guess(update: Update, context: CallbackContext) -> None:
