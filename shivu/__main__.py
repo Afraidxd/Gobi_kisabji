@@ -120,7 +120,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         chat_id=chat_id,
         photo=character['img_url'],
         caption="""A New Car Has Just Appeared Use /guess [name] 
-And Add This car In Your Collection""",
+And Add This car In Your Collection""",reply_markup=reply_markup
         parse_mode='Markdown')
 
 async def guess(update: Update, context: CallbackContext) -> None:
