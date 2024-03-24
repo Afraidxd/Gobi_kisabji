@@ -105,9 +105,11 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         caption=f"A New {character['rarity']} Car Appeared...\nGuess the Car Name and add it to Your Garage",
         parse_mode='markdown', reply_markup=InlineKeyboardMarkup(keyboard))
 
-async def button_click(update: Update, context: CallbackContext) -> None:
+async def button(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
-    chat_id = query.message.chat_id
+    await query.answer()
+
+    if query.data == 'help':
 
     if query.data == 'car_name':
         character = last_characters.get(chat_id)
