@@ -79,41 +79,31 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 
 
 async def send_image(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id
+    chat_id = update.effective_chat.id
 
-    all_characters = list(await collection.find({}).to_list(length=None))
+    all_characters = list(await collection.find({}).to_list(length=None))
 
-    if chat_id not in sent_characters:
-        sent_characters[chat_id] = []
+    if chat_id not in sent_characters:
+        sent_characters[chat_id] = []
 
-    if len(sent_characters[chat_id]) == len(all_characters):
-        sent_characters[chat_id] = []
+    if len(sent_characters[chat_id]) == len(all_characters):
+        sent_characters[chat_id] = []
 
-    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
+    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
 
-    sent_characters[chat_id].append(character['id'])
-    last_characters[chat_id] = character
+    sent_characters[chat_id].append(character['id'])
+    last_characters[chat_id] = character
 
-    if chat_id in first_correct_guesses:
-        del first_correct_guesses[chat_id]
+    if chat_id in first_correct_guesses:
+        del first_correct_guesses[chat_id]
 
-    keyboard = [[InlineKeyboardButton("Guess 🔥", callback_data=character['name'])]]
+    keyboard = [[InlineKeyboardButton("Guess 🔥", callback_data=character['name'])]]
 
-    await context.bot.send_photo(
-        chat_id=chat_id,
-        photo=character['img_url'],
-        caption=f"A New {character['rarity']} Car Appeared...\n/guess Name and add in Your Garage",
-        parse_mode='HTML',
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-
-async def button_click(update: Update, context: CallbackContext) -> None:
-    query = update.callback_query
-    character_name = query.data
-    query.answer(text=f"The car name is: {car name})"
-
-# Add this line to your main function to handle button clicks
-dp.add_handler(CallbackQueryHandler(button_click))
+    await context.bot.send_photo(
+        chat_id=chat_id,
+        photo=character['img_url'],
+        caption=f"A New {character['rarity']} Car Appeared...\n/guess Name and add in Your Garage",
+        parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
