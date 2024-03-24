@@ -102,13 +102,15 @@ async def send_image(update: Update, context: CallbackContext) -> None:
 
     if chat_id in first_correct_guesses:
         del first_correct_guesses[chat_id]
+        
 
+            keyboard = [[InlineKeyboardButton(f"𝙂𝙖𝙧𝙖𝙜𝙚 🔥", switch_inline_query_current_chat=f"collection.{user_id}")]]
 
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
         caption=f"""𝘼 𝙉𝙚𝙬{character['rarity']} 𝘾𝙖𝙧 𝘼𝙥𝙥𝙚𝙖𝙧𝙚𝙙...\n/guess 𝙉𝙖𝙢𝙚 𝙖𝙣𝙙 𝙖𝙙𝙙 𝙞𝙣 𝙔𝙤𝙪𝙧 𝙂𝙖𝙧𝙖𝙜𝙚""",
-        parse_mode='Markdown')
+        parse_mode='HTML',reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
