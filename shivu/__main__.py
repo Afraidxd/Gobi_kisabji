@@ -97,16 +97,24 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     if chat_id in first_correct_guesses:
         del first_correct_guesses[chat_id]
 
-    if query.data == 'car name':
-{last_characters[chat_id]["car name"]}
-
-    keyboard = [[InlineKeyboardButton("Guess 🔥", callback_data=character['car name'])]]
+    keyboard = [[InlineKeyboardButton("Guess 🔥", callback_data='car_name')]]
 
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"A New {character['rarity']} Car Appeared...\n/guess Name and add in Your Garage",
+        caption=f"A New {character['rarity']} Car Appeared...\nGuess the Car Name and add it to Your Garage",
         parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard))
+
+async def button_click(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    chat_id = query.message.chat_id
+
+    if query.data == 'car_name':
+        character = last_characters.get(chat_id)
+        if character:
+            await query.answer(f"The car name is: {character['car name']}")
+        else:
+            await query.answer("No car name available.")
 
 
 async def guess(update: Update, context: CallbackContext) -> None:
