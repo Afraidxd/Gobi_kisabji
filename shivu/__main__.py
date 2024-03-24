@@ -78,6 +78,9 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 
 
 async def send_image(update: Update, context: CallbackContext) -> None:
+    
+
+async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
     all_characters = list(await collection.find({}).to_list(length=None))
@@ -96,13 +99,23 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     if chat_id in first_correct_guesses:
         del first_correct_guesses[chat_id]
 
-    keyboard = [[InlineKeyboardButton("Guess 🔥", callback_data=character['car name'])]]
+    keyboard = [[InlineKeyboardButton("Guess 🔥", callback_data='car_name')]]
 
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"A New {character['rarity']} Car Appeared...\n/guess Name and add in Your Garage",
-        parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard))
+        caption=f"A New {character['rarity']} Car Appeared...\nGuess the Name and add it to Your Garage",
+        parse_mode='HTML',
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+async def button_click(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    car_name = last_characters.get(query.message.chat.id, {}).get('car name', 'Unknown Car')
+
+    await query.answer(text=f"The car name is: {car_name}")
+
+    # You can add more logic here to handle the user's response to the car name
 
 
 
