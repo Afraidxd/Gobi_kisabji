@@ -107,7 +107,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"""𝘼 𝙉𝙚𝙬{character['rarity']} 𝘾𝙖𝙧 𝘼𝙥𝙥𝙚𝙖𝙧𝙚𝙙...\n/guess 𝙉𝙖𝙢𝙚 𝙖𝙣𝙙 𝙖𝙙𝙙 𝙞𝙣 𝙔𝙤𝙪𝙧 𝙝𝙖𝙧𝙚𝙢""",
+        caption=f"""𝘼 𝙉𝙚𝙬{character['rarity']} 𝘾𝙖𝙧 𝘼𝙥𝙥𝙚𝙖𝙧𝙚𝙙...\n/guess 𝙉𝙖𝙢𝙚 𝙖𝙣𝙙 𝙖𝙙𝙙 𝙞𝙣 𝙔𝙤𝙪𝙧 𝙂𝙖𝙧𝙖𝙜𝙚""",
         parse_mode='Markdown')
 
 async def guess(update: Update, context: CallbackContext) -> None:
@@ -128,7 +128,7 @@ async def guess(update: Update, context: CallbackContext) -> None:
         return
 
 
-    name_parts = last_characters[chat_id]['name'].lower().split()
+    name_parts = last_characters[chat_id]['car name'].lower().split()
 
     if sorted(name_parts) == sorted(guess.split()) or any(part == guess for part in name_parts):
 
