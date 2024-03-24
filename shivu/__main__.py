@@ -5,7 +5,7 @@ import re
 import asyncio
 from html import escape
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, CallbackContext, CallbackQueryHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import Update
 from telegram.ext import CommandHandler,  CallbackContext, MessageHandler, filters
 
