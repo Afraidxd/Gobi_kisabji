@@ -3,17 +3,15 @@ import time
 import random
 import re
 import asyncio
-from html import escape 
+from html import escape
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext, MessageHandler, filters
 
-from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu 
-from shivu import application, LOGGER 
+from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu
+from shivu import application, LOGGER
 from shivu.modules import ALL_MODULES
-
 
 locks = {}
 message_counters = {}
@@ -23,13 +21,14 @@ sent_characters = {}
 first_correct_guesses = {}
 message_counts = {}
 
-
 for module_name in ALL_MODULES:
     imported_module = importlib.import_module("shivu.modules." + module_name)
 
 
 last_user = {}
 warned_users = {}
+
+
 def escape_markdown(text):
     escape_chars = r'\*_`\\~>#+-=|{}.!'
     return re.sub(r'([%s])' % re.escape(escape_chars), r'\\\1', text)
@@ -51,7 +50,6 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
         else:
             message_frequency = 100
 
-
         if chat_id in last_user and last_user[chat_id]['user_id'] == user_id:
             last_user[chat_id]['count'] += 1
             if last_user[chat_id]['count'] >= 10:
@@ -60,57 +58,51 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
                     return
                 else:
 
-                    await update.message.reply_text(f"⚠️ 𝘿𝙤𝙣'𝙩 𝙎𝙥𝙖𝙢 {update.effective_user.first_name}...\n𝙔𝙤𝙪𝙧 𝙈𝙚𝙨𝙨𝙖𝙜𝙚𝙨 𝙒𝙞𝙡𝙡 𝙗𝙚 𝙞𝙜𝙣𝙤𝙧𝙚𝙙 𝙛𝙤𝙧 10 𝙈𝙞𝙣𝙪𝙩𝙚𝙨...")
+                    await update.message.reply_text(
+                        f"⚠️ Don't Spam {update.effective_user.first_name}...\nYour Messages Will be Ignored for 10 Minutes...")
                     warned_users[user_id] = time.time()
                     return
         else:
             last_user[chat_id] = {'user_id': user_id, 'count': 1}
-
 
         if chat_id in message_counts:
             message_counts[chat_id] += 1
         else:
             message_counts[chat_id] = 1
 
-
         if message_counts[chat_id] % message_frequency == 0:
             await send_image(update, context)
 
             message_counts[chat_id] = 0
 
+
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
-
     all_characters = list(await collection.find({}).to_list(length=None))
-
 
     if chat_id not in sent_characters:
         sent_characters[chat_id] = []
 
-
     if len(sent_characters[chat_id]) == len(all_characters):
         sent_characters[chat_id] = []
 
-
     character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
-
 
     sent_characters[chat_id].append(character['id'])
     last_characters[chat_id] = character
 
-
     if chat_id in first_correct_guesses:
         del first_correct_guesses[chat_id]
-        
 
-            keyboard = [[InlineKeyboardButton(f"𝙂𝙖𝙧𝙖𝙜𝙚 🔥", switch_inline_query_current_chat=f"collection.{user_id}")]]
+    keyboard = [[InlineKeyboardButton(f"Guess 🔥", switch_inline_query_current_chat=f"collection.{user_id}")]]
 
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"""𝘼 𝙉𝙚𝙬{character['rarity']} 𝘾𝙖𝙧 𝘼𝙥𝙥𝙚𝙖𝙧𝙚𝙙...\n/guess 𝙉𝙖𝙢𝙚 𝙖𝙣𝙙 𝙖𝙙𝙙 𝙞𝙣 𝙔𝙤𝙪𝙧 𝙂𝙖𝙧𝙖𝙜𝙚""",
-        parse_mode='HTML',reply_markup=InlineKeyboardMarkup(keyboard))
+        caption=f"A New {character['rarity']} Car Appeared...\n/guess Name and add in Your Garage",
+        parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard))
+
 
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
