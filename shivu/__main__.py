@@ -95,7 +95,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     if chat_id in first_correct_guesses:
         del first_correct_guesses[chat_id]
 
-    keyboard = [[InlineKeyboardButton(f"Guess 🔥", callback_data=['car name']")]]
+    keyboard = [[InlineKeyboardButton(f"Guess 🔥", callback_data=hii")]]
 
     await context.bot.send_photo(
         chat_id=chat_id,
