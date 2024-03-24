@@ -77,9 +77,7 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 
 
 
-
 async def send_image(update: Update, context: CallbackContext) -> None:
-   async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
     all_characters = list(await collection.find({}).to_list(length=None))
@@ -105,6 +103,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         photo=character['img_url'],
         caption=f"A New {character['rarity']} Car Appeared...\n/guess Name and add in Your Garage",
         parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard))
+
 
 
 
