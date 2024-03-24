@@ -108,6 +108,13 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
+async def button_click(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    car_name = last_characters.get(query.message.chat_id, {}).get('name', 'Unknown Car')
+    query.answer(text=f"The car name is: {car_name}", show_alert=True)
+
+# In your main function or setup code
+dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^car_name$'))
 
 
 
