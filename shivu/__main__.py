@@ -79,45 +79,31 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 
 
 async def send_image(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id
+    chat_id = update.effective_chat.id
 
-    all_characters = list(await collection.find({}).to_list(length=None))
+    all_characters = list(await collection.find({}).to_list(length=None))
 
-    if chat_id not in sent_characters:
-        sent_characters[chat_id] = []
+    if chat_id not in sent_characters:
+        sent_characters[chat_id] = []
 
-    if len(sent_characters[chat_id]) == len(all_characters):
-        sent_characters[chat_id] = []
+    if len(sent_characters[chat_id]) == len(all_characters):
+        sent_characters[chat_id] = []
 
-    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
+    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
 
-    sent_characters[chat_id].append(character['id'])
-    last_characters[chat_id] = character
+    sent_characters[chat_id].append(character['id'])
+    last_characters[chat_id] = character
 
-    if chat_id in first_correct_guesses:
-        del first_correct_guesses[chat_id]
+    if chat_id in first_correct_guesses:
+        del first_correct_guesses[chat_id]
 
-    keyboard = [[InlineKeyboardButton("Guess 🔥", callback_data='car_name')]]
+    keyboard = [[InlineKeyboardButton("Guess 🔥", callback_data=character['name'])]]
 
-    await context.bot.send_photo(
-        chat_id=chat_id,
-        photo=character['img_url'],
-        caption=f"A New {character['rarity']} Car Appeared...\nGuess the Car Name and add it to Your Garage",
-        parse_mode='markdown', reply_markup=InlineKeyboardMarkup(keyboard))
-
-async def button(update: Update, context: CallbackContext) -> None:
-    query = update.callback_query
-    await query.answer()
-
-    if query.data == 'help':
-        # Add your help functionality here
-
-    if query.data == 'car_name':
-        chat_id = query.message.chat_id
-        character = last_characters.get(chat_id)
-        if character:
-            await query.answer(f"The car name is: {character['car name']}")
-
+    await context.bot.send_photo(
+        chat_id=chat_id,
+        photo=character['img_url'],
+        caption=f"A New {character['rarity']} Car Appeared...\n/guess Name and add in Your Garage",
+        parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard))
 
 
 async def guess(update: Update, context: CallbackContext) -> None:
