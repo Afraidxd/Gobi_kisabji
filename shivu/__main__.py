@@ -89,6 +89,17 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     if len(sent_characters[chat_id]) == len(all_characters):
         sent_characters[chat_id] = []
 
+    character = random.choice([c for c in async def send_image(update: Update, context: CallbackContext) -> None:
+    chat_id = update.effective_chat.id
+
+    all_characters = list(await collection.find({}).to_list(length=None))
+
+    if chat_id not in sent_characters:
+        sent_characters[chat_id] = []
+
+    if len(sent_characters[chat_id]) == len(all_characters):
+        sent_characters[chat_id] = []
+
     character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
 
     sent_characters[chat_id].append(character['id'])
@@ -103,7 +114,9 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         chat_id=chat_id,
         photo=character['img_url'],
         caption=f"A New {character['rarity']} Car Appeared...\n/guess Name and add in Your Garage",
-        parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard))
+        parse_mode='HTML',
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
 
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
