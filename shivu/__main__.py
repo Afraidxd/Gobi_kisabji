@@ -112,7 +112,7 @@ async def button_click(update: Update, context: CallbackContext) -> None:
     query.answer(text=f"The car name is: {car_name}", show_alert=True)
 
 # In your main function or setup code
-dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^car_name$'))
+application.add_handler(CallbackQueryHandler(button_click, pattern='^car_name$'))
 
 
 
