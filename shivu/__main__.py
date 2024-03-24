@@ -99,7 +99,8 @@ async def send_image(update: Update, context: CallbackContext) -> None:
 
 keyboard = [[InlineKeyboardButton("Guess 🔥", callback_data="hii")]]
 
-await context.bot.send_photo(
+     await 
+    context.bot.send_photo(
     chat_id=chat_id,
     photo=character['img_url'],
     caption=f"A New {character['rarity']} Car Appeared...\n/guess Name and add in Your Garage",
