@@ -110,7 +110,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
 async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     character_name = query.data
-    query.answer(text=f"The car name is: {car name}")
+    query.answer(text=f"The car name is: {"car name"})"
 
 # Add this line to your main function to handle button clicks
 dp.add_handler(CallbackQueryHandler(button_click))
