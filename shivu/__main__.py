@@ -103,7 +103,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         chat_id=chat_id,
         photo=character['img_url'],
         caption=f"A New {character['rarity']} Car Appeared...\nGuess the Car Name and add it to Your Garage",
-        parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard))
+        parse_mode='markdown', reply_markup=InlineKeyboardMarkup(keyboard))
 
 async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
