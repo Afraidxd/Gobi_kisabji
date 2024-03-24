@@ -5,7 +5,7 @@ import re
 import asyncio
 from html import escape
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, CallbackContext, CallbackQueryHandler
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext, MessageHandler, filters
 
@@ -76,6 +76,8 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
             message_counts[chat_id] = 0
 
 
+
+
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
@@ -95,13 +97,23 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     if chat_id in first_correct_guesses:
         del first_correct_guesses[chat_id]
 
-    keyboard = [[InlineKeyboardButton("Guess 🔥", callback_data=character['car name'])]]
+    keyboard = [[InlineKeyboardButton("Guess 🔥", callback_data=character['name'])]]
 
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
         caption=f"A New {character['rarity']} Car Appeared...\n/guess Name and add in Your Garage",
-        parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard))
+        parse_mode='HTML',
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+async def button_click(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    character_name = query.data
+    query.answer(text=f"The car name is: {car name}")
+
+# Add this line to your main function to handle button clicks
+dp.add_handler(CallbackQueryHandler(button_click))
 
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
