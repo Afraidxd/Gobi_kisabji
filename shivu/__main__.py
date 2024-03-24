@@ -110,18 +110,22 @@ async def send_image(update: Update, context: CallbackContext) -> None:
 
 
     if chat_id in first_correct_guesses:
-        del first_correct_guesses[chat_id]
-         
-                keyboard = [
-            [InlineKeyboardButton("𝐀ᴅᴅ 𝐌ᴇ", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],       
-            reply_markup = InlineKeyboardMarkup(keyboard)
+    del first_correct_guesses[chat_id]
 
-    await context.bot.send_photo(
-        chat_id=chat_id,
-        photo=character['img_url'],
-        caption="""A New Car Has Just Appeared Use /guess [name] 
-And Add This car In Your Collection""",reply_markup=reply_markup
-        parse_mode='Markdown')
+keyboard = [
+    [InlineKeyboardButton("𝐀ᴅᴅ 𝐌ᴇ", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
+]
+reply_markup = InlineKeyboardMarkup(keyboard)
+
+await context.bot.send_photo(
+    chat_id=chat_id,
+    photo=character['img_url'],
+    caption="""A New Car Has Just Appeared. Use /guess [name] 
+And Add This Car In Your Collection""",
+    reply_markup=reply_markup,
+    parse_mode='Markdown'
+)
+
 
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
