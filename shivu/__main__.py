@@ -111,7 +111,10 @@ async def send_image(update: Update, context: CallbackContext) -> None:
 
     if chat_id in first_correct_guesses:
         del first_correct_guesses[chat_id]
-
+         
+                keyboard = [
+            [InlineKeyboardButton("𝐀ᴅᴅ 𝐌ᴇ", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],       
+            reply_markup = InlineKeyboardMarkup(keyboard)
 
     await context.bot.send_photo(
         chat_id=chat_id,
