@@ -109,7 +109,8 @@ async def send_image(update: Update, context: CallbackContext) -> None:
 async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     car_name = last_characters.get(query.message.chat_id, {}).get('name', 'Unknown Car')
-await query.answer(text=f"The car name is: {car_name}", show_alert=True)
+await query.answer
+(text=f"The car name is: {car_name}", show_alert=True)
 
 
 # In your main function or setup code
