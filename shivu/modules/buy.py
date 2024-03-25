@@ -67,7 +67,7 @@ async def shop(update, context):
     message_text += "⚪ Common: 60000 💸\n"
     message_text += "🟢 Medium: 80000 💸\n"
     message_text += "🟣 Rare : 100000 💸\n"
-    message_text += "Use /buy <slave id>\n"
+    message_text += "Use /buy <car id>\n"
     message_text += "If you want to buy car go and select from here @cardatab"
     await update.message.reply_text(message_text)
   
