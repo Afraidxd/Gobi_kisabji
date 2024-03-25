@@ -62,4 +62,4 @@ async def propose(update, context):
     # Update last propose time
     last_propose_times[user_id] = datetime.now()
 
-application.add_handler(CommandHandler("race", block=False))
+application.add_handler(CommandHandler("race", propose,block=False))
