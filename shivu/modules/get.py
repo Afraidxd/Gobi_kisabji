@@ -28,4 +28,4 @@ async def get_car_info(client, message):
     else:
         await message.reply("Car not found.")
 
-application.add_handler(get_car_info, filters.command("get"))
+application.add_handler(CommandHandler("get", get_car_info, block=False))
