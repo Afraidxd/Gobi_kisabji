@@ -8,7 +8,7 @@ async def buy(update, context):
 
     # Check if the command includes a character ID
     if not context.args or len(context.args) != 1:
-        await update.message.reply_text('<b>Please provide a valid slave ID to buy.</b>')
+        await update.message.reply_text('<b>Please provide a valid car ID to buy.</b>')
         return
 
     character_id = context.args[0]
@@ -16,13 +16,13 @@ async def buy(update, context):
     # Retrieve the character from the store based on the provided ID
     character = await collection.find_one({'id': character_id})
     if not character:
-        await update.message.reply_text('Slave not found in the store.')
+        await update.message.reply_text('car not found in the store.')
         return
 
     # Check if the user has sufficient coins to make the purchase
     user = await user_collection.find_one({'id': user_id})
     if not user or 'balance' not in user:
-        await update.message.reply_text('Error: User balance not found.')
+        await update.message.reply_text('Grab 1 car to buy car.')
         return
 
     # Determine the coin cost based on the rarity of the character
