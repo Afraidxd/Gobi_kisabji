@@ -1,29 +1,31 @@
-from pyrogram import Client, filters
-from shivu import db, collection
-from shivu import application
+from pyrogram import filters
+from shivu import collection, user_collection, application 
 
-app = Client("my_account")
+async def get_car_info(client, message):
+    # Extract the car ID from the message text
+    car_id = message.text.split()[-1]
 
-@app.on_message(filters.command("get", prefixes="/"))
-async def get_character_info(client, message):
-    try:
-        character_id = int(message.text.split()[1])  # Extract character ID from the message
-        character = await collection.find_one({'id': character_id})
+    if not car_id.isdigit():
+        await message.reply("Please provide a valid car ID.")
+        return
 
-        if character:
-            img_url = character['img_url']
-            caption = (
-                f"Successfully Given To {message.chat.id}\n"
-                f"Information As Follows\n"
-                f" ✅ Rarity: {character['rarity']}\n"
-                f"🫂 Company: {character['company']}\n"
-                f"💕 Car Name: {character['car name']}\n"
-                f"🍿 ID: {character['id']}"
-            )
+    # Query the MongoDB collection for car information based on the ID
+    # Replace this with your actual query to retrieve car details
+    character = await collection.find_one({'id': int(car_id)})
 
-            # Send the car information as a message
-            await client.send_photo(message.chat.id, photo=img_url, caption=caption)
-        else:
-            await message.reply("Character not found.")
-    except IndexError:
-        await message.reply("Please provide a valid character ID.")
+    if character:
+        img_url = character['img_url']
+        caption = (
+            f"Car Information:\n"
+            f"✅ Rarity: {character['rarity']}\n"
+            f"🫂 Company: {character['company']}\n"
+            f"💕 Car Name: {character['car name']}\n"
+            f"🍿 ID: {character['id}"
+        )
+
+        # Send a message with car information
+        await client.send_photo(message.chat.id, photo=img_url, caption=caption)
+    else:
+        await message.reply("Car not found.")
+
+app.add_handler(get_car_info, filters.command("get"))
