@@ -1,5 +1,5 @@
 from pyrogram import filters
-from shivu import collection, user_collection, app
+from shivu import collection, user_collection, application
 
 async def get_car_info(client, message):
     car_id = message.text.split()[-1]
@@ -24,4 +24,4 @@ async def get_car_info(client, message):
     else:
         await message.reply("Car not found.")
 
-app.add_handler(get_car_info, filters.command("get"))
+application.add_handler(CommandHandler("get", get_car_info, block=False))
