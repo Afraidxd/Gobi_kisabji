@@ -45,7 +45,7 @@ async def propose(update, context):
     await asyncio.sleep(2)  # 2-second delay
 
     # Generate a random result (60% chance of rejection, 40% chance of acceptance)
-    if random.random() < 0.3:
+    if random.random() < 0.4:
         random_reward = random.randint(30000, 90000)
         monster_image = 'https://telegra.ph/file/f95f2d9755b89e16c7123.jpg'
         await user_collection.update_one(
@@ -62,4 +62,4 @@ async def propose(update, context):
     # Update last propose time
     last_propose_times[user_id] = datetime.now()
 
-application.add_handler(CommandHandler("race", propose, block=False))
+application.add_handler(CommandHandler("race", block=False))
