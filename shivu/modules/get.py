@@ -1,17 +1,13 @@
-from telegram.ext import CommandHandler
 from pyrogram import filters
-from shivu import collection, user_collection, application 
+from shivu import collection, user_collection, app
 
 async def get_car_info(client, message):
-     car_id = message.text.split()[-1]
-   
+    car_id = message.text.split()[-1]
 
     if not car_id.isdigit():
         await message.reply("Please provide a valid car ID.")
         return
 
-    # Query the MongoDB collection for car information based on the ID
-    # Replace this with your actual query to retrieve car details
     character = await collection.find_one({'id': int(car_id)})
 
     if character:
@@ -24,9 +20,8 @@ async def get_car_info(client, message):
             f"🍿 ID: {character['id']}"
         )
 
-        # Send a message with car information
         await client.send_photo(message.chat.id, photo=img_url, caption=caption)
     else:
         await message.reply("Car not found.")
 
-application.add_handler(CommandHandler("get", get_car_info, block=False))
+app.add_handler(get_car_info, filters.command("get"))
