@@ -91,7 +91,6 @@ async def send_image(update: Update, context: CallbackContext, rarity_filter: st
     filtered_characters = [c for c in all_characters if c['id'] not in sent_characters[chat_id]]
 
     if not filtered_characters:
-        # Handle the case where no characters match the filter or all have been sent
         return
 
     character = random.choice(filtered_characters)
@@ -113,8 +112,8 @@ async def send_image(update: Update, context: CallbackContext, rarity_filter: st
     )
 
 # Call send_image with a specific rarity filter
+await send_image(update, context, "⚪️ Common, 🟣 Rare, 🟡 Legendary, 🟢 Medium, 💮 Limited Edition")
 
-await send_image(update, context, "⚪️ Common, 🟣 Rare, 🟡 Legendary, 🟢 Medium, 💮 limited edition")
 
 
 async def button_click(update: Update, context: CallbackContext) -> None:
