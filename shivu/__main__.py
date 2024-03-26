@@ -77,10 +77,10 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 
 
 
-async def send_image(update: Update, context: CallbackContext) -> None:
+async def send_image(update: Update, context: CallbackContext, rarity_filter: str) -> None:
     chat_id = update.effective_chat.id
 
-    all_characters = list(await collection.find({'rarity': '⚪️ Common, 🟣 Rare, 🟡 Legendary, 🟢 Medium, 💮 limited edition'}).to_list(length=None))
+    all_characters = list(await collection.find({ "rarity": rarity_filter }).to_list(length=None))
 
     if chat_id not in sent_characters:
         sent_characters[chat_id] = []
@@ -88,7 +88,13 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     if len(sent_characters[chat_id]) == len(all_characters):
         sent_characters[chat_id] = []
 
-    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
+    filtered_characters = [c for c in all_characters if c['id'] not in sent_characters[chat_id]]
+
+    if not filtered_characters:
+        # Handle the case where no characters match the filter or all have been sent
+        return
+
+    character = random.choice(filtered_characters)
 
     sent_characters[chat_id].append(character['id'])
     last_characters[chat_id] = character
@@ -101,11 +107,14 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"A New Common Car Appeared...\nGuess the Name and add it to Your Garage",
+        caption=f"A New {character['rarity']} Car Appeared...\nGuess the Name and add it to Your Garage",
         parse_mode='HTML',
-
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
+
+# Call send_image with a specific rarity filter
+await send_image(update, context, "⚪️ Common, 🟣 Rare, 🟡 Legendary, 🟢 Medium, 💮 limited edition")
+
 
 async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
