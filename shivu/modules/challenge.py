@@ -42,13 +42,13 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
         if chat_frequency:
             message_frequency = chat_frequency.get('message_frequency', 100)
         else:
-            message_frequency = 100
+            message_frequency = 1
 
         if chat_id in last_user and last_user[chat_id]['user_id'] == user_id:
             last_user[chat_id]['count'] += 1
             if last_user[chat_id]['count'] >= 10:
 
-                if user_id in warned_users and time.time() - warned_users[user_id] < 600:
+                if user_id in warned_users and time.time() - warned_users[user_id] < 60:
                     return
                 else:
 
