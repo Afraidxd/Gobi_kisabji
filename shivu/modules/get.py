@@ -1,11 +1,11 @@
 from pyrogram import filters
 from shivu import collection, user_collection, application
 
-async def get_car_info(client, update):
-    car_id = update.message.text.split()[-1]
+async def get_car_info(client, message):
+    car_id = message.text.split()[-1]
 
     if not car_id.isdigit():
-        await update.message.reply_text("Please provide a valid car ID.")
+        await message.reply_text("Please provide a valid car ID.")
         return
 
     character = await collection.find_one({'id': int(car_id)})
@@ -20,10 +20,10 @@ async def get_car_info(client, update):
             f"🍿 ID: {character.get('id')}"
         )
 
-        await client.send_photo(update.message.chat.id, photo=img_url, caption=caption)
+        await client.send_photo(message.chat.id, photo=img_url, caption=caption)
     else:
-        await update.message.reply_text("Car not found.")
+        await message.reply_text("Car not found.")
 
-@application.add_handler(filters.command("get"))
+@application.on_message(filters.command("get"))
 async def handle_get_command(client, message):
     await get_car_info(client, message)
