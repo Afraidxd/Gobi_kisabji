@@ -81,7 +81,7 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
-    all_characters = list(await collection.find({ 'rarity': { '$in': ['⚪ Common'] } }).to_list(length=None))
+    all_characters = list(await collection.find({ 'rarity': { '$in': ['⚪ Common', '🟣 Rare', '🟡 Legendary', '🟢 Medium', '💮 Limited Edition'] } }).to_list(length=None))
 
     if chat_id not in sent_characters:
         sent_characters[chat_id] = []
