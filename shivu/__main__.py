@@ -113,8 +113,8 @@ async def send_image(update: Update, context: CallbackContext, rarity_filter: st
     )
 
 # Call send_image with a specific rarity filter
-await 
-send_image(update, context, "⚪️ Common, 🟣 Rare, 🟡 Legendary, 🟢 Medium, 💮 limited edition")
+
+await send_image(update, context, "⚪️ Common, 🟣 Rare, 🟡 Legendary, 🟢 Medium, 💮 limited edition")
 
 
 async def button_click(update: Update, context: CallbackContext) -> None:
