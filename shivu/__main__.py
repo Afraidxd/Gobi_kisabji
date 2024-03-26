@@ -89,9 +89,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     if len(sent_characters[chat_id]) == len(all_characters):
         sent_characters[chat_id] = []
 
-    valid_rarities = ['⚪Common', '🟣Rare', '🟡Legendary', '🟢Medium', '💮Limited Edition']
-
-    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id] and c['rarity'] in valid_rarities])
+    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
 
     sent_characters[chat_id].append(character['id'])
     last_characters[chat_id] = character
@@ -99,7 +97,15 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     if chat_id in first_correct_guesses:
         del first_correct_guesses[chat_id]
 
-    keyboard = [[InlineKeyboardButton("Name 🔥", callback_data='name')]]
+    keyboard = [[InlineKeyboardButton("Name 🔥", callback_data='car_name')]]
+
+    await context.bot.send_photo(
+        chat_id=chat_id,
+        photo=character['img_url'],
+        caption=f"A New {character['rarity']} Car Appeared...\n/guess the Name and add it to Your slave list",
+        parse_mode='HTML',
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
 
     await context.bot.send_photo(
         chat_id=chat_id,
