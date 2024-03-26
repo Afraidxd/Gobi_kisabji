@@ -24,6 +24,6 @@ async def get_car_info(client, update):
     else:
         await update.message.reply_text("Car not found.")
 
-@application.on_message(filters.command("get"))
+@application.add_handler(filters.command("get"))
 async def handle_get_command(client, message):
     await get_car_info(client, message)
