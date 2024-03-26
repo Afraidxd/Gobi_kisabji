@@ -1,8 +1,9 @@
 from telegram.ext import CommandHandler
+from telegram import Update 
 from pyrogram import filters
 from shivu import collection, user_collection, application
 
-async def get_car_info(client, update):
+async def get_car_info(client, update, context):
     car_id = update.message.text.split()[-1]
 
     if not car_id.isdigit():
@@ -25,4 +26,4 @@ async def get_car_info(client, update):
     else:
         await update.message.reply_text("Car not found.")
 
-application.add_handler(CommandHandler("get", get_car_info, block=False))
+application.add_handler(CommandHandler("get", get_car_info, pass_args=True, pass_update_queue=True, pass_job_queue=True, pass_user_data=True))
