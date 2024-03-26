@@ -81,7 +81,7 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
-    all_characters = list(await collection.find({}).to_list(length=None))
+    all_characters = list(await collection.find({ 'rarity': { '$in': ['⚪Common', '🟣Rare', '🟡Legendary', '🟢Medium', '💮Limited Edition'] } }).to_list(length=None))
 
     if chat_id not in sent_characters:
         sent_characters[chat_id] = []
@@ -102,18 +102,11 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"A New {character['rarity']} Car Appeared...\n/guess the Name and add it to Your slave list",
+        caption=f"A New {character['rarity']} Car Appeared...\nGuess the Name and add it to Your slave list",
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-    await context.bot.send_photo(
-        chat_id=chat_id,
-        photo=character['img_url'],
-        caption=f"A New {character['rarity']} slave Appeared...\n/Guess the Name and add it to Your slave list",
-        parse_mode='HTML',
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
 
 
 
