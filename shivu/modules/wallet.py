@@ -7,18 +7,18 @@ import asyncio
 last_payment_times = {}
 
 async def balance(update, context):
+    # Retrieve user balance from the database (replace this with your actual database query)
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
     if user_balance:
         balance_amount = user_balance.get('balance', 0)
-        balance_message = f"Your current balance is: ꜩ{balance_amount}"
+        balance_message = f"𝗬𝗼𝘂𝗿 𝗰𝘂𝗿𝗿𝗲𝗻𝘁 𝗯𝗮𝗹𝗮𝗻𝗰𝗲 𝗶𝘀: ꜩ{balance_amount}"
     else:
-        await user_collection.insert_one({'id': user_id, 'balance': 0})
-        balance_amount = 0
-        balance_message = "Your account has been set up. Your current balance is: ꜩ0"
+        balance_message = "𝗚𝗮𝗿𝗯 𝘀𝗼𝗺𝗲 𝗰𝗮𝗿𝘀 𝗳𝗶𝗿𝘀𝘁."
 
     await update.message.reply_text(balance_message)
+
 
 
 async def pay(update, context):
