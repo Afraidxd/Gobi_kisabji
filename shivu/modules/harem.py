@@ -24,8 +24,8 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
 
     character_counts = {k: len(list(v)) for k, v in groupby(characters, key=lambda x: x['id'])}
 
+    
     unique_characters = list({character['id']: character for character in characters}.values())
-
 
     
     total_pages = math.ceil(len(unique_characters) / 15)  
@@ -42,7 +42,7 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
     current_grouped_characters = {k: list(v) for k, v in groupby(current_characters, key=lambda x: x['company'])}
 
     for anime, characters in current_grouped_characters.items():
-        harem_message += f'\n<b>{company} {len(characters)}/{await collection.count_documents({"company": anime})}</b>\n'
+        harem_message += f'\n<b>{anime} {len(characters)}/{await collection.count_documents({"company": anime})}</b>\n'
 
         for character in characters:
             
