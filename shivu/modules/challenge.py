@@ -1,100 +1,49 @@
-import importlib
-import time
-import random
-import re
-import asyncio
-from html import escape
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import Update
-from telegram.ext import CommandHandler,  CallbackContext, MessageHandler, CallbackQueryHandler, filters
-
-from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu
-from shivu import application, LOGGER
-from shivu.modules import ALL_MODULES
-
-locks = {}
-message_counters = {}
-spam_counters = {}
-last_characters = {}
-sent_characters = {}
-first_correct_guesses = {}
-message_counts = {}
-
-for module_name in ALL_MODULES:
-    imported_module = importlib.import_module("shivu.modules." + module_name)
-
-
-last_user = {}
-warned_users = {}
-
-async def message_counter(update: Update, context: CallbackContext) -> None:
-    chat_id = str(update.effective_chat.id)
+async def propose(update, context):
+    # Check if the user has 20000 tokens
     user_id = update.effective_user.id
+    user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
-    if chat_id not in locks:
-        locks[chat_id] = asyncio.Lock()
-    lock = locks[chat_id]
+    if not user_balance or user_balance.get('balance', 0) < 20000:
+        await update.message.reply_text("You need at least 20000 tokens to propose.")
+        return
 
-    async with lock:
+    # Check last propose time and cooldown
+    last_propose_time = last_propose_times.get(user_id)
+    if last_propose_time:
+        time_since_last_propose = datetime.now() - last_propose_time
+        if time_since_last_propose < timedelta(minutes=5):
+            remaining_cooldown = timedelta(minutes=5) - time_since_last_propose
+            remaining_cooldown_minutes = remaining_cooldown.total_seconds() // 60
+            remaining_cooldown_seconds = remaining_cooldown.total_seconds() % 60
+            await update.message.reply_text(f"Cooldown! Please wait {int(remaining_cooldown_minutes)}m {int(remaining_cooldown_seconds)}s before proposing again.")
+            return
 
-        chat_frequency = await user_totals_collection.find_one({'chat_id': chat_id})
-        if chat_frequency:
-            message_frequency = chat_frequency.get('message_frequency', 100)
-        else:
-            message_frequency = 1
+    # Deduct the propose fee of 10000 tokens
+    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -10000}})
 
-        if chat_id in last_user and last_user[chat_id]['user_id'] == user_id:
-            last_user[chat_id]['count'] += 1
-            if last_user[chat_id]['count'] >= 10:
+    # Send the proposal message with a photo path
+    proposal_message = "✨ 𝐅𝐢𝐧𝐚𝐥𝐥𝐲 𝐭𝐡𝐞 𝐭𝐢𝐦𝐞 𝐡𝐚𝐬 𝐜𝐨𝐦𝐞 ✨"
+    photo_path = 'https://graph.org/file/deda08aefd8c0e1540fcd.jpg'  # Replace with your photo path
+    await update.message.reply_photo(photo=photo_path, caption=proposal_message)
 
-                if user_id in warned_users and time.time() - warned_users[user_id] < 60:
-                    return
-                else:
+    await asyncio.sleep(2)  # 2-second delay
 
-                    await update.message.reply_text(
-                        f"⚠️ Don't Spam {update.effective_user.first_name}...\nYour Messages Will be Ignored for 10 Minutes...")
-                    warned_users[user_id] = time.time()
-                    return
-        else:
-            last_user[chat_id] = {'user_id': user_id, 'count': 1}
+    # Send the proposal text
+    await update.message.reply_text("𝐏𝐫𝐨𝐩𝐨𝐬𝐞𝐢𝐧𝐠 𝐡𝐞𝐫 💍")
 
-        if chat_id in message_counts:
-            message_counts[chat_id] += 1
-        else:
-            message_counts[chat_id] = 1
+    await asyncio.sleep(2)  # 2-second delay
 
-        # Check if half an hour has passed since the last character was sent
-        if chat_id in last_character_time and time.time() - last_character_time[chat_id] >= 120:
-            await send_image(update, context)
-            last_character_time[chat_id] = time.time()
+    # Filter characters based on rarity (assuming rarity is stored in the character document)
+    selected_rarity = "Epic"  # Specify the rarity you want to select characters from
+    filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
 
-        if message_counts[chat_id] % message_frequency == 0:
-            message_counts[chat_id] = 0
+    # Select a random character from the filtered list
+    character = random.choice(filtered_characters)
 
-async def send_image(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id
+    # Add the selected character to the user's collection
+    await user_collection.update_one({'id': user_id}, {'$push': {'characters': character}})
+    await update.message.reply_photo(photo=character['img_url'], caption=f"{character['name']} accepted your proposal go and have some sex 💝")
 
-    all_characters = list(await collection.find({'rarity': '🏎 Race edition'}).to_list(length=None))
-
-    if chat_id not in sent_characters:
-        sent_characters[chat_id] = []
-
-    if len(sent_characters[chat_id]) == len(all_characters):
-        sent_characters[chat_id] = []
-
-    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
-
-    sent_characters[chat_id].append(character['id'])
-    last_characters[chat_id] = character
-
-    if chat_id in first_challenge_accept:
-        del first_challenge_accept[chat_id]
-
-    await context.bot.send_photo(
-        chat_id=chat_id,
-        photo=character['img_url'],
-        caption=f"A New Common Car Appeared...\n/accept the Name and add it to Your Garage",
-        parse_mode='HTML',
-    )
-
+    # Update last propose time
+    last_propose_times[user_id] = datetime.now()
