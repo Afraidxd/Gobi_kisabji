@@ -40,7 +40,7 @@ async def race(update, context):
     await asyncio.sleep(2)
 
     selected_rarity = ["💮 limited edition", "🏎 Race edition"]
-    filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
+    filtered_characters = await collection.find({'rarity': {'$in': selected_rarity}}).to_list(length=None)
 
     if not filtered_characters:
         await update.message.reply_text("No characters found with the specified rarity.")
