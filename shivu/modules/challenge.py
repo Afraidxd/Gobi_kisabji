@@ -45,7 +45,7 @@ async def race(update, context):
     await asyncio.sleep(2)  # 2-second delay
 
     # Filter characters based on rarity (assuming rarity is stored in the character document)
-    selected_rarity = "'💮 limited edition', '🏎 Race edition'"  # Specify the rarity you want to select characters from
+    selected_rarity = ["💮 limited edition", "🏎 Race edition"]  # Specify the rarity you want to select characters from
     filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
 
     if not filtered_characters:
