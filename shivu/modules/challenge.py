@@ -3,7 +3,6 @@ from telegram.ext import CommandHandler
 from shivu import application, user_collection, collection
 from telegram import Update
 import random
-import math
 from datetime import datetime, timedelta
 
 # Dictionary to store last propose times
@@ -49,12 +48,16 @@ async def race(update, context):
     selected_rarity = "'💮 limited edition', '🏎 Race edition'"  # Specify the rarity you want to select characters from
     filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
 
+    if not filtered_characters:
+        await update.message.reply_text("No characters found with the specified rarity.")
+        return
+
     # Select a random character from the filtered list
     character = random.choice(filtered_characters)
 
     # Add the selected character to the user's collection
     await user_collection.update_one({'id': user_id}, {'$push': {'characters': character}})
-    await update.message.reply_photo(photo=character['img_url'], caption=f"Congratulations You won {character['car name']} as reward")
+    await update.message.reply_photo(photo=character['img_url'], caption=f"Congratulations! You won {character['car name']} as a reward.")
 
     # Update last propose time
     last_propose_times[user_id] = datetime.now()
