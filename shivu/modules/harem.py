@@ -24,8 +24,8 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
 
     character_counts = {k: len(list(v)) for k, v in groupby(characters, key=lambda x: x['id'])}
 
-    
     unique_characters = list({character['id']: character for character in characters}.values())
+
 
     
     total_pages = math.ceil(len(unique_characters) / 15)  
