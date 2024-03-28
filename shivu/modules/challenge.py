@@ -30,7 +30,7 @@ async def race(update, context):
     await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -500000}})
 
     proposal_message = "Challenge Accepted "
-    photo_path = 'https://graph.org/file/deda08aefd8c0e1540fcd.jpg'  # Replace with your photo path
+    photo_path = 'https://telegra.ph/file/938a03f66ce32dfeaee87.jpg'  # Replace with your photo path
     await update.message.reply_photo(photo=photo_path, caption=proposal_message)
 
     await asyncio.sleep(2)
@@ -59,4 +59,4 @@ async def race(update, context):
 
     last_propose_times[user_id] = datetime.now()
 
-application.add_handler(CommandHandler("crace", race, block=False))
+application.add_handler(CommandHandler("challenge", race, block=False))
