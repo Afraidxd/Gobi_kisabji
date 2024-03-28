@@ -13,8 +13,8 @@ async def race(update, context):
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
-    if not user_balance or user_balance.get('balance', 0) < 20000:
-        await update.message.reply_text("You need at least 20000 tokens to propose.")
+    if not user_balance or user_balance.get('balance', 0) < 600000:
+        await update.message.reply_text("You need at least 600000 tokens to propose.")
         return
 
     last_propose_time = last_propose_times.get(user_id)
@@ -27,29 +27,35 @@ async def race(update, context):
             await update.message.reply_text(f"Cooldown! Please wait {int(remaining_cooldown_minutes)}m {int(remaining_cooldown_seconds)}s before proposing again.")
             return
 
-    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -10000}})
+    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -500000}})
 
-    proposal_message = "✨ 𝐅𝐢𝐧𝐚𝐥𝐥𝐲 𝐭𝐡𝐞 𝐭𝐢𝐦𝐞 𝐡𝐚𝐬 𝐜𝐨𝐦𝐞 ✨"
+    proposal_message = "Challenge Accepted "
     photo_path = 'https://graph.org/file/deda08aefd8c0e1540fcd.jpg'  # Replace with your photo path
     await update.message.reply_photo(photo=photo_path, caption=proposal_message)
 
     await asyncio.sleep(2)
 
-    await update.message.reply_text("𝐏𝐫𝐨𝐩𝐨𝐬𝐞𝐢𝐧𝐠 𝐡𝐞𝐫 💍")
+    await update.message.reply_text("Race has started")
 
     await asyncio.sleep(2)
 
-    selected_rarity = random.choices(["💮 limited edition", "🏎 Race edition"], weights=[0.7, 0.3])[0]
-    filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
+    winning_chances = ["💮 limited edition", "🏎 Race edition", "You lost"]
+    outcomes = random.choices(winning_chances, weights=[0.5, 0.3, 0.2])[0]
 
-    if not filtered_characters:
-        await update.message.reply_text("No characters found with the specified rarity.")
-        return
+    if outcomes == "You lost":
+        await update.message.reply_text("You lost! Better luck next time.")
+    else:
+        selected_rarity = outcomes
+        filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
 
-    character = random.choice(filtered_characters)
+        if not filtered_characters:
+            await update.message.reply_text("No characters found with the specified rarity.")
+            return
 
-    await user_collection.update_one({'id': user_id}, {'$push': {'characters': character}})
-    await update.message.reply_photo(photo=character['img_url'], caption=f"Congratulations! You won {character['car name']} as a reward.")
+        character = random.choice(filtered_characters)
+
+        await user_collection.update_one({'id': user_id}, {'$push': {'characters': character}})
+        await update.message.reply_photo(photo=character['img_url'], caption=f"Congratulations! You won {character['rarity']} {character['car name']} as a reward.")
 
     last_propose_times[user_id] = datetime.now()
 
