@@ -43,7 +43,7 @@ async def race(update, context):
     outcomes = random.choices(winning_chances, weights=[0.3, 0.2, 0.5])[0]
 
     if outcomes == "You lost":
-        await update.message.reply_text("You lost! Better luck next time.")
+        await update.message.reply_text("Ha ha ha-you lost You noob go and get some car knowledge.")
     else:
         selected_rarity = outcomes
         filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
