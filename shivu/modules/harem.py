@@ -17,9 +17,9 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
     user = await user_collection.find_one({'id': user_id})
     if not user:
         if update.message:
-            await update.message.reply_text('𝙔𝙤𝙪 𝙃𝙖𝙫𝙚 𝙉𝙤𝙩 𝙂𝙧𝙖𝙗 𝙖𝙣𝙮 𝙎𝙡𝙖𝙫𝙚 𝙔𝙚𝙩...')
+            await update.message.reply_text('You Have Not owned any car Yet 𝙮𝙤𝙪 𝙥𝙤𝙤𝙧...')
         else:
-            await update.callback_query.edit_message_text('𝙔𝙤𝙪 𝙃𝙖𝙫𝙚 𝙉𝙤𝙩 𝙂𝙧𝙖𝙗 𝙖𝙣𝙮 𝙎𝙡𝙖𝙫𝙚 𝙔𝙚𝙩...')
+            await update.callback_query.edit_message_text('You Have Not owned any car Yet 𝙮𝙤𝙪 𝙥𝙤𝙤𝙧...')
         return
 
     characters = sorted(user['characters'], key=lambda x: (x['company'], x['id']))
@@ -35,7 +35,7 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
     if page < 0 or page >= total_pages:
         page = 0  
 
-    harem_message = f"<b>{escape(update.effective_user.first_name)}'s Harem - Page {page+1}/{total_pages}</b>\n"
+    harem_message = f"<b>{escape(update.effective_user.first_name)}'s Garage - Floor {page+1}/{total_pages}</b>\n"
 
 
     current_characters = unique_characters[page*7:(page+1)*7]
@@ -61,9 +61,9 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
 
         nav_buttons = []
         if page > 0:
-            nav_buttons.append(InlineKeyboardButton("⬅️", callback_data=f"harem:{page-1}:{user_id}"))
+            nav_buttons.append(InlineKeyboardButton("⇤", callback_data=f"harem:{page-1}:{user_id}"))
         if page < total_pages - 1:
-            nav_buttons.append(InlineKeyboardButton("➡️", callback_data=f"harem:{page+1}:{user_id}"))
+            nav_buttons.append(InlineKeyboardButton("⇥", callback_data=f"harem:{page+1}:{user_id}"))
         keyboard.append(nav_buttons)
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -134,6 +134,6 @@ async def harem_callback(update: Update, context: CallbackContext) -> None:
 
 
 
-application.add_handler(CommandHandler(["slaves"], harem,block=False))
+application.add_handler(CommandHandler(["collection"], harem,block=False))
 harem_handler = CallbackQueryHandler(harem_callback, pattern='^harem.*', block=False)
 application.add_handler(harem_handler)
