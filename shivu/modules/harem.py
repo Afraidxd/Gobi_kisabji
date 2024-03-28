@@ -22,7 +22,7 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
             await update.callback_query.edit_message_text('𝙔𝙤𝙪 𝙃𝙖𝙫𝙚 𝙉𝙤𝙩 𝙂𝙧𝙖𝙗 𝙖𝙣𝙮 𝙎𝙡𝙖𝙫𝙚 𝙔𝙚𝙩...')
         return
 
-    characters = sorted(user['characters'], key=lambda x: (x['anime'], x['id']))
+    characters = sorted(user['characters'], key=lambda x: (x['company'], x['id']))
 
     character_counts = {k: len(list(v)) for k, v in groupby(characters, key=lambda x: x['id'])}
 
