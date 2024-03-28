@@ -1,5 +1,16 @@
+import asyncio
+from telegram.ext import CommandHandler
+from shivu import application, user_collection, collection
+from telegram import Update
+import random
+import math
+from datetime import datetime, timedelta
 
-async def propose(update, context):
+# Dictionary to store last propose times
+last_propose_times = {}
+last_command_time = {}
+
+async def race(update, context):
     # Check if the user has 20000 tokens
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
@@ -35,7 +46,7 @@ async def propose(update, context):
     await asyncio.sleep(2)  # 2-second delay
 
     # Filter characters based on rarity (assuming rarity is stored in the character document)
-    selected_rarity = "Epic"  # Specify the rarity you want to select characters from
+    selected_rarity = "'💮 limited edition', '🏎 Race edition'"  # Specify the rarity you want to select characters from
     filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
 
     # Select a random character from the filtered list
@@ -43,7 +54,9 @@ async def propose(update, context):
 
     # Add the selected character to the user's collection
     await user_collection.update_one({'id': user_id}, {'$push': {'characters': character}})
-    await update.message.reply_photo(photo=character['img_url'], caption=f"{character['name']} accepted your proposal go and have some sex 💝")
+    await update.message.reply_photo(photo=character['img_url'], caption=f"Congratulations You won {character['car name']} as reward")
 
     # Update last propose time
     last_propose_times[user_id] = datetime.now()
+
+application.add_handler(CommandHandler("crace", race, block=False))
