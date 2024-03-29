@@ -16,7 +16,7 @@ else:
     sudo_users = ["6734369007", "6919722801", "5757833536", "5516379068", "6942997609", "7087814148"]
     GROUP_ID = -4115403338
     TOKEN = "7152549014:AAGQl39KqsCe7g8_oZO2tFa12tZOAIP75tY"
-    mongo_url = "mongodb+srv://cargrabberdb:CYYlHdPWXqm0RHuA@cluster0.9y2smsd.mongodb.net/"
+    mongo_url = "mongodb+srv://ishitaroy657boobs:6rhmZeIH8qESZmRS@waifu.hza810f.mongodb.net/"
     PHOTO_URL = ["https://telegra.ph/file/2ed20f2783ebb9cbfd04c.jpg", "https://telegra.ph/file/ed9d1302a7d58b2b2f2a2.jpg", "https://telegra.ph/file/578547d3f14979d82e1ae.jpg"]
     SUPPORT_CHAT = "carbotsupport"
     UPDATE_CHAT = "Divine_x_soul"
