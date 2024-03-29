@@ -14,7 +14,7 @@ async def race(update, context):
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
     if not user_balance or user_balance.get('balance', 0) < 600000:
-        await update.message.reply_text("You need at least 600000 tokens to propose.")
+        await update.message.reply_text("You need at least 600000 tokens to challenge.")
         return
 
     last_propose_time = last_propose_times.get(user_id)
