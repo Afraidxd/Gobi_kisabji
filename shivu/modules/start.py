@@ -41,7 +41,24 @@ async def start(update: Update, context: CallbackContext) -> None:
         caption = f"""
         ***𝐇𝐞𝐲 𝐭𝐡𝐞𝐫𝐞! {update.effective_user.first_name} 🌻***
               
-***𝐢 𝐀𝐦 𝐆𝐫𝐚𝐛 '𝐂𝐚𝐫 𝐆𝐫𝐚𝐛𝐛𝐞𝐫 𝐁𝐨𝐭.. 𝐀𝐝𝐝 𝐌𝐞 𝐢𝐧 𝐘𝐨𝐮'𝐫𝐞 𝐆𝐫𝐨𝐮𝐩 𝐀𝐧𝐝 𝐈 𝐰𝐢𝐥𝐥 𝐬𝐞𝐧𝐝 𝐑𝐚𝐧𝐝𝐨𝐦 𝐂𝐚𝐫𝐬 𝐢𝐧 𝐠𝐫𝐨𝐮𝐩 𝐚𝐟𝐭𝐞𝐫 𝐞𝐯𝐞𝐫𝐲 100 𝐦𝐞𝐬𝐬𝐚𝐠𝐞𝐬 𝐚𝐧𝐝 𝐰𝐡𝐨 𝐠𝐮𝐞𝐬𝐬𝐞𝐝 𝐭𝐡𝐚𝐭 𝐜𝐚𝐫 𝐧𝐚𝐦𝐞 𝐂𝐨𝐫𝐫𝐞𝐜𝐭.. 𝐈 𝐰𝐢𝐥𝐥 𝐚𝐝𝐝 𝐓𝐡𝐚𝐭 🚗 𝐢𝐧 𝐓𝐡𝐚𝐭 𝐮𝐬𝐞𝐫'𝐬 𝐂𝐨𝐥𝐥𝐞𝐜𝐭𝐢𝐨𝐧.. 𝐓𝐚𝐩 𝐨𝐧 𝐡𝐞𝐥𝐩 𝐁𝐮𝐭𝐭𝐨𝐧 𝐓𝐨 𝐒𝐞𝐞 𝐀𝐥𝐥 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬***
+***𝗜 𝗮𝗺 𝗖𝗮𝗿 𝗚𝗿𝗮𝗯𝗯𝗲𝗿 𝗚𝗮𝗻𝗲 𝗕𝗼𝘁 𝗮𝗱𝗱 𝗺𝗲 𝗶𝗻 𝘆𝗼𝘂𝗿 𝗴𝗿𝗼𝘂𝗽 𝗮𝗻𝗱 𝗽𝗿𝗲𝘀𝘀 𝗵𝗲𝗹𝗽 𝘀𝗲𝗰𝘁𝗶𝗼𝗻 𝘁𝗼 𝘀𝗲𝗲 𝗰𝗼𝗺𝗺𝗮𝗻𝗱
+
+𝗥𝗲𝗮𝗿𝗶𝘁𝘆 𝗘𝘅𝗽𝗹𝗮𝗻𝗮𝘁𝗶𝗼𝗻 
+
+𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗴𝗲𝘁 𝘁𝗵𝗲𝘀𝗲 𝗯𝘆 𝗴𝘂𝗲𝘀𝘀𝗶𝗻𝗴 
+⚪️ 𝗖𝗼𝗺𝗺𝗼𝗻  
+🟣 𝗥𝗮𝗿𝗲         
+🟡 𝗟𝗲𝗴𝗲𝗻𝗱𝗮𝗿𝘆
+🟢 𝗠𝗲𝗱𝗶𝘂𝗺.    
+💮 𝗠𝘆𝘁𝗵𝗶𝗰
+
+𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗴𝗲𝘁 𝘁𝗵𝗲𝘀𝗲 𝗯𝘆 𝗰𝗼𝗺𝗺𝗮𝗻𝗱 /𝗰𝗵𝗮𝗹𝗹𝗲𝗻𝗴𝗲 
+💪 𝗰𝗵𝗮𝗹𝗹𝗲𝗻𝗴𝗲 𝗲𝗱𝗶𝘁𝗶𝗼𝗻 
+💮 𝗠𝘆𝘁𝗵𝗶𝗰
+
+𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗴𝗲𝘁 𝘁𝗵𝗶𝘀 𝗯𝘆 𝗯𝗶𝗱𝗱𝗶𝗻𝗴 𝗳𝗼𝗿 𝘁𝗵𝗶𝘀 𝗬𝗼𝘂 𝗵𝗮𝘃𝗲 𝘁𝗼 𝗷𝗼𝗶𝗻 𝘀𝘂𝗽𝗽𝗼𝗿𝘁
+
+🫧 𝗔𝘂𝗰𝘁𝗶𝗼𝗻 𝗲𝗱𝗶𝘁𝗶𝗼𝗻***
                """
         keyboard = [
             [InlineKeyboardButton("𝐀ᴅᴅ 𝐌ᴇ", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
@@ -59,7 +76,7 @@ async def start(update: Update, context: CallbackContext) -> None:
         keyboard = [
 
             [InlineKeyboardButton("𝐇ᴇʟᴘ", callback_data='help'),
-             InlineKeyboardButton("𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/botsupportXD')],
+             InlineKeyboardButton("𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/carbotsupport')],
 
         ]
 
@@ -73,27 +90,22 @@ async def button(update: Update, context: CallbackContext) -> None:
     if query.data == 'help':
         help_text = """
     ***Help Section :***
-    
-***/guess: To Guess character (only works in group)***
-***/fav: Add Your fav***
-***/trade : To trade Characters***
-***/gift: Give any Character from Your Collection to another user.. (only works in groups)***
-***/collection: To see Your Collection***
-***/topgroups : See Top Groups.. Ppl Guesses Most in that Groups***
-***/top: Too See Top Users***
-***/ctop : Your ChatTop***
-***/changetime: Change Character appear time (only works in Groups)***
-
-    ***Game Section :***
-
-*/𝗯𝗮𝗹: 𝗧𝗼 𝗖𝗵𝗲𝗰𝗸 𝗬𝗼𝘂𝗿𝗕𝗮𝗹𝗮𝗻𝗰𝗲*
-*/𝗯𝗲𝘁: 𝗧𝗼 𝗯𝗲𝘁 𝘆𝗼𝘂𝗿 𝗰𝗼𝗶𝗻*
-*/𝗯𝗼𝗻𝘂𝘀 : 𝗧𝗼 𝗰𝗹𝗮𝗶𝗺 𝗬𝗼𝘂𝗿 𝗱𝗮𝗶𝗹𝘆 𝗯𝗼𝗻𝘂𝘀*
-*/𝗽𝗮𝘆 :  𝘁𝗼 𝗴𝗶𝘃𝗲 𝘆𝗼𝘂𝗿 𝗰𝗼𝗶𝗻 𝘁𝗼 𝗮𝗻𝗼𝘁𝗵𝗲𝗿 𝘂𝘀𝗲𝗿 *
-*/𝘁𝗼𝗽𝘀 : 𝗧𝗼 𝘀𝗲𝗲 𝘁𝗼𝗽 𝗰𝗼𝗶𝗻 𝗵𝗼𝗹𝗱𝗲𝗿𝘀*
-*/𝗿𝗮𝗰𝗲 : 𝘁𝗼 𝗿𝗮𝗰𝗲 𝗰𝗮𝗿 𝗮𝗻𝗱 𝘄𝗶𝗻 𝗿𝗮𝗻𝗱𝗼𝗺 random amount of coin between (30000-90000)*
-*/𝗯𝘂𝘆 : 𝘁𝗼 𝗯𝘂𝘆 𝗰𝗮𝗿𝘀 𝘁𝗼 𝘀𝗲𝗲 𝗽𝗿𝗶𝗰𝗲𝘀 𝗱𝗼 /𝘀𝘁𝗼𝗿𝗲*
-*/wbonus : To claim Your daily bonus*
+***/guess: To Guess car (only works in group)
+/fav: Add Your fav
+/trade : To trade Characters
+/gift: Give any Character from Your Collection to another user.. (only works in groups)
+/collection: To see Your Collection
+/topgroups : See Top Groups.. Ppl Guesses Most in that Groups
+/top: Too See Top Users
+/ctop : Your ChatTop
+/changetime: Change Character appear time (only works in Groups)
+/bal : To Check Your Balance 
+/bonus : To claim daily bonus 
+/wbonus: To claim weekly bonus
+/pay : to give your coin to another user
+/race: to race car and win random amount of coin between (30000-90000)
+/challenge: To win 💪 challenge edition car 
+/buy : to buy car to see prices do /store***
    """
         help_keyboard = [[InlineKeyboardButton("Back", callback_data='back')]]
         reply_markup = InlineKeyboardMarkup(help_keyboard)
@@ -105,7 +117,24 @@ async def button(update: Update, context: CallbackContext) -> None:
         caption = f"""
         ***Hey there! {update.effective_user.first_name}*** 🌻
         
-***𝐢 𝐀𝐦 𝐆𝐫𝐚𝐛 '𝐂𝐚𝐫 𝐆𝐫𝐚𝐛𝐛𝐞𝐫 𝐁𝐨𝐭.. 𝐀𝐝𝐝 𝐌𝐞 𝐢𝐧 𝐘𝐨𝐮'𝐫𝐞 𝐆𝐫𝐨𝐮𝐩 𝐀𝐧𝐝 𝐈 𝐰𝐢𝐥𝐥 𝐬𝐞𝐧𝐝 𝐑𝐚𝐧𝐝𝐨𝐦 𝐂𝐚𝐫𝐬 𝐢𝐧 𝐠𝐫𝐨𝐮𝐩 𝐚𝐟𝐭𝐞𝐫 𝐞𝐯𝐞𝐫𝐲 100 𝐦𝐞𝐬𝐬𝐚𝐠𝐞𝐬 𝐚𝐧𝐝 𝐰𝐡𝐨 𝐠𝐮𝐞𝐬𝐬𝐞𝐝 𝐭𝐡𝐚𝐭 𝐜𝐚𝐫 𝐧𝐚𝐦𝐞 𝐂𝐨𝐫𝐫𝐞𝐜𝐭.. 𝐈 𝐰𝐢𝐥𝐥 𝐚𝐝𝐝 𝐓𝐡𝐚𝐭 🚗 𝐢𝐧 𝐓𝐡𝐚𝐭 𝐮𝐬𝐞𝐫'𝐬 𝐂𝐨𝐥𝐥𝐞𝐜𝐭𝐢𝐨𝐧.. 𝐓𝐚𝐩 𝐨𝐧 𝐡𝐞𝐥𝐩 𝐁𝐮𝐭𝐭𝐨𝐧 𝐓𝐨 𝐒𝐞𝐞 𝐀𝐥𝐥 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬***
+***𝗜 𝗮𝗺 𝗖𝗮𝗿 𝗚𝗿𝗮𝗯𝗯𝗲𝗿 𝗚𝗮𝗻𝗲 𝗕𝗼𝘁 𝗮𝗱𝗱 𝗺𝗲 𝗶𝗻 𝘆𝗼𝘂𝗿 𝗴𝗿𝗼𝘂𝗽 𝗮𝗻𝗱 𝗽𝗿𝗲𝘀𝘀 𝗵𝗲𝗹𝗽 𝘀𝗲𝗰𝘁𝗶𝗼𝗻 𝘁𝗼 𝘀𝗲𝗲 𝗰𝗼𝗺𝗺𝗮𝗻𝗱
+
+𝗥𝗲𝗮𝗿𝗶𝘁𝘆 𝗘𝘅𝗽𝗹𝗮𝗻𝗮𝘁𝗶𝗼𝗻 
+
+𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗴𝗲𝘁 𝘁𝗵𝗲𝘀𝗲 𝗯𝘆 𝗴𝘂𝗲𝘀𝘀𝗶𝗻𝗴 
+⚪️ 𝗖𝗼𝗺𝗺𝗼𝗻  
+🟣 𝗥𝗮𝗿𝗲         
+🟡 𝗟𝗲𝗴𝗲𝗻𝗱𝗮𝗿𝘆
+🟢 𝗠𝗲𝗱𝗶𝘂𝗺.    
+💮 𝗠𝘆𝘁𝗵𝗶𝗰
+
+𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗴𝗲𝘁 𝘁𝗵𝗲𝘀𝗲 𝗯𝘆 𝗰𝗼𝗺𝗺𝗮𝗻𝗱 /𝗰𝗵𝗮𝗹𝗹𝗲𝗻𝗴𝗲 
+💪 𝗰𝗵𝗮𝗹𝗹𝗲𝗻𝗴𝗲 𝗲𝗱𝗶𝘁𝗶𝗼𝗻 
+💮 𝗠𝘆𝘁𝗵𝗶𝗰
+
+𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗴𝗲𝘁 𝘁𝗵𝗶𝘀 𝗯𝘆 𝗯𝗶𝗱𝗱𝗶𝗻𝗴 𝗳𝗼𝗿 𝘁𝗵𝗶𝘀 𝗬𝗼𝘂 𝗵𝗮𝘃𝗲 𝘁𝗼 𝗷𝗼𝗶𝗻 𝘀𝘂𝗽𝗽𝗼𝗿𝘁
+
+🫧 𝗔𝘂𝗰𝘁𝗶𝗼𝗻 𝗲𝗱𝗶𝘁𝗶𝗼𝗻***
         """
         keyboard = [
             [InlineKeyboardButton("𝐀ᴅᴅ 𝐌ᴇ", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
