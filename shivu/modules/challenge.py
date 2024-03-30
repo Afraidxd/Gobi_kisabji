@@ -40,23 +40,23 @@ async def race(update, context):
     await asyncio.sleep(2)
 
     winning_chances = ["💮 Mythic", "💪 challenge edition", "You lost"]
-    outcomes = random.choices(winning_chances, weights=[0.3, 0.2, 0.5])[0]
+outcomes = random.choices(winning_chances, weights=[0.3, 0.2, 0.5])[0]
 
-    if outcomes == "You lost":
-        await update.message.reply_text("Ha ha ha-you lost You noob go and get some car knowledge.")
-    else:
-        selected_rarity = outcomes
-        filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
+if outcomes == "You lost":
+    await update.message.reply_text("Ha ha ha-you lost You noob go and get some car knowledge.")
+else:
+    selected_rarity = outcomes
+    filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
 
-        if not filtered_characters:
-            await update.message.reply_text("No characters found with the specified rarity.")
-            return
+    if not filtered_characters:
+        await update.message.reply_text("No characters found with the specified rarity.")
+        return
 
-        character = random.choice(filtered_characters)
+    character = random.choice(filtered_characters)
 
-        await user_collection.update_one({'id': user_id}, {'$push': {'characters': character}})
-        await update.message.reply_photo(photo=character['img_url'], caption=f"Congratulations! You won {character['rarity']} {character['car name']} as a reward.")
+    await user_collection.update_one({'id': user_id}, {'$push': {'characters': character}})
+    await update.message.reply_photo(photo=character['img_url'], caption=f"Congratulations! You won {character['rarity']} {character['car name']} as a reward.")
 
-    last_propose_times[user_id] = datetime.now()
+last_propose_times[user_id] = datetime.now()
 
 application.add_handler(CommandHandler("challenge", race, block=False))
