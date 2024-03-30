@@ -24,7 +24,7 @@ async def race(update, context):
             remaining_cooldown = timedelta(minutes=5) - time_since_last_propose
             remaining_cooldown_minutes = remaining_cooldown.total_seconds() // 60
             remaining_cooldown_seconds = remaining_cooldown.total_seconds() % 60
-            await update.message.reply_text(f"Cooldown! Please wait {int(remaining_cooldown_minutes)}m {int(remaining_cooldown_seconds)}s before proposing again.")
+            await update.message.reply_text(f"Cooldown! Please wait {int(remaining_cooldown_minutes)}m {int(remaining_cooldown_seconds)}s before challengeing again.")
             return
 
     await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -50000}})
