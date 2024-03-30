@@ -97,7 +97,6 @@ async def mtop(update, context):
     photo_path = 'https://telegra.ph/file/14cb27c83d171bd125de4.jpg'
     await update.message.reply_photo(photo=photo_path, caption=top_users_message, parse_mode='HTML')
 
-
 async def daily_reward(update, context):
     user_id = update.effective_user.id
 
