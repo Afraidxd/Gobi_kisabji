@@ -1,43 +1,38 @@
+from datetime import datetime, timedelta
+
 from telegram.ext import CommandHandler
 from shivu import application, user_collection
 from telegram import Update
-from datetime import datetime, timedelta
+import random
 
-# Dictionary to store last payment times
-last_payment_times = {}
-
-async def weekly_reward(update, context):
+async def sbet(update, context):
+    # Parse the amount from the command
+    try:
+        amount = int(context.args[0])
+        if amount <= 0:
+            raise ValueError("Amount must be greater than zero.")
+    except (IndexError, ValueError):
+        await update.message.reply_text("Use /bet <amount>")
+        return
     user_id = update.effective_user.id
+    user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
-    # Check if the user already claimed the weekly reward this week
-    user_data = await user_collection.find_one({'id': user_id}, projection={'last_weekly_reward': 1, 'balance': 1})
-
-    if user_data:
-        last_claimed_date = user_data.get('last_weekly_reward')
-
-        if last_claimed_date:
-            time_since_last_claim = datetime.utcnow() - last_claimed_date
-            if time_since_last_claim < timedelta(days=7):
-                remaining_time = timedelta(days=7) - time_since_last_claim
-                await update.message.reply_text(f"You have already claimed your weekly reward. Please come back in {format_timedelta(remaining_time)}.")
-                return
-
-    await user_collection.update_one(
-        {'id': user_id},
-        {'$inc': {'balance': 100000}, '$set': {'last_weekly_reward': datetime.utcnow()}}
-    )
-
-    await update.message.reply_text("Congratulations! You claimed 100,000 Tokens as your weekly reward.")
-
-def format_timedelta(td: timedelta) -> str:
-    days = td.days
-    hours, remainder = divmod(td.seconds, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    
-    if days > 0:
-        return f"{days} day{'s' if days > 1 else ''} {hours:02}h {minutes:02}m {seconds:02}s"
+    if not user_balance or user_balance.get('balance', 0) < amount:
+        await update.message.reply_text("Insufficient balance to make the bet.")
+        return
+    if random.random() < 0.4:
+        won_amount = 2 * amount
+        await user_collection.update_one({'id': user_id}, {'$inc': {'balance': won_amount + amount}})
+        updated_balance = user_balance.get('balance', 0) + won_amount
+        await update.message.reply_text(
+            f"Congratulations You won!\n\n Your updated balance is {updated_balance}."
+        )
     else:
-        return f"{hours:02}h {minutes:02}m {seconds:02}s"
+        await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -amount}})
+        updated_balance = user_balance.get('balance', 0) - amount
+        await update.message.reply_text(
+            f"You lost {amount} .\n\nYour updated Balance is {updated_balance}."
+        )
 
 
-application.add_handler(CommandHandler("wbonus", weekly_reward, block=False))
+application.add_handler(CommandHandler("bet", sbet, block=False))
