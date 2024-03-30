@@ -132,7 +132,7 @@ async def daily_reward(update, context):
         upsert=True
     )
 
-    await update.message.reply_text("Congratulations! You claimed Ŧ50000 Tokens")
+    await update.message.reply_text("Congratulations! You claimed 50000 Tokens")
 
 
 def format_timedelta(td: timedelta) -> str:
@@ -163,7 +163,7 @@ async def weekly(update, context):
         upsert=True
     )
 
-    await update.message.reply_text("Congratulations! You claimed Ŧ100000 Tokens as your weekly bonus.")
+    await update.message.reply_text("Congratulations! You claimed 100000 Tokens as your weekly bonus.")
 
 
 application.add_handler(CommandHandler("bonus", daily_reward, block=False))
