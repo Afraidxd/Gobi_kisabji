@@ -104,10 +104,10 @@ async def mtop(update, context):
         # Concatenate first_name and last_name if last_name is available
         full_name = f"{first_name} {last_name}" if last_name else first_name
 
-        top_users_message += f"{i}. <a href='tg://user?id={user_id}'>{full_name}</a>, 💸{user.get('balance', 0)} Tokens\n"
+        top_users_message += f"{i}. {full_name}, 💸{user.get('balance', 0)} Tokens\n"
     # Send the photo and include the top_users_message in the caption
     photo_path = 'https://telegra.ph/file/f0e95066f4230757923ba.jpg'
-    await update.message.reply_photo(photo=photo_path, caption=top_users_message, parse_mode='HTML')
+    await update.message.reply_photo(photo=photo_path, caption=top_users_message, parse_mode='Markdown')
 
 
 async def daily_reward(update, context):
