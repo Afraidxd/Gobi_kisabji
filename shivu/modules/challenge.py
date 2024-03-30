@@ -13,8 +13,8 @@ async def race(update, context):
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
-    if not user_balance or user_balance.get('balance', 0) < 600000:
-        await update.message.reply_text("You need at least 600000 tokens to challenge.")
+    if not user_balance or user_balance.get('balance', 0) < 60000:
+        await update.message.reply_text("You need at least 60000 tokens to challenge.")
         return
 
     last_propose_time = last_propose_times.get(user_id)
@@ -27,7 +27,7 @@ async def race(update, context):
             await update.message.reply_text(f"Cooldown! Please wait {int(remaining_cooldown_minutes)}m {int(remaining_cooldown_seconds)}s before proposing again.")
             return
 
-    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -500000}})
+    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -50000}})
 
     proposal_message = "Challenge Accepted "
     photo_path = 'https://telegra.ph/file/938a03f66ce32dfeaee87.jpg'  # Replace with your photo path
