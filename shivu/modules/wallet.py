@@ -83,7 +83,7 @@ async def mtop(update, context):
     top_users = await user_collection.find({}, projection={'id': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}).sort('balance', -1).limit(10).to_list(10)
 
     # Create a message with the top users
-    top_users_message = "𝗧𝗼𝗽 𝟭𝟬 𝗨𝘀𝗲𝗿𝘀 𝗪𝗶𝘁𝗵 𝗛𝗶𝗴𝗵𝗲𝘀𝘁 𝗧𝗼𝗸𝗲𝗻𝘀\n\n"
+    top_users_message = "Top 10 Users With Highest Tokens\n\n"
     for i, user in enumerate(top_users, start=1):
         first_name = user.get('first_name', 'Unknown')
         last_name = user.get('last_name', '')
@@ -94,7 +94,7 @@ async def mtop(update, context):
 
         top_users_message += f"{i}. <a href='tg://user?id={user_id}'>{full_name}</a>, 💸{user.get('balance', 0)} Tokens\n"
     # Send the photo and include the top_users_message in the caption
-    photo_path = 'https://telegra.ph/file/7b462d98bdafb357a57f7.jpg'
+    photo_path = 'https://telegra.ph/file/14cb27c83d171bd125de4.jpg'
     await update.message.reply_photo(photo=photo_path, caption=top_users_message, parse_mode='HTML')
 
 
