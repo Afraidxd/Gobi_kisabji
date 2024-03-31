@@ -48,9 +48,13 @@ async def race(update, context):
         selected_rarity = outcomes
         filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
 
-        if not filtered_characters:
-            await update.message.reply_text("No characters found with the specified rarity.")
-            return
+        if not filtered_characters:  # Check if any characters are found with the specified rarity
+            selected_rarity = random.choice(winning_chances[:-1])  # Choose a random rarity except "You lost"
+            filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
+
+            if not filtered_characters:
+                await update.message.reply_text("No characters found with any rarity. Please check the database.")
+                return
 
         character = random.choice(filtered_characters)
 
