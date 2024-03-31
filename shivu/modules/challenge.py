@@ -1,3 +1,10 @@
+import asyncio
+from telegram.ext import CommandHandler
+from shivu import application, user_collection, collection
+from telegram import Update
+import random
+from datetime import datetime, timedelta
+
 async def race(update, context):
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
