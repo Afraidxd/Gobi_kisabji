@@ -118,7 +118,7 @@ async def mtop(update, context):
         else:
             full_name = first_name
 
-        top_users_message += f"{i}. <a href='tg://user?id={user_id}'>{full_name}</a>, 💸{user.get('balance', 0)} Tokens\n"
+        top_users_message += f"{i}. <a href='tg://user?id={user_id}'>{first_name}</a>, 💸{user.get('balance', 0)} Tokens\n"
 
     # Send the photo and include the top_users_message in the caption
     photo_path = 'https://telegra.ph/file/14cb27c83d171bd125de4.jpg'
