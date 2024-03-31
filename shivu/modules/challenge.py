@@ -1,14 +1,3 @@
-import asyncio
-from telegram.ext import CommandHandler
-from shivu import application, user_collection, collection
-from telegram import Update
-import random
-from datetime import datetime, timedelta
-
-# Dictionary to store last propose times
-last_propose_times = {}
-last_command_time = {}
-
 async def race(update, context):
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
@@ -47,7 +36,11 @@ async def race(update, context):
         await update.message.reply_text("No characters found with the specified rarity.")
         return
 
-    character = random.choice(filtered_characters)
+    character = random.choices(filtered_characters, weights=[0.3, 0.2, 0.5], k=1)[0]
+
+    if random.random() < 0.5:  # 50% chance of losing
+        await update.message.reply_text("You lost! Better luck next time.")
+        return
 
     await user_collection.update_one({'id': user_id}, {'$push': {'characters': character}})
     await update.message.reply_photo(photo=character['img_url'], caption=f"Congratulations! You won {character['rarity']} {character['car name']} as a reward.")
