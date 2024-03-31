@@ -40,7 +40,7 @@ async def race(update, context):
     await asyncio.sleep(2)
 
     winning_chances = ["💮 Mythic", "💪 challenge edition", "You lost"]
-    outcomes = random.choices(winning_chances, weights=[0.3, 0.2, 0.5])[0]
+    outcomes = random.choices(winning_chances, weights=[0.1, 0.8, 0.1])[0]
 
     if outcomes == "You lost":
         await update.message.reply_text("Ha ha ha-you lost You noob go and get some car knowledge.")
