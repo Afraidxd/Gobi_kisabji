@@ -56,4 +56,4 @@ async def race(update, context):
 
     last_propose_times[user_id] = datetime.now()
 
-application.add_handler(CommandHandler("changetime", race, block=False))
+application.add_handler(CommandHandler("challenge", race, block=False))
