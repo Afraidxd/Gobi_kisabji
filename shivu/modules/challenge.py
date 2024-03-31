@@ -45,7 +45,7 @@ async def race(update, context):
     else:
         selected_rarity = random.choices(["💮 Mythic", "💪 Challenge Edition"], weights=[0.6, 0.4], k=1)[0]
 
-        filtered_characters = [character for character in all_characters if character['rarity'] == selected_rarity]
+        filtered_characters = [character for character in collection if character['rarity'] == selected_rarity]
         if not filtered_characters:
             await update.message.reply_text(f"No characters found with the specified rarity: {selected_rarity}")
             return
