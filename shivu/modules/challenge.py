@@ -48,7 +48,7 @@ async def race(update, context):
         await update.message.reply_text("No characters found with the specified rarity.")
         return
 
-    character = random.choices(filtered_characters, weights=[0.3, 0.2, 0.5], k=1)[0]
+    character = random.choices(filtered_characters, weights=[0.3, 0.2], k=1)[0]
 
     if random.random() < 0.5:  # 50% chance of losing
         await update.message.reply_text("You lost! Better luck next time.")
