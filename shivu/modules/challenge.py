@@ -5,6 +5,11 @@ from telegram import Update
 import random
 from datetime import datetime, timedelta
 
+from datetime import datetime, timedelta
+
+# Dictionary to store last propose times
+last_propose_times = {}
+last_command_time = {}
 async def race(update, context):
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
