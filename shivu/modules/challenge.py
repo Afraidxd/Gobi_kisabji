@@ -1,19 +1,20 @@
 import asyncio
 from telegram.ext import CommandHandler
+from shivu import application, user_collection, collection
 from telegram import Update
 import random
 from datetime import datetime, timedelta
-from shivu import collection, user_collection, user_totals_collection, shivuu, application
 
 # Dictionary to store last propose times
 last_propose_times = {}
+last_command_time = {}
 
 async def race(update, context):
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
-    if not user_balance or user_balance.get('balance', 0) < 50000:
-        await update.message.reply_text("You need at least 50000 tokens to propose.")
+    if not user_balance or user_balance.get('balance', 0) < 600000:
+        await update.message.reply_text("You need at least 600000 tokens to challenge.")
         return
 
     last_propose_time = last_propose_times.get(user_id)
@@ -26,10 +27,10 @@ async def race(update, context):
             await update.message.reply_text(f"Cooldown! Please wait {int(remaining_cooldown_minutes)}m {int(remaining_cooldown_seconds)}s before proposing again.")
             return
 
-    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -50000}})
+    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -500000}})
 
-    proposal_message = "Challenge Accepted"
-    photo_path = 'https://telegra.ph/file/694053e32528dbcd5f1cf.jpg'
+    proposal_message = "Challenge Accepted "
+    photo_path = 'https://telegra.ph/file/938a03f66ce32dfeaee87.jpg'  # Replace with your photo path
     await update.message.reply_photo(photo=photo_path, caption=proposal_message)
 
     await asyncio.sleep(2)
@@ -38,21 +39,23 @@ async def race(update, context):
 
     await asyncio.sleep(2)
 
-    if random.random() < 0.6:
-        rejection_message = "You lost"
-        rejection_photo_path = 'https://telegra.ph/fil/6e77ba2f79c4788fedc1a.jpg'
-        await update.message.reply_photo(photo=rejection_photo_path, caption=rejection_message)
-    else:
-        selected_rarity = random.choices(["💮 Mythic", "💪 Challenge Edition"], weights=[0.6, 0.4], k=1)[0]
+    winning_chances = ["💮 Mythic", "💪 challenge edition", "You lost"]
+    outcomes = random.choices(winning_chances, weights=[0.3, 0.2, 0.5])[0]
 
-        filtered_characters = [character for character in collection if character['rarity'] == selected_rarity]
+    if outcomes == "You lost":
+        await update.message.reply_text("Ha ha ha-you lost You noob go and get some car knowledge.")
+    else:
+        selected_rarity = outcomes
+        filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
+
         if not filtered_characters:
-            await update.message.reply_text(f"No characters found with the specified rarity: {selected_rarity}")
+            await update.message.reply_text("No characters found with the specified rarity.")
             return
 
         character = random.choice(filtered_characters)
+
         await user_collection.update_one({'id': user_id}, {'$push': {'characters': character}})
-        await update.message.reply_photo(photo=character['img_url'], caption=f"Congratulations! You won a {character['rarity']} Car - {character['car name']} as a reward")
+        await update.message.reply_photo(photo=character['img_url'], caption=f"Congratulations! You won {character['rarity']} {character['car name']} as a reward.")
 
     last_propose_times[user_id] = datetime.now()
 
