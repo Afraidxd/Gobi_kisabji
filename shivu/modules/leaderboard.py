@@ -10,6 +10,8 @@ from shivu import (application, PHOTO_URL, OWNER_ID,
                     group_user_totals_collection)
 
 from shivu import sudo_users as SUDO_USERS 
+from shivu import user_collection, top_global_groups_collection, top_global_groups_collection
+
 
     
 async def global_leaderboard(update: Update, context: CallbackContext) -> None:
