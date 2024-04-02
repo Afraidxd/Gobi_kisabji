@@ -21,7 +21,7 @@ async def global_leaderboard(update: Update, context: CallbackContext) -> None:
     ])
     leaderboard_data = await cursor.to_list(length=10)
 
-    leaderboard_message = "<b>TOP 10 GROUPS WHO GUESSED MOST CHARACTERS</b>\n\n"
+    leaderboard_message = "<b>TOP 10 GROUPS WHO GUESSED MOST CAR</b>\n\n"
 
     for i, group in enumerate(leaderboard_data, start=1):
         group_name = html.escape(group.get('group_name', 'Unknown'))
@@ -47,14 +47,14 @@ async def ctop(update: Update, context: CallbackContext) -> None:
     ])
     leaderboard_data = await cursor.to_list(length=10)
 
-    leaderboard_message = "<b>10 𝐔𝐒𝐄𝐑𝐒 𝐖𝐇𝐎 𝐆𝐑𝐀𝐁𝐁𝐄𝐃 𝐂𝐀𝐑 𝐌𝐎𝐒𝐓 𝐓𝐈𝐌𝐄 𝐈𝐍 𝐓𝐇𝐈𝐒 𝐆𝐑𝐎𝐔𝐏...</b>\n\n"
+    leaderboard_message = "<b>TOP 10 USERS WHO GUESSED CHARACTERS MOST TIME IN THIS GROUP..</b>\n\n"
 
     for i, user in enumerate(leaderboard_data, start=1):
         username = user.get('username', 'Unknown')
         first_name = html.escape(user.get('first_name', 'Unknown'))
 
         if len(first_name) > 10:
-            first_name = first_name[:10] + '...'
+            first_name = first_name[:15] + '...'
         character_count = user['character_count']
         leaderboard_message += f'{i}. <a href="https://t.me/{username}"><b>{first_name}</b></a> ➾ <b>{character_count}</b>\n'
     
@@ -72,7 +72,7 @@ async def leaderboard(update: Update, context: CallbackContext) -> None:
     ])
     leaderboard_data = await cursor.to_list(length=10)
 
-    leaderboard_message = "<b>𝐓𝐎𝐏 10 𝐔𝐒𝐄𝐑𝐒 𝐖𝐈𝐓𝐇 𝐌𝐎𝐒𝐓 𝐂𝐀𝐑𝐒</b>\n\n"
+    leaderboard_message = "<b>TOP 10 USERS WITH MOST CAR</b>\n\n"
 
     for i, user in enumerate(leaderboard_data, start=1):
         username = user.get('username', 'Unknown')
@@ -146,11 +146,10 @@ async def send_groups_document(update: Update, context: CallbackContext) -> None
 
 application.add_handler(CommandHandler('ctop', ctop, block=False))
 application.add_handler(CommandHandler('stats', stats, block=False))
-application.add_handler(CommandHandler('TopGroups', global_leaderboard, block=False))
+application.add_handler(CommandHandler('topgroups', global_leaderboard, block=False))
 
 application.add_handler(CommandHandler('list', send_users_document, block=False))
 application.add_handler(CommandHandler('groups', send_groups_document, block=False))
 
 
 application.add_handler(CommandHandler('top', leaderboard, block=False))
-
