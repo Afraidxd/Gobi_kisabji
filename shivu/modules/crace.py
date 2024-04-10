@@ -10,7 +10,7 @@ async def get_user_balance(user_id):
 async def update_user_balance(user_id, amount):
     await user_collection.update_one({'id': user_id}, {'$inc': {'balance': amount}})
 
-def crace(update: Update, context: CallbackContext):
+async def crace(update: Update, context: CallbackContext):
     replied_user = update.message.reply_to_message.from_user if update.message.reply_to_message else None
 
     if not replied_user:
