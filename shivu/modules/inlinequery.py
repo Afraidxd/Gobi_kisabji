@@ -41,7 +41,7 @@ async def inlinequery(update: Update, context: CallbackContext) -> None:
                 all_characters = list({v['id']:v for v in user['characters']}.values())
                 if search_terms:
                     regex = re.compile(' '.join(search_terms), re.IGNORECASE)
-                    all_characters = [character for character in all_characters if regex.search(character['name']) or regex.search(character['anime'])]
+                    all_characters = [character for character in all_characters if regex.search(character['car name']) or regex.search(character['company'])]
             else:
                 all_characters = []
         else:
