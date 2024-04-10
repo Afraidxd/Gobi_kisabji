@@ -75,7 +75,7 @@ async def leaderboard(update: Update, context: CallbackContext) -> None:
     leaderboard_data = await cursor.to_list(None)
     cursor.close()
 
-    leaderboard_message = "<b>TOP 10 USERS WITH MOST CHARACTERS</b>\n\n"
+    leaderboard_message = "<b>TOP 10 USERS WITH MOST CARS</b>\n\n"
 
     for i, user in enumerate(leaderboard_data, start=1):
         username = user.get('username', 'Unknown')
@@ -83,13 +83,14 @@ async def leaderboard(update: Update, context: CallbackContext) -> None:
 
         if len(first_name) > 10:
             first_name = first_name[:15] + '...'
-        
+
         character_count = user.get('character_count', 0)
         leaderboard_message += f'{i}. <a href="https://t.me/{username}"><b>{first_name}</b></a> ➾ <b>{character_count}</b>\n'
 
     photo_url = random.choice(PHOTO_URL)
 
     await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML')
+
 
 
 
