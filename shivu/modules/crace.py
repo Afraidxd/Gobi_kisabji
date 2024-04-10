@@ -51,14 +51,14 @@ async def crace_callback(update: Update, context: CallbackContext):
             winner = random.choice([user_id, replied_user_id])
             await update_user_balance(winner, 2 * race_amount)
 
-            query.answer()
-            query.message.reply_text(f"User {winner} wins the race! Congratulations. {2 * race_amount} coins transferred to the winner.")
+            await query.answer()
+            await query.message.reply_text(f"User {winner} wins the race! Congratulations. {2 * race_amount} coins transferred to the winner.")
         else:
-            query.answer()
-            query.message.reply_text("Not enough balance to proceed with the race.")
+            await query.answer()
+            await query.message.reply_text("Not enough balance to proceed with the race.")
     else:
-        query.answer()
-        query.message.reply_text("Race cancelled.")
+        await query.answer()
+        await query.message.reply_text("Race cancelled.")
 
 application.add_handler(CommandHandler("crace", crace))
 application.add_handler(CallbackQueryHandler(crace_callback))
