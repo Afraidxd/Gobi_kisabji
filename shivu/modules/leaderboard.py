@@ -89,7 +89,7 @@ async def leaderboard(update: Update, context: CallbackContext) -> None:
 
     photo_url = random.choice(PHOTO_URL)
 
-    await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML')
+    await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='Markdown')
 
 
 
