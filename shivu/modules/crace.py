@@ -1,71 +1,53 @@
-from telegram.ext import CommandHandler
-from shivu import application, user_collection
-from telegram import Update
-from datetime import datetime, timedelta
-import asyncio
-# Dictionary to store last payment times
-last_payment_times = {}
-from shivu import collection, user_collection, application
-
-from shivu import shivuu as app
-
-from itertools import groupby
-
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import CommandHandler, CallbackQueryHandler
-
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import Updater, CommandHandler, CallbackContext, MessageHandler, Filters, CallbackQueryHandler
+from telegram.ext import PicklePersistence
 import random
 
-async def crace(update, context):
-    # Get the replied user's ID
-    replied_user_id = update.message.reply_to_message.from_user.id
-    
-    # Check if the replied user exists and has a balance
-    replied_user_balance = await user_collection.find_one({'id': replied_user_id}, projection={'balance': 1})
-    
-    if replied_user_balance:
-        replied_user_balance_amount = replied_user_balance.get('balance', 0)
-        
-        if replied_user_balance_amount >= 10000:
-            keyboard = [[InlineKeyboardButton("Yes", callback_data='crace_yes')],
-                        [InlineKeyboardButton("No", callback_data='crace_no')]]
-            reply_markup = InlineKeyboardMarkup(keyboard)
-            
-            await update.message.reply_text("Do you want to race?", reply_markup=reply_markup)
-        else:
-            await update.message.reply_text("Replied user must have a minimum balance of 10,000 coins to participate in the race.")
-    else:
-        await update.message.reply_text("Replied user not found in the database.")
+def crace(update: Update, context: CallbackContext):
+    replied_user = update.message.reply_to_message.from_user
+    replied_user_id = replied_user.id
 
-async def crace_callback(update, context):
+    # Check if the replied user exists and has a balance of at least 10000 coins
+    replied_user_balance = get_user_balance_from_database(replied_user_id)  # Function to get user balance
+    if replied_user_balance >= 10000:
+        keyboard = [[InlineKeyboardButton("Yes", callback_data='crace_yes')],
+                    [InlineKeyboardButton("No", callback_data='crace_no')]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        update.message.reply_text("Do you want to race?", reply_markup=reply_markup)
+    else:
+        update.message.reply_text("Replied user must have a minimum balance of 10,000 coins to participate in the race.")
+
+def crace_callback(update: Update, context: CallbackContext):
     query = update.callback_query
     user_id = query.from_user.id
-    
+
     if query.data == 'crace_yes':
-        # Deduct the race amount from both users' balances
         replied_user_id = query.message.reply_to_message.from_user.id
-        race_amount = random.randint(10000, 100000)  # Random race amount between 10,000 and 100,000 coins
-        
-        await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -race_amount}})
-        await user_collection.update_one({'id': replied_user_id}, {'$inc': {'balance': -race_amount}})
-        
-        # Choose a winner randomly
-        winner = random.choice([user_id, replied_user_id])
-        
-        # Transfer all coins to the winner
-        await user_collection.update_one({'id': winner}, {'$inc': {'balance': 2 * race_amount}})
-        
-        await query.answer()
-        await query.message.reply_text(f"User {winner} wins the race! Congratulations!")
+        race_amount = random.randint(10000, 100000)
+
+        user_balance = get_user_balance_from_database(user_id)
+        replied_user_balance = get_user_balance_from_database(replied_user_id)
+
+        if user_balance >= race_amount and replied_user_balance >= race_amount:
+            # Deduct the race amount from both participants
+            update_user_balance_in_database(user_id, -race_amount)
+            update_user_balance_in_database(replied_user_id, -race_amount)
+
+            winner = random.choice([user_id, replied_user_id])
+
+            # Transfer all coins to the winner
+            update_user_balance_in_database(winner, 2 * race_amount)
+
+            query.answer()
+            query.message.reply_text(f"User {winner} wins the race! Congratulations!")
+        else:
+            query.answer()
+            query.message.reply_text("Not enough balance to proceed with the race.")
     else:
-        await query.answer()
-        await query.message.reply_text("Race cancelled.")
+        query.answer()
+        query.message.reply_text("Race cancelled.")
 
-# Add a command handler for /crace and a message handler for handling inline keyboard callbacks
-crace_handler = CommandHandler('crace', crace)
-dispatcher.add_handler(crace_handler)
-
-crace_callback_handler = CallbackQueryHandler(crace_callback, pattern='^crace_')
-dispatcher.add_handler(crace_callback_handler)
-
-
+# Add the /crace command and its callback handler using application.add_handler
+application.add_handler(CommandHandler("crace", crace))
+application.add_handler(CallbackQueryHandler(crace_callback))
