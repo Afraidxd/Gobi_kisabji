@@ -11,26 +11,35 @@ async def update_user_balance(user_id, amount):
     await user_collection.update_one({'id': user_id}, {'$inc': {'balance': amount}})
 
 def crace(update: Update, context: CallbackContext):
-    replied_user = update.message.reply_to_message.from_user
+    replied_user = update.message.reply_to_message.from_user if update.message.reply_to_message else None
+
+    if not replied_user:
+        update.message.reply_text("Please reply to a user you want to challenge for a race.")
+        return
+
     replied_user_id = replied_user.id
 
+    race_amount = random.randint(10000, 100000)
+
     replied_user_balance = await get_user_balance(replied_user_id)
-    if replied_user_balance >= 10000:
-        keyboard = [[InlineKeyboardButton("Yes", callback_data='crace_yes')],
-                    [InlineKeyboardButton("No", callback_data='crace_no')]]
-        reply_markup = InlineKeyboardMarkup(keyboard)
 
-        update.message.reply_text("Do you want to race?", reply_markup=reply_markup)
-    else:
-        update.message.reply_text("Replied user must have a minimum balance of 10,000 coins to participate in the race.")
+    if replied_user_balance < race_amount:
+        update.message.reply_text(f"The replied user must have a minimum balance of {race_amount} coins to participate.")
+        return
 
-def crace_callback(update: Update, context: CallbackContext):
+    keyboard = [[InlineKeyboardButton("Yes", callback_data=f'crace_yes|{race_amount}|{replied_user_id}')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    update.message.reply_text(f"Do you want to race for {race_amount} coins?", reply_markup=reply_markup)
+
+async def crace_callback(update: Update, context: CallbackContext):
     query = update.callback_query
     user_id = query.from_user.id
 
-    if query.data == 'crace_yes':
-        replied_user_id = query.message.reply_to_message.from_user.id
-        race_amount = random.randint(10000, 100000)
+    data = query.data.split('|')
+    if data[0] == 'crace_yes':
+        race_amount = int(data[1])
+        replied_user_id = int(data[2])
 
         user_balance = await get_user_balance(user_id)
         replied_user_balance = await get_user_balance(replied_user_id)
@@ -40,11 +49,10 @@ def crace_callback(update: Update, context: CallbackContext):
             await update_user_balance(replied_user_id, -race_amount)
 
             winner = random.choice([user_id, replied_user_id])
-
             await update_user_balance(winner, 2 * race_amount)
 
             query.answer()
-            query.message.reply_text(f"User {winner} wins the race! Congratulations!")
+            query.message.reply_text(f"User {winner} wins the race! Congratulations. {2 * race_amount} coins transferred to the winner.")
         else:
             query.answer()
             query.message.reply_text("Not enough balance to proceed with the race.")
