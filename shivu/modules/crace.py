@@ -1,17 +1,20 @@
-from telegram.ext import CommandHandler, JobQueue
-from shivu import application, user_collection
+import asyncio
+from shivu import application, user_collection, dispatcher
 import random
+from telegram.ext import CommandHandler
 
 participants = []
 race_started = False
 
 async def srace(update, context):
+    """Announce the car race and set a timer for users to join."""
     await update.message.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
 
     # Set a timer for 50 seconds to allow users to join the race
     context.job_queue.run_once(timeout_race, 50, context={'update': update})
 
 async def participate(update, context):
+    """Handle user participation in the race."""
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
@@ -24,6 +27,7 @@ async def participate(update, context):
     await update.message.reply_text("✅ You have joined the race!")
 
 async def timeout_race(context):
+    """Handle the case when the race timer expires."""
     global participants
 
     if len(participants) < 2:
@@ -31,10 +35,16 @@ async def timeout_race(context):
         participants = []
         return
 
-    await context['update'].message.reply_text("⏰ Time's up! The race will start now.")
+    # Remind users to join the race before time runs out
+    await context.job_queue.run_repeating(remind_to_join, interval=10, first=10, context={'update': context['update']})
+
+    # Wait for 50 seconds before starting the race
+    await asyncio.sleep(50)
+
     await start_race(context['update'], context)
 
 async def start_race(update, context):
+    """Start the race and determine the winner."""
     global race_started
 
     if race_started:
@@ -54,15 +64,12 @@ async def start_race(update, context):
     participants.clear()
     race_started = False
 
-def remind_to_join(context):
+async def remind_to_join(context):
+    """Remind users to join the race before time runs out."""
     if len(participants) < 2:
         return
 
-    context.bot.send_message(context.job.context['update'].effective_chat.id, "🏁 Join the race before time runs out! 🏎️")
+    await context.bot.send_message(context.job.context['update'].effective_chat.id, "🏁 Join the race before time runs out! 🏎️")
 
 application.add_handler(CommandHandler("srace", srace, block=False))
 application.add_handler(CommandHandler("participate", participate, block=False))
-
-job = JobQueue.run_repeating(remind_to_join, interval=10, first=10)
-job.context['update'] = None  # Set the context variable for the remind_to_join function
-application.add_job_queue(job)
