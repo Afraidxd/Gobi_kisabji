@@ -78,4 +78,3 @@ async def remind_to_join(context: CallbackContext):
 application.add_handler(CommandHandler("srace", srace))
 application.add_handler(CommandHandler("participate", participate))
 
-application.run()
