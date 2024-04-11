@@ -27,7 +27,7 @@ async def participate(update, context):
         await update.message.reply_text("❌ You have already joined the race.")
         return
 
-    if not user_balance or user_balance.get('balance') < 10000:
+    if user_balance is None or user_balance.get('balance') < 10000:
         await update.message.reply_text("❌ You don't have enough tokens to participate.")
         return
 
