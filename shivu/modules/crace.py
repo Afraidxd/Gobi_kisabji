@@ -85,4 +85,3 @@ async def remind_to_join(context):
 application.add_handler(CommandHandler("srace", srace, block=False))
 application.add_handler(CommandHandler("participate", participate, block=False))
 
-application.run()
