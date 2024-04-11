@@ -11,18 +11,22 @@ async def srace(update, context):
     await update.message.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
 
     # Set a timer for 50 seconds to allow users to join the race
-    context.job_queue.run_once(timeout_race, 50)
+    context.job_queue.run_once(timeout_race, 50, context={'update': update})
 
 async def participate(update, context):
     """Handle user participation in the race."""
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
+    if user_id in [p['id'] for p in participants]:
+        await update.message.reply_text("❌ You have already joined the race.")
+        return
+
     if not user_balance or user_balance.get('balance', 0) < 10000:
         await update.message.reply_text("❌ You don't have enough tokens to participate.")
         return
 
-    participants.append(update.effective_user.first_name)
+    participants.append({'id': user_id, 'name': update.effective_user.first_name})
     await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -10000}})
     await update.message.reply_text("✅ You have joined the race!")
 
@@ -36,7 +40,7 @@ async def timeout_race(context):
         return
 
     # Remind users to join the race before time runs out
-    await context.job_queue.run_repeating(remind_to_join, interval=10, first=10)
+    await context.job_queue.run_repeating(remind_to_join, interval=10, first=10, context={'update': context.job.context['update']})
 
     # Wait for 50 seconds before starting the race
     await asyncio.sleep(50)
@@ -52,12 +56,11 @@ async def start_race(update, context):
         return
 
     race_started = True
-    winner = random.choice(participants)
+    winner = random.choice([p['name'] for p in participants])
     prize = len(participants) * 10000
 
     for participant in participants:
-        user_id = await user_collection.find_one({'first_name': participant}, projection={'id': 1})
-        await user_collection.update_one({'id': user_id['id']}, {'$inc': {'balance': prize // len(participants)}})
+        await user_collection.update_one({'id': participant['id']}, {'$inc': {'balance': prize // len(participants)}})
 
     await update.message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(participants)} tokens.")
 
