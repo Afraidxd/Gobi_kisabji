@@ -8,11 +8,14 @@ race_started = False
 srace_used = False
 
 async def srace(update, context):
+    """Announce the car race and set a timer for users to join."""
     await update.message.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
-    context.job_queue.run_once(timeout_race, 50, context={'update': update})
+    context.job_queue.run_once(timeout_race, 50)
     srace_used = True
 
 async def participate(update, context):
+    global srace_used
+
     if not srace_used:
         await update.message.reply_text("❌ The /srace command must be used first before participating.")
         return
@@ -28,7 +31,7 @@ async def participate(update, context):
         await update.message.reply_text("❌ You don't have enough tokens to participate.")
         return
 
-    participants.append({'id': z user_id, 'name': update.effective_user.first_name})
+    participants.append({'id': user_id, 'name': update.effective_user.first_name})
     await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -10000}})
     await update.message.reply_text("✅ You have joined the race!")
 
@@ -40,7 +43,7 @@ async def timeout_race(context):
         participants = []
         return
 
-    await context.job_queue.run_repeating(remind_to_join, interval=10, first=10, context={'update': context['update']})
+    await context.job_queue.run_repeating(remind_to_join, interval=10, first=10)
     await asyncio.sleep(50)
 
     await start_race(context['update'], context)
