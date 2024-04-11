@@ -1,5 +1,5 @@
 from telegram.ext import CommandHandler
-from shivu import application, user_collection, dispatcher
+from shivu import application, user_collection,
 import random
 
 participants = []
