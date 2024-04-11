@@ -1,4 +1,4 @@
-from telegram.ext import CommandHandler
+from telegram.ext import CommandHandler, Updater, 
 from shivu import application, user_collection
 import random
 import asyncio
