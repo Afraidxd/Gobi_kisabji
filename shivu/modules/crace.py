@@ -1,98 +1,71 @@
-import asyncio
-import random
-from typing import List, Dict
-
-import pyrogram
-from pyrogram.errors import RpcError
-from pyrogram.handlers import MessageHandler
-from pyrogram.types import Update
-from pyrogram.filters import command
+from pyrogram.errors import RaisedException
+from pyrogram.ext import CommandHandler, Filters, MessageHandler
+from pyrogram.handlers import BaseHandler
+from pyrogram.types import Message
 
 from shivu import application, user_collection
 
-participants: List[Dict[str, str]] = []
-race_started: bool = False
-srace_used: bool = False
+RACE_FEE = 10000
 
-async def srace(client: pyrogram.Client, message: Update):
-    global srace_used
+class ParticipantHandler(BaseHandler):
+    async def check(self, update: Update) -> bool:
+        if update.effective_chat.type != 'private':
+            return False
+        if not await user_collection.find_one({'id': update.effective_user.id}):
+            await user_collection.insert_one({'id': update.effective_user.id, 'balance': 0})
+        return True
 
-    if srace_used:
-        await message.reply_text("❌ The /srace command can only be used once.")
-        return
+    async def handle(self, update: Update):
+        user_id = update.effective_user.id
+        user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
-    srace_used = True
+        if user_balance.get('balance', 0) < RACE_FEE:
+            await update.message.reply_text("Insufficient balance to participate in the race.")
+            return
 
-    await message.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
+        await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -RACE_FEE}})
+        await update.message.reply_text("You have joined the race!")
 
-    await asyncio.sleep(50)
-
+@application.on_message(Filters.command('srace'))
+async def start_race(client, message: Message):
     try:
-        await start_race(client, message)
-    except RpcError as e:
-        await message.reply_text(f"❌ Error starting the race: {e}")
+        await application.send_message(message.chat.id, "A car race is organized! Participants fees are 10000 tokens. Use /participate to join.")
+        await application.send_message(message.chat.id, "Waiting for participants...")
+
         participants = []
-        race_started = False
-        srace_used = False
+        for _ in range(2):
+            participant = await application.send_message(message.chat.id, "Type /participate to join the race.")
+            await ParticipantHandler.handle(participant)
+            participants.append(participant.from_user.id)
 
+        await application.send_message(message.chat.id, f"Race started!\nLeft time: 50 sec")
 
-async def participate(client: pyrogram.Client, message: Update):
-    user_id = message.from_user.id
-    user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
+        # Simulate the race
+        for _ in range(5):
+            await application.send_message(message.chat.id, "Left time: 10 sec")
+            await application.sleep(10)
 
-    if any(participant['id'] == user_id for participant in participants):
-        await message.reply_text("❌ You have already joined the race.")
-        return
+        winner = random.choice(participants)
+        await application.send_message(message.chat.id, f"The race has started!\n\nThe winner is <b>{winner}</b>!")
 
-    if not user_balance or user_balance.get('balance', 0) < 10000:
-        await message.reply_text("❌ You don't have enough tokens to participate.")
-        return
+        # Distribute the prize
+        total_fees = RACE_FEE * len(participants)
+        prize = int(total_fees * 0.7)
+        await application.send_message(message.chat.id, f"The prize is {prize} tokens!")
 
-    participants.append({'id': user_id, 'name': message.from_user.first_name})
-    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -10000}})
-    await message.reply_text("✅ You have joined the race!")
+        for participant in participants:
+            if participant == winner:
+                await application.send_message(message.chat.id, f"<b>{participant}</b> has won {prize} tokens!")
+            else:
+                await application.send_message(message.chat.id, f"<b>{participant}</b> has won 0 tokens.")
 
+    except RaisedException as e:
+        print(f"Error: {e}")
 
-async def start_race(client: pyrogram.Client, message: Update):
-    global race_started
-
-    if race_started:
-        await message.reply_text("❌ Race has already started.")
-        return
-
-    race_started = True
-
-    prize = len(participants) * 10000
-
-    winner = random.choice([participant['name'] for participant in participants])
-
-    for participant in participants:
-        try:
-            await user_collection.update_one({'id': participant['id']}, {'$inc': {'balance': prize // len(participants)}})
-        except RpcError as e:
-            await message.reply_text(f"❌ Error updating balance for participant {participant['name']}: {e}")
-
-    await message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(participants)} tokens.")
-
-    participants.clear()
-    race_started = False
-    srace_used = False
-
-
-async def remind_to_join(client: pyrogram.Client, message: Update):
-    if len(participants) < 2:
-        return
-
-    await message.reply_text("🏁 Join the race before time runs out! 🏎️")
-
-
-application.add_handler(MessageHandler(command("srace"), srace))
-application.add_handler(MessageHandler(command("participate"), participate))
-
-async def main():
-    await application.start()
-    await application.idle()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
+@application.on_message(Filters.command('participate'))
+async def join_race(client, message: Message):
+    try:
+        await ParticipantHandler.handle(message)
+    except RaisedException as e:
+        print(f"Error: {e}")
+        await message.reply_text("You have already joined the race.")
