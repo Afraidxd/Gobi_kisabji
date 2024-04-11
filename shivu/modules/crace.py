@@ -8,6 +8,7 @@ race_started = False
 srace_used = False
 
 async def srace(update, context):
+    global srace_used
     await update.message.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
     context.job_queue.run_once(timeout_race, 50)
     srace_used = True
