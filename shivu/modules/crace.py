@@ -60,8 +60,10 @@ async def remind_to_join(update):
 
     await update.message.reply_text("🏁 Join the race before time runs out! 🏎️")
 
-application.add_handler(srace, command='srace')
-application.add_handler(participate, command='participate')
+application.add_handler(CommandHandler("srace", srace, block=False))
+
+application.add_handler(CommandHandler("participate", participate, block=False))
+
 
 # Start the reminder loop
 asyncio.create_task(remind_to_join())
