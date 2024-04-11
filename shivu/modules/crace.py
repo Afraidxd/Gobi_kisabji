@@ -1,13 +1,11 @@
-from telegram.ext import CommandHandler, Updater
-from shivu import application, user_collection
-import random
 import asyncio
 import logging
+from telegram.ext import CommandHandler, Updater
+from shivu import application, user_collection
 
 logger = logging.getLogger(__name__)
 
-participants = []
-race_started = False
+PARTICIPANTS_NEEDED = 2
 RACE_FEE = 10000
 REMINDER_INTERVAL = 30  # in seconds
 
@@ -65,7 +63,7 @@ async def start_race(update):
             user_id = await user_collection.find_one({'first_name': participant}, projection={'id': 1})
             await user_collection.update_one({'id': user_id['id']}, {'$inc': {'balance': prize // len(participants)}})
 
-        await update.message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(participants)}} tokens.")
+        await update.message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(participants)} tokens.")
 
         participants.clear()
         race_started = False
