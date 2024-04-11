@@ -11,14 +11,14 @@ race_started = False
 RACE_FEE = 10000
 REMINDER_INTERVAL = 30  # in seconds
 
-async def srace(update: Update):
+async def srace(update):
     try:
         await update.message.reply_text(f"🏎️ A thrilling car race is organized! Participation fee is {RACE_FEE} tokens. Use /participate to join within 50 seconds.")
         await timeout_race(update)
     except Exception as e:
         logger.error(f"An error occurred in srace: {e}")
 
-async def participate(update: Update):
+async def participate(update):
     try:
         user_id = update.effective_user.id
         user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
@@ -33,7 +33,7 @@ async def participate(update: Update):
     except Exception as e:
         logger.error(f"An error occurred in participate: {e}")
 
-async def timeout_race(update: Update):
+async def timeout_race(update):
     try:
         global participants
 
@@ -49,7 +49,7 @@ async def timeout_race(update: Update):
     except Exception as e:
         logger.error(f"An error occurred in timeout_race: {e}")
 
-async def start_race(update: Update):
+async def start_race(update):
     try:
         global race_started
 
@@ -63,7 +63,7 @@ async def start_race(update: Update):
 
         for participant in participants:
             user_id = await user_collection.find_one({'first_name': participant}, projection={'id': 1})
-            await user_collection.update_one({'id': user_id['id']}, {'$inc': {'balance': prize // len(participants)}})
+            await user_collection.update_one({'id': user_id['id']}, {'$inc': {'balance': prize // len(participants)})
 
         await update.message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(participants)} tokens.")
 
@@ -72,7 +72,7 @@ async def start_race(update: Update):
     except Exception as e:
         logger.error(f"An error occurred in start_race: {e}")
 
-async def remind_to_join(update: Update):
+async def remind_to_join(update):
     try:
         if len(participants) < 2:
             return
