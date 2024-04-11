@@ -35,17 +35,17 @@ async def timeout_race(context):
     global participants
 
     if len(participants) < 2:
-        await context.bot.send_message(context.job.context['update'].effective_chat.id, "❌ Not enough participants to start the race.")
+        await context['update'].message.reply_text("❌ Not enough participants to start the race.")
         participants = []
         return
 
     # Remind users to join the race before time runs out
-    await context.job_queue.run_repeating(remind_to_join, interval=10, first=10, context={'update': context.job.context['update']})
+    await context.job_queue.run_repeating(remind_to_join, interval=10, first=10, context={'update': context['update']})
 
     # Wait for 50 seconds before starting the race
     await asyncio.sleep(50)
 
-    await start_race(context.job.context['update'], context)
+    await start_race(context['update'], context)
 
 async def start_race(update, context):
     """Start the race and determine the winner."""
