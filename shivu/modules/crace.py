@@ -27,7 +27,7 @@ async def participate(update, context):
         await update.message.reply_text("❌ You have already joined the race.")
         return
 
-    if not user_balance or user_balance.get('balance', 0) < 10000:
+    if not user_balance or user_balance.get('balance') < 10000:
         await update.message.reply_text("❌ You don't have enough tokens to participate.")
         return
 
@@ -56,16 +56,15 @@ async def start_race(update, context):
         return
 
     race_started = True
-    if participants:
-        winner = random.choice([p['name'] for p in participants])
-        prize = len(participants) * 10000
+    winner = random.choice([p['name'] for p in participants])
+    prize = len(participants) * 10000
 
-        for participant in participants:
-            await user_collection.update_one({'id': participant['id']}, {'$inc': {'balance': prize // len(participants)}})
+    for participant in participants:
+        await user_collection.update_one({'id': participant['id']}, {'$inc': {'balance': prize // len(participants)}})
 
-        await update.message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(participants)} tokens.")
+    await update.message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(participants)} tokens.")
 
-    participants.clear()
+    participants = []
     race_started = False
     srace_used = False
 
@@ -75,11 +74,5 @@ async def remind_to_join(context):
 
     await context.bot.send_message(context.job.context['update'].message.chat_id, "🏁 Join the race before time runs out! 🏎️")
 
-def error_handler(update, context):
-    """Log the error and handle it gracefully."""
-    logger.error(f"An error occurred: {context.error}")
-    update.message.reply_text("An error occurred while processing your request.")
-
-application.add_handler(CommandHandler("srace", srace, pass_args=False))
-application.add_handler(CommandHandler("participate", participate, pass_args=False))
-application.add_error_handler(error_handler)
+application.add_handler(CommandHandler("srace", srace, block=False))
+application.add_handler(CommandHandler("participate", participate, block=False))
