@@ -1,8 +1,9 @@
+import os
 import asyncio
-from shivu import application, user_collection, dispatcher
-import random
-from telegram.ext import CommandHandler
+from shivu import user_collection
+from telegram.ext import Application, CommandHandler, MessageHandler, Filters
 
+application = Application.builder().token(os.getenv("TOKEN")).build()
 participants = []
 race_started = False
 
@@ -57,7 +58,7 @@ async def start_race(update, context):
 
     for participant in participants:
         user_id = await user_collection.find_one({'first_name': participant}, projection={'id': 1})
-        await user_collection.update_one({'id': user_id['id']}, {'$inc': {'balance': prize // len(participants)}})
+        await user_collection.update_one({'id': user_id['id']}, {'$inc': {'balance': prize // len(participants)})
 
     await update.message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(participants)} tokens.")
 
