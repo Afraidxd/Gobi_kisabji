@@ -6,6 +6,7 @@ from telegram.ext import CommandHandler
 participants = []
 race_started = False
 srace_used = False
+context.chat_data = {}
 
 async def srace(update, context):
     global srace_used
