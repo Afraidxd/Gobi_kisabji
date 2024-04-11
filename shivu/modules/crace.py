@@ -3,18 +3,13 @@ import random
 from shivu import application, user_collection
 from telegram.ext import CommandHandler
 
-PARTICIPATION_FEE = 10000
-TIMEOUT_DURATION = 50
-REMIND_INTERVAL = 10
-
-participants: list = []
-race_started: bool = False
-srace_used: bool = False
+participants = []
+race_started = False
+srace_used = False
 
 async def srace(update, context):
-    await update.message.reply_text("🏎️ A thrilling car race is organized! Participation fee is {} tokens. Use /participate to join within {} seconds.".format(PARTICIPATION_FEE, TIMEOUT_DURATION))
-    context.job_queue.run_once(timeout_race, TIMEOUT_DURATION)
-    global srace_used
+    await update.message.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
+    context.job_queue.run_once(timeout_race, 50)
     srace_used = True
 
 async def participate(update, context):
@@ -31,26 +26,26 @@ async def participate(update, context):
         await update.message.reply_text("❌ You have already joined the race.")
         return
 
-    if not user_balance or user_balance.get('balance', 0) < PARTICIPATION_FEE:
+    if not user_balance or user_balance.get('balance') < 10000:
         await update.message.reply_text("❌ You don't have enough tokens to participate.")
         return
 
     participants.append({'id': user_id, 'name': update.effective_user.first_name})
-    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -PARTICIPATION_FEE}})
+    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -10000}})
     await update.message.reply_text("✅ You have joined the race!")
 
 async def timeout_race(context):
     global participants
 
     if len(participants) < 2:
-        await context['update'].message.reply_text("❌ Not enough participants to start the race.")
+        await context.bot.send_message(context.chat_data['update'].message.chat_id, "❌ Not enough participants to start the race.")
         participants = []
         return
 
-    await context.job_queue.run_repeating(remind_to_join, interval=REMIND_INTERVAL, first=REMIND_INTERVAL)
-    await asyncio.sleep(TIMEOUT_DURATION)
+    await context.job_queue.run_repeating(remind_to_join, interval=10, first=10, context=context)
+    await asyncio.sleep(50)
 
-    await start_race(context['update'], context)
+    await start_race(context.chat_data['update'], context)
 
 async def start_race(update, context):
     global race_started
@@ -76,7 +71,7 @@ async def remind_to_join(context):
     if len(participants) < 2:
         return
 
-    await context.bot.send_message(context.job.context['update'].effective_chat.id, "🏁 Join the race before time runs out! 🏎️")
+    await context.bot.send_message(context.job.context['update'].message.chat_id, "🏁 Join the race before time runs out! 🏎️")
 
 application.add_handler(CommandHandler("srace", srace, block=False))
 application.add_handler(CommandHandler("participate", participate, block=False))
