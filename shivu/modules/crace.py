@@ -61,7 +61,7 @@ async def start_race(update, context):
         prize = len(participants) * 10000
 
         for participant in participants:
-            await user_collection.update_one({'id': participant['id']}, {'$inc': {'balance': prize // len(participants)]])
+            await user_collection.update_one({'id': participant['id']}, {'$inc': {'balance': prize // len(participants)}})
 
         await update.message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(participants)} tokens.")
 
