@@ -1,17 +1,15 @@
-from telegram.ext import CommandHandler
-from shivu import application, user_collection,
+from shivu import application, user_collection
 import random
+import asyncio
 
 participants = []
 race_started = False
 
-async def srace(update, context):
+async def srace(update):
     await update.message.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
+    asyncio.create_task(timeout_race(update))
 
-    # Set a timer for 50 seconds to allow users to join the race
-    context.job_queue.run_once(timeout_race, 50, context={'update': update})
-
-async def participate(update, context):
+async def participate(update):
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
@@ -23,18 +21,20 @@ async def participate(update, context):
     await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -10000}})
     await update.message.reply_text("✅ You have joined the race!")
 
-async def timeout_race(context):
+async def timeout_race(update):
     global participants
 
+    await asyncio.sleep(50)
+
     if len(participants) < 2:
-        await context['update'].message.reply_text("❌ Not enough participants to start the race.")
+        await update.message.reply_text("❌ Not enough participants to start the race.")
         participants = []
         return
 
-    await context['update'].message.reply_text("⏰ Time's up! The race will start now.")
-    await start_race(context['update'], context)
+    await update.message.reply_text("⏰ Time's up! The race will start now.")
+    await start_race(update)
 
-async def start_race(update, context):
+async def start_race(update):
     global race_started
 
     if race_started:
@@ -47,20 +47,23 @@ async def start_race(update, context):
 
     for participant in participants:
         user_id = await user_collection.find_one({'first_name': participant}, projection={'id': 1})
-        await user_collection.update_one({'id': user_id['id']}, {'$inc': {'balance': prize // len(participants)}})
+        await user_collection.update_one({'id': user_id['id']}, {'$inc': {'balance': prize // len(participants)})
 
     await update.message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(participants)} tokens.")
 
     participants.clear()
     race_started = False
 
-async def remind_to_join(context):
+async def remind_to_join(update):
     if len(participants) < 2:
         return
 
-    await context.bot.send_message(context.job.context['update'].effective_chat.id, "🏁 Join the race before time runs out! 🏎️")
+    await update.message.reply_text("🏁 Join the race before time runs out! 🏎️")
 
-application.add_handler(CommandHandler("srace", srace, block=False))
-application.add_handler(CommandHandler("participate", participate, block=False))
+application.add_handler(srace)
+application.add_handler(participate)
 
-dispatcher.add_handler(dispatcher.job_queue.run_repeating(remind_to_join, interval=10, first=10, context={'update': update}))
+# Start the reminder loop
+asyncio.create_task(remind_to_join())
+
+application.run()
