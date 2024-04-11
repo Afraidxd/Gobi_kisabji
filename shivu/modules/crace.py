@@ -65,7 +65,7 @@ async def start_race(update):
             user_id = await user_collection.find_one({'first_name': participant}, projection={'id': 1})
             await user_collection.update_one({'id': user_id['id']}, {'$inc': {'balance': prize // len(participants)})
 
-        await update.message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(participants)} tokens.")
+        await update.message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(participants)}} tokens.")
 
         participants.clear()
         race_started = False
