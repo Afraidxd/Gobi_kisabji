@@ -2,7 +2,7 @@ from telegram.ext import CommandHandler
 from shivu import application, user_collection
 from telegram import Update
 import random
-import asyncio 
+import asyncio
 
 participants = []
 race_started = False
@@ -49,7 +49,7 @@ async def start_race(update):
 
     for participant in participants:
         user_id = await user_collection.find_one({'first_name': participant}, projection={'id': 1})
-        await user_collection.update_one({'id': user_id['id']}, {'$inc': {'balance': prize // len(participants)}})
+        await user_collection.update_one({'id': user_id['id']}, {'$inc': {'balance': prize // len(participants)})
 
     await update.message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(participants)} tokens.")
 
@@ -63,11 +63,9 @@ async def remind_to_join(update):
     await update.message.reply_text("🏁 Join the race before time runs out! 🏎️")
 
 application.add_handler(CommandHandler("srace", srace, block=False))
-
 application.add_handler(CommandHandler("participate", participate, block=False))
 
-
 # Start the reminder loop
-asyncio.create_task(remind_to_join())
+asyncio.create_task(lambda: remind_to_join(None))
 
 application.run()
