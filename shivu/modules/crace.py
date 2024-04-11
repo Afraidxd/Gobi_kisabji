@@ -5,12 +5,18 @@ from telegram.ext import CommandHandler
 
 participants = []
 race_started = False
+srace_used = False
 
 async def srace(update, context):
     await update.message.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
     context.job_queue.run_once(timeout_race, 50, context={'update': update})
+    srace_used = True
 
 async def participate(update, context):
+    if not srace_used:
+        await update.message.reply_text("❌ The /srace command must be used first before participating.")
+        return
+
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
@@ -22,7 +28,7 @@ async def participate(update, context):
         await update.message.reply_text("❌ You don't have enough tokens to participate.")
         return
 
-    participants.append({'id': user_id, 'name': update.effective_user.first_name})
+    participants.append({'id': z user_id, 'name': update.effective_user.first_name})
     await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -10000}})
     await update.message.reply_text("✅ You have joined the race!")
 
@@ -57,6 +63,7 @@ async def start_race(update, context):
 
     participants.clear()
     race_started = False
+    srace_used = False
 
 async def remind_to_join(context):
     if len(participants) < 2:
