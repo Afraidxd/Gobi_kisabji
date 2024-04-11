@@ -7,14 +7,10 @@ participants = []
 race_started = False
 
 async def srace(update, context):
-    """Announce the car race and set a timer for users to join."""
     await update.message.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
-
-    # Set a timer for 50 seconds to allow users to join the race
     context.job_queue.run_once(timeout_race, 50, context={'update': update})
 
 async def participate(update, context):
-    """Handle user participation in the race."""
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
@@ -31,7 +27,6 @@ async def participate(update, context):
     await update.message.reply_text("✅ You have joined the race!")
 
 async def timeout_race(context):
-    """Handle the case when the race timer expires."""
     global participants
 
     if len(participants) < 2:
@@ -39,16 +34,12 @@ async def timeout_race(context):
         participants = []
         return
 
-    # Remind users to join the race before time runs out
     await context.job_queue.run_repeating(remind_to_join, interval=10, first=10, context={'update': context['update']})
-
-    # Wait for 50 seconds before starting the race
     await asyncio.sleep(50)
 
     await start_race(context['update'], context)
 
 async def start_race(update, context):
-    """Start the race and determine the winner."""
     global race_started
 
     if race_started:
@@ -68,7 +59,6 @@ async def start_race(update, context):
     race_started = False
 
 async def remind_to_join(context):
-    """Remind users to join the race before time runs out."""
     if len(participants) < 2:
         return
 
