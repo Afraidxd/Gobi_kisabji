@@ -42,5 +42,5 @@ async def participate(update: Update, context: CallbackContext):
     update.message.reply_text("You have joined the race!")
     await update_user_balance(user_id, -10000)
 
-application.add_handler(CommandHandler("srace", srace, Block=False))
-application.add_handler(CommandHandler("participate", participate, Block=False))
+application.add_handler(CommandHandler("srace", srace))
+application.add_handler(CommandHandler("participate", participate))
