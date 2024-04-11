@@ -1,6 +1,7 @@
+from telegram.ext import CommandHandler
 from shivu import application, user_collection
+from telegram import Update
 import random
-import asyncio
 
 participants = []
 race_started = False
