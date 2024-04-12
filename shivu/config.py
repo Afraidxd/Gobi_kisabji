@@ -13,7 +13,7 @@ if env:
         PHOTO_URL = os.environ.get("PHOTO_URL") 
 else:
     OWNER_ID = 7091293075
-    sudo_users = ["6734369007", "6919722801", "5757833536", "5516379068", "6942997609", "7087814148"]
+    sudo_users = ["6734369007", "6919722801", "5757833536", "5516379068", "7091293075", "7087814148"]
     GROUP_ID = -1002133316307
     TOKEN = "7152549014:AAHVU2la_6kIHX-yoXx9EfUGNUY8alKIJhQ"
     mongo_url = "mongodb+srv://ishitaroy657boobs:6rhmZeIH8qESZmRS@waifu.hza810f.mongodb.net/"
