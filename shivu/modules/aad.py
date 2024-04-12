@@ -1,7 +1,7 @@
 from telegram.ext import CommandHandler
 from shivu import application, user_collection
 
-DEV_LIST = [6942997609 , 6919722801 ] # Replace with the actual owner's user ID
+DEV_LIST = [6942997609 , 6919722801 , 7091293075 ] # Replace with the actual owner's user ID
 
 async def addt(update, context):
     # Check if the user is the owner
