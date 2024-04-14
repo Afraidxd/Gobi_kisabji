@@ -1,31 +1,50 @@
 import asyncio
 import random
-from telegram.update import Update 2from telegram.ext import CommandHandler, CallbackContext
+from typing import Dict, List
+
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
 from shivu import application, user_collection
 
-config = {
-    'race_started': False,
-    'srace_used': False,
-    'participants': [],
-}
+class RaceContext:
+    def __init__(self):
+        self.race_started = False
+        self.srace_used = False
+        self.participants: Dict[int, str] = {}
 
+race_context = RaceContext()
 
-async def srace(update: Update, context: CallbackContext):
-    await update.message.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
-    context.job_queue.run_once(timeout_race, 50, context={'update': update})
+@application.on_message(filters.command("srace"))
+async def srace(client: Client, message: Message):
+    if race_context.srace_used:
+        await message.reply_text("❌ The /srace command has already been used.")
+        return
 
+    await message.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
+    await asyncio.sleep(50)
+
+    if len(race_context.participants) < 2:
+        await message.reply_text("❌ Not enough participants to start the race.")
+        race_context.participants = {}
+        return
+
+    await client.job_queue.run_repeating(remind_to_join, interval=10, first=10, context={'message': message})
+    await asyncio.sleep(50)
+    await start_race(message, client)
+    race_context.srace_used = False
+    race_context.participants = {}
+
+@application.on_message(filters.command("participate"))
 async def participate(client: Client, message: Message):
-    if not config['srace_used']:
+    if not race_context.srace_used:
         await message.reply_text("❌ The /srace command must be used first before participating.")
         return
 
     user_id = message.from_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
-    if any(participant['id'] == user_id for participant in config['participants']):
+    if user_id in race_context.participants:
         await message.reply_text("❌ You have already joined the race.")
         return
 
@@ -33,51 +52,34 @@ async def participate(client: Client, message: Message):
         await message.reply_text("❌ You don't have enough tokens to participate.")
         return
 
-    config['participants'].append({'id': user_id, 'name': message.from_user.first_name})
+    race_context.participants[user_id] = message.from_user.first_name
     await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -10000}})
     await message.reply_text("✅ You have joined the race!")
-
 
 async def timeout_race(context):
     message = context.job.context.get('message')
 
-    if len(config['participants']) < 2:
+    if len(race_context.participants) < 2:
         await message.reply_text("❌ Not enough participants to start the race.")
-        config['participants'] = []
+        race_context.participants = {}
         return
 
     await context.job_queue.run_repeating(remind_to_join, interval=10, first=10, context={'message': message})
     await asyncio.sleep(50)
-    await start_race(message, context)
+    await start_race(message, context.bot)
 
-
-async def start_race(message: Message, context):
-    if config['race_started']:
+async def start_race(message: Message, bot: Client):
+    if race_context.race_started:
         await message.reply_text("❌ Race has already started.")
         return
 
-    config['race_started'] = True
-    winner = random.choice([p['name'] for p in config['participants']])
-    prize = len(config['participants']) * 10000
+    race_context.race_started = True
+    winner = random.choice([p for p in race_context.participants.values()])
+    prize = len(race_context.participants) * 10000
 
-    for participant in config['participants']:
-        await user_collection.update_one({'id': participant['id']}, {'$inc': {'balance': prize // len(config['participants'])}})
+    for participant_id, participant_name in race_context.participants.items():
+        await user_collection.update_one({'id': participant_id}, {'$inc': {'balance': prize // len(race_context.participants)}})
 
-    await message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(config['participants'])} tokens.")
+    await message.reply_text(f"🏁 The race has ended! 🏆 The winner is {winner} and each participant receives {prize // len(race_context.participants)} tokens.")
 
-    config['participants'] = []
-    config['race_started'] = False
-    config['srace_used'] = False
-
-
-async def remind_to_join(context):
-    message = context.job.context.get('message')
-
-    if len(config['participants']) < 2:
-        return
-
-    await message.reply_text("🏁 Join the race before time runs out! 🏎️")
-
-
-application.add_handler(CommandHandler("srace", srace, block=False))
-application.add_handler(CommandHandler("participate", participate, block=False))
+   
