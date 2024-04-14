@@ -1,7 +1,6 @@
 import asyncio
 import random
-from telegram.ext import CommandHandler
-
+from telegram.update import Update 2from telegram.ext import CommandHandler, CallbackContext
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
