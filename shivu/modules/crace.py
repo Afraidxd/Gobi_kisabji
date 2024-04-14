@@ -14,10 +14,9 @@ config = {
 }
 
 
-async def srace(client: Client, message: Message):
-    await message.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
-    await client.job_queue.run_once(timeout_race, 50, context={'message': message})
-
+async def srace(update: Update, context: CallbackContext):
+    await update.message.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
+    context.job_queue.run_once(timeout_race, 50, context={'update': update})
 
 async def participate(client: Client, message: Message):
     if not config['srace_used']:
