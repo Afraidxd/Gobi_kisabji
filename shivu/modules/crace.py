@@ -13,7 +13,7 @@ config: Dict[str, bool | List[Dict[str, str]]] = {
     'participants': [],
 }
 
-async def srace(update: Message, context: CallbackContext):
+async def srace(update: Message):
     await update.reply_text("🏎️ A thrilling car race is organized! Participation fee is 10000 tokens. Use /participate to join within 50 seconds.")
     context.job_queue.run_once(timeout_race, 50, context={'update': update})
 
