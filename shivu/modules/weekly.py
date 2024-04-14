@@ -33,5 +33,6 @@ async def sbet(update, context):
         await update.message.reply_text(
             f"😔 You lost {amount}.\n\n💸 Your updated balance is \033[1;31;40m{updated_balance}\033[0m."
         )
+await update.message.reply_text(message_text, parse_mode=ParseMode.HTML)
 
 application.add_handler(CommandHandler("bet", sbet, block=False))
