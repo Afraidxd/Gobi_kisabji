@@ -2,7 +2,7 @@ import asyncio
 import random
 from pyrogram import Client, filters
 from pyrogram.types import Message
-from telegram.ext import CommandHandler 
+from telegram.ext import CommandHandler
 
 from shivu import application, user_collection
 
