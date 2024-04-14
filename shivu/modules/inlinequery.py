@@ -9,7 +9,7 @@ from telegram import Update, InlineQueryResultPhoto
 from telegram.ext import InlineQueryHandler, CallbackContext, CommandHandler 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from Grabber import user_collection, collection, application, db
+from shivu import user_collection, collection, application, db
 
 # Define a lock for concurrency control
 lock = asyncio.Lock()
