@@ -22,7 +22,7 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
             await update.callback_query.edit_message_text('You Have Not owned any car Yet 𝙮𝙤𝙪 𝙥𝙤𝙤𝙧...')
         return
 
-    characters = sorted(user['characters'], key=lambda x: (x['company'], x['id']))
+    characters = sorted(user['character'], key=lambda x: (x['company'], x['id']))
 
     character_counts = {k: len(list(v)) for k, v in groupby(characters, key=lambda x: x['id'])}
 
