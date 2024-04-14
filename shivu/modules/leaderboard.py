@@ -14,7 +14,7 @@ from shivu import (application, PHOTO_URL, OWNER_ID,
                     user_collection, top_global_groups_collection, top_global_groups_collection, 
                     group_user_totals_collection)
 
-from Grabber import sudo_users as SUDO_USERS 
+from shivu import sudo_users as SUDO_USERS 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CallbackQueryHandler
 from telegram.ext import *
