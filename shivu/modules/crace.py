@@ -1,5 +1,6 @@
 import asyncio
 import random
+from telegram.ext import CommandHandler
 
 from pyrogram import Client, filters
 from pyrogram.types import Message
