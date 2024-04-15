@@ -81,50 +81,48 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 
 
 async def send_image(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id
+    chat_id = update.effective_chat.id
 
-    all_characters = list(await collection.find({ 'rarity': { '$in': ['⚪ Common', '🟣 Rare', '🟡 Legendary', '🟢 Medium', '💮 Mythic'] } }).to_list(length=None))
+    all_characters = list(await collection.find({ 'rarity': { '$in': ['⚪ Common', '🟣 Rare', '🟡 Legendary', '🟢 Medium', '💮 Mythic'] } }).to_list(length=None))
 
-    if chat_id not in sent_characters:
-        sent_characters[chat_id] = []
+    if chat_id not in sent_characters:
+        sent_characters[chat_id] = []
 
-    if len(sent_characters[chat_id]) == len(all_characters):
-        sent_characters[chat_id] = []
+    if len(sent_characters[chat_id]) == len(all_characters):
+        sent_characters[chat_id] = []
 
-    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
+    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
 
-    sent_characters[chat_id].append(character['id'])
-    last_characters[chat_id] = character
+    sent_characters[chat_id].append(character['id'])
+    last_characters[chat_id] = character
 
-    if chat_id in first_correct_guesses:
-        del first_correct_guesses[chat_id]
+    if chat_id in first_correct_guesses:
+        del first_correct_guesses[chat_id]
 
-    challenge_cost = get_challenge_cost(character['rarity'])
-    keyboard = [[InlineKeyboardButton("Name 🔥", callback_data='car_name')]]
+    keyboard = [[InlineKeyboardButton("Name 🔥", callback_data='car_name')]]
 
-    await context.bot.send_photo(
-        chat_id=chat_id,
-        photo=character['img_url'],
-        caption=f"ᴀ ɴᴇᴡ {character['rarity']} ᴄᴀʀ ᴀᴘᴘᴇᴀʀᴇᴅ ...\n/challenge the Name and add it to Your slave list\n/challenge the car for a race! Challenge cost: {challenge_cost}",
-        parse_mode='HTML',
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-
-def get_challenge_cost(rarity: str) -> int:
-    if rarity == '⚪ Common':
-        return random.randint(10000, 20000)
-    elif rarity == '🟣 Rare':
-        return random.randint(10000, 40000)
-    elif rarity == '🟢 Medium':
-        return random.randint(10000, 30000)
-    elif rarity == '🟡 Legendary':
-        return random.randint(20000, 50000)
-    elif rarity == '💮 Mythic':
-        return random.randint(20000, 60000)
-    else:
-        return 0
+    await context.bot.send_photo(
+        chat_id=chat_id,
+        photo=character['img_url'],
+        caption=f"A New {character['rarity']} Car Appeared...\n/guess the Name and add it to Your slave list",
+        parse_mode='HTML',
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
 
 
+
+
+
+
+
+async def button_click(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    car_name = last_characters.get(query.message.chat_id, {}).get('car name', 'Unknown Car')
+    await query.answer(text=f"The car name is: {car_name}", show_alert=True)
+
+
+# In your main function or setup code
+application.add_handler(CallbackQueryHandler(button_click, pattern='^car_name$'))
 
 
 
