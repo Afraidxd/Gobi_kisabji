@@ -1,3 +1,4 @@
+from typing import List, Dict
 import importlib
 import time
 import random
@@ -78,6 +79,13 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 
 
 
+import random
+from typing import List, Dict
+
+# Assuming that 'collection' is a MongoDB collection containing the characters
+# and 'sent_characters', 'last_characters', and 'first_correct_guesses' are
+# global dictionaries used to store the state of the game.
+
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
@@ -97,15 +105,38 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     if chat_id in first_correct_guesses:
         del first_correct_guesses[chat_id]
 
+    challenge_cost = get_challenge_cost(character['rarity'])
     keyboard = [[InlineKeyboardButton("Name 🔥", callback_data='car_name')]]
 
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"A New {character['rarity']} Car Appeared...\n/guess the Name and add it to Your slave list",
+        caption=f"A New {character['rarity']} Car Appeared...\n/guess the Name and add it to Your slave list\n/challenge the car for a race! Challenge cost: {challenge_cost}",
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
+
+def get_challenge_cost(rarity: str) -> int:
+    if rarity == '⚪ Common':
+        return random.randint(10000, 20000)
+    elif rarity == '🟣 Rare':
+        return random.randint(10000, 40000)
+    elif rarity == '🟢 Medium':
+        return random.randint(10000, 30000)
+    elif rarity == '🟡 Legendary':
+        return random.randint(20000, 50000)
+    elif rarity == '💮 Mythic':
+        return random.randint(20000, 60000)
+    else:
+        return 0
+
+async def button_click(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    car_name = last_characters.get(query.message.chat_id, {}).get('car name', 'Unknown Car')
+    await query.answer(text=f"The car name is: {car_name}", show_alert=True)
+
+# In your main function or setup code
+application.add_handler(CallbackQueryHandler(button_click, pattern='^car_name$'))
 
 
 
