@@ -79,12 +79,6 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 
 
 
-import random
-from typing import List, Dict
-
-# Assuming that 'collection' is a MongoDB collection containing the characters
-# and 'sent_characters', 'last_characters', and 'first_correct_guesses' are
-# global dictionaries used to store the state of the game.
 
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
@@ -111,7 +105,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"A New {character['rarity']} Car Appeared...\n/guess the Name and add it to Your slave list\n/challenge the car for a race! Challenge cost: {challenge_cost}",
+        caption=f"ᴀ ɴᴇᴡ {character['rarity']} ᴄᴀʀ ᴀᴘᴘᴇᴀʀᴇᴅ ...\n/challenge the Name and add it to Your slave list\n/challenge the car for a race! Challenge cost: {challenge_cost}",
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
