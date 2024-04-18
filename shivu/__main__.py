@@ -170,12 +170,6 @@ async def button_click(update: Update, context: CallbackContext) -> None:
 application.add_handler(CallbackQueryHandler(button_click, pattern='^car_name$'))
 
 
-async def main():
-    application.run()
-
-
-if __name__ == '__main__':
-    asyncio.run(main())
 
 async def fav(update: Update, context: CallbackContext) -> None:
     user_id = update.effective_user.id
