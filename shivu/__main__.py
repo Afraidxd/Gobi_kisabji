@@ -165,42 +165,12 @@ application.add_handler(CallbackQueryHandler(button_click, pattern='^car_name$')
 
 
 
-async def fav(update: Update, context: CallbackContext) -> None:
-    user_id = update.effective_user.id
-
-
-    if not context.args:
-        await update.message.reply_text('𝙋𝙡𝙚𝙖𝙨𝙚 𝙥𝙧𝙤𝙫𝙞𝙙𝙚 𝘾𝙖𝙧 𝙞𝙙...')
-        return
-
-    character_id = context.args[0]
-
-
-    user = await user_collection.find_one({'id': user_id})
-    if not user:
-        await update.message.reply_text('𝙔𝙤𝙪 𝙝𝙖𝙫𝙚 𝙣𝙤𝙩 𝙂𝙤𝙩 𝘼𝙣𝙮 𝘾𝙖𝙧 𝙮𝙚𝙩...')
-        return
-
-
-    character = next((c for c in user['characters'] if c['id'] == character_id), None)
-    if not character:
-        await update.message.reply_text('𝙏𝙝𝙞𝙨 𝘾𝙖𝙧 𝙞𝙨 𝙉𝙤𝙩 𝙄𝙣 𝙮𝙤𝙪𝙧 𝙂𝙖𝙧𝙖𝙜𝙚')
-        return
-
-
-    user['favorites'] = [character_id]
-
-
-    await user_collection.update_one({'id': user_id}, {'$set': {'favorites': user['favorites']}})
-
-    await update.message.reply_text(f'🥳𝘾𝙖𝙧 {character["car name"]} 𝙄𝙨 𝙎𝙚𝙩 𝙤𝙣 𝙔𝙤𝙪𝙧 𝙁𝙞𝙧𝙨𝙩 𝙛𝙡𝙤𝙤𝙧 𝙣𝙤𝙬...')
 
 
 def main() -> None:
     """Run bot."""
 
     application.add_handler(CommandHandler(["guess"], guess, block=False))
-application.add_handler(CommandHandler("fav", fav, block=False))
 application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
 
 
