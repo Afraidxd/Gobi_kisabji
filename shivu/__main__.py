@@ -98,7 +98,13 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     if len(sent_characters[chat_id]) == len(all_characters):
         sent_characters[chat_id] = []
 
-    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
+    valid_characters = [c for c in all_characters if 'id' in c and c['id'] not in sent_characters[chat_id]]
+
+    if not valid_characters:
+        # Handle case when all characters have been sent
+        return
+
+    character = random.choice(valid_characters)
 
     sent_characters[chat_id].append(character['id'])
     last_characters[chat_id] = character
@@ -116,6 +122,9 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         photo=character['img_url'],
         caption=f"A New {character['rarity']} Car Appeared...\nPrice: {price} coins\nTo buy this car, click 'Name 🔥'.",
         parse_mode='HTML',
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
