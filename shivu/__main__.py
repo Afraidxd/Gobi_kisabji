@@ -187,9 +187,9 @@ async def fav(update: Update, context: CallbackContext) -> None:
 def main() -> None:
     """Run bot."""
 
-    application.add_handler(CommandHandler(["buy"], buy_car, pass_args=True, pass_chat_data=True, block=False))
-    application.add_handler(CommandHandler("fav", fav, block=False))
-    application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
+    application.add_handler(CommandHandler("buy", buy_car, pass_args=True, pass_chat_data=True))
+    application.add_handler(CommandHandler("fav", fav))
+    application.add_handler(MessageHandler(filters.ALL, message_counter))
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
