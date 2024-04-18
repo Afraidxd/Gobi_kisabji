@@ -88,13 +88,13 @@ async def send_image(update: Update, context: CallbackContext) -> None:
 
     rarities_prices = {
         '⚪ Common': (10000, 20000),
-        '🟣 Rare': (20000, 40000),
-        '🟢 Medium': (30000, 50000),
-        '🟡 Legendary': (40000, 60000),
-        '💮 Mythic': (50000, 80000)
+        '🟣 Rare': (10000, 40000),
+        '🟢 Medium': (10000, 30000),
+        '🟡 Legendary': (20000, 50000),
+        '💮 Mythic': (30000, 60000)
     }
 
-    all_characters = list(await collection.find({'rarity': {'$in': rarities_prices.keys()}}).to_list(length=None))
+    all_characters = list(await collection.find({'rarity': {'$in': list(rarities_prices.keys())}}).to_list(length=None))
 
     if chat_id not in sent_characters:
         sent_characters[chat_id] = []
@@ -113,16 +113,15 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     price_range = rarities_prices[character['rarity']]
     price = random.randint(price_range[0], price_range[1])
 
-    keyboard = [[InlineKeyboardButton("Buy 🔥", callback_data=f'buy_{character["car name"]}')]]
+    keyboard = [[InlineKeyboardButton("Name 🔥", callback_data='car_name')]]
 
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"A New {character['rarity']} Car Appeared...\nPrice: {price} coins\nTo buy this car, use /buy {character['car name']}.",
+        caption=f"A New {character['rarity']} Car Appeared...\nTo buy this car, use /buy {character['car name']}.\nPrice: {price} coins",
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
-
 
 async def buy_car(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
