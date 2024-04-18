@@ -125,9 +125,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-
+       
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
     user_id = update.effective_user.id
