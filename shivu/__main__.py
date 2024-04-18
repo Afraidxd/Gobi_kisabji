@@ -164,7 +164,7 @@ async def button_click(update: Update, context: CallbackContext) -> None:
 application.add_handler(CallbackQueryHandler(button_click, pattern='^car_name$'))
 
 
-
+    application.run_polling(drop_pending_updates=True)
 
 
 def main() -> None:
