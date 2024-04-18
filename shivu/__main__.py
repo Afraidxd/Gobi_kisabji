@@ -9,7 +9,7 @@ import random
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import Update
-from telegram.ext import CommandHandler,  CallbackContext, MessageHandler, CallbackQueryHandler, filters
+from telegram.ext import CommandHandler, CallbackContext, MessageHandler, CallbackQueryHandler, filters
 
 from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu
 from shivu import application, LOGGER
@@ -83,7 +83,14 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
-    all_characters = list(await collection.find({ 'rarity': { '$in': ['⚪ Common', '🟣 Rare', '🟡 Legendary', '🟢 Medium', '💮 Mythic'] } }).to_list(length=None))
+    rarities_prices = {
+        '⚪ Common': (10000, 20000),
+        '🟣 Rare': (10000, 40000),
+        '🟢 Medium': (10000, 30000),
+        '🟡 Legendary': (20000, 50000)
+    }
+
+    all_characters = list(await collection.find({'rarity': {'$in': rarities_prices.keys()}}).to_list(length=None))
 
     if chat_id not in sent_characters:
         sent_characters[chat_id] = []
@@ -99,40 +106,18 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     if chat_id in first_correct_guesses:
         del first_correct_guesses[chat_id]
 
+    price_range = rarities_prices[character['rarity']]
+    price = random.randint(price_range[0], price_range[1])
+
     keyboard = [[InlineKeyboardButton("Name 🔥", callback_data='car_name')]]
 
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"A New {character['rarity']} Car Appeared...\n/guess the Name and add it to Your slave list",
+        caption=f"A New {character['rarity']} Car Appeared...\nPrice: {price} coins\nGuess the name and add it to your collection!",
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
-
-
-async def button_click(update: Update, context: CallbackContext) -> None:
-    query = update.callback_query
-    car_name = last_characters.get(query.message.chat_id, {}).get('car name', 'Unknown Car')
-    await query.answer(text=f"The car name is: {car_name}", show_alert=True)
-
-
-# In your main function or setup code
-application.add_handler(CallbackQueryHandler(button_click, pattern='^car_name$'))
-
-
-
-
-
-
-async def button_click(update: Update, context: CallbackContext) -> None:
-    query = update.callback_query
-    car_name = last_characters.get(query.message.chat_id, {}).get('car name', 'Unknown Car')
-    await query.answer(text=f"The car name is: {car_name}", show_alert=True)
-
-
-# In your main function or setup code
-application.add_handler(CallbackQueryHandler(button_click, pattern='^car_name$'))
-
 
 
 async def guess(update: Update, context: CallbackContext) -> None:
@@ -143,93 +128,54 @@ async def guess(update: Update, context: CallbackContext) -> None:
         return
 
     if chat_id in first_correct_guesses:
-        await update.message.reply_text(f'❌ 𝘼𝙡𝙧𝙚𝙖𝙙𝙮 𝙜𝙪𝙚𝙨𝙨𝙚𝙙 𝙗𝙮 𝙎𝙤𝙢𝙚𝙤𝙣𝙚 𝙚𝙡𝙨𝙚..')
+        await update.message.reply_text(f'❌ Already guessed by another user...')
         return
 
     guess = ' '.join(context.args).lower() if context.args else ''
 
     if "()" in guess or "&" in guess.lower():
-        await update.message.reply_text("𝙉𝙖𝙝𝙝 𝙔𝙤𝙪 𝘾𝙖𝙣'𝙩 𝙪𝙨𝙚 𝙏𝙝𝙞𝙨 𝙏𝙮𝙥𝙚𝙨 𝙤𝙛 𝙬𝙤𝙧𝙙𝙨 ❌️")
+        await update.message.reply_text("Invalid characters in your guess.")
         return
-
 
     name_parts = last_characters[chat_id]['car name'].lower().split()
 
     if sorted(name_parts) == sorted(guess.split()) or any(part == guess for part in name_parts):
-
-
         first_correct_guesses[chat_id] = user_id
 
-        user = await user_collection.find_one({'id': user_id})
-        if user:
-            update_fields = {}
-            if hasattr(update.effective_user, 'username') and update.effective_user.username != user.get('username'):
-                update_fields['username'] = update.effective_user.username
-            if update.effective_user.first_name != user.get('first_name'):
-                update_fields['first_name'] = update.effective_user.first_name
-            if update_fields:
-                await user_collection.update_one({'id': user_id}, {'$set': update_fields})
+        price = last_characters[chat_id].get('price', 0)
+        
+        user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
-            await user_collection.update_one({'id': user_id}, {'$push': {'characters': last_characters[chat_id]}})
-
-        elif hasattr(update.effective_user, 'username'):
-            await user_collection.insert_one({
-                'id': user_id,
-                'username': update.effective_user.username,
-                'first_name': update.effective_user.first_name,
-                'characters': [last_characters[chat_id]],
-            })
-
-
-        group_user_total = await group_user_totals_collection.find_one({'user_id': user_id, 'group_id': chat_id})
-        if group_user_total:
-            update_fields = {}
-            if hasattr(update.effective_user, 'username') and update.effective_user.username != group_user_total.get('username'):
-                update_fields['username'] = update.effective_user.username
-            if update.effective_user.first_name != group_user_total.get('first_name'):
-                update_fields['first_name'] = update.effective_user.first_name
-            if update_fields:
-                await group_user_totals_collection.update_one({'user_id': user_id, 'group_id': chat_id}, {'$set': update_fields})
-
-            await group_user_totals_collection.update_one({'user_id': user_id, 'group_id': chat_id}, {'$inc': {'count': 1}})
-
+        if user_balance and user_balance.get('balance', 0) >= price:
+            if random.random() < 0.7:  # 70% chance of winning
+                await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -price}})
+                await user_collection.update_one({'id': user_id}, {'$push': {'characters': last_characters[chat_id]}})
+                await update.message.reply_text(f"Congratulations! You won the car!\nYou've been charged {price} coins.")
+            else:
+                await update.message.reply_text("Unfortunately, you lost the race. Try again next time!")
         else:
-            await group_user_totals_collection.insert_one({
-                'user_id': user_id,
-                'group_id': chat_id,
-                'username': update.effective_user.username,
-                'first_name': update.effective_user.first_name,
-                'count': 1,
-            })
-
-
-
-        group_info = await top_global_groups_collection.find_one({'group_id': chat_id})
-        if group_info:
-            update_fields = {}
-            if update.effective_chat.title != group_info.get('group_name'):
-                update_fields['group_name'] = update.effective_chat.title
-            if update_fields:
-                await top_global_groups_collection.update_one({'group_id': chat_id}, {'$set': update_fields})
-
-            await top_global_groups_collection.update_one({'group_id': chat_id}, {'$inc': {'count': 1}})
-
-        else:
-            await top_global_groups_collection.insert_one({
-                'group_id': chat_id,
-                'group_name': update.effective_chat.title,
-                'count': 1,
-            })
-
-
-
-        keyboard = [[InlineKeyboardButton(f"𝙂𝙖𝙧𝙖𝙜𝙚 🔥", switch_inline_query_current_chat=f"collection.{user_id}")]]
-
-
-        await update.message.reply_text(f'<b><a href="tg://user?id={user_id}">{escape(update.effective_user.first_name)}</a></b> 𝙔𝙤𝙪 𝙂𝙤𝙩 𝙉𝙚𝙬 𝘾𝙖𝙧🫧 \n🌸𝗡𝗔𝗠𝗘: <b>{last_characters[chat_id]["car name"]}</b> \n🧩𝘾𝙤𝙢𝙥𝙖𝙣𝙮: <b>{last_characters[chat_id]["company"]}</b> \n𝗥𝗔𝗜𝗥𝗧𝗬: <b>{last_characters[chat_id]["rarity"]}</b>\n\n⛩ 𝘾𝙝𝙚𝙘𝙠 𝙮𝙤𝙪𝙧 /collection 𝙉𝙤𝙬', parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard))
+            await update.message.reply_text("You don't have enough coins to buy this car.")
 
     else:
-        await update.message.reply_text('𝙋𝙡𝙚𝙖𝙨𝙚 𝙒𝙧𝙞𝙩𝙚 𝘾𝙤𝙧𝙧𝙚𝙘𝙩 𝙉𝙖𝙢𝙚... ❌️')
+        await update.message.reply_text('Incorrect guess. Try again!')
+
+
+async def button_click(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    car_name = last_characters.get(query.message.chat_id, {}).get('car name', 'Unknown Car')
+    await query.answer(text=f"The car name is: {car_name}", show_alert=True)
+
+
+# In your main function or setup code
+application.add_handler(CallbackQueryHandler(button_click, pattern='^car_name$'))
+
+
+async def main():
+    application.run()
+
+
+if __name__ == '__main__':
+    asyncio.run(main())
 
 async def fav(update: Update, context: CallbackContext) -> None:
     user_id = update.effective_user.id
