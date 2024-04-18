@@ -80,6 +80,9 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 
 
 
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import CallbackContext, CallbackQueryHandler
+
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
@@ -114,11 +117,10 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"A New {character['rarity']} Car Appeared...\nPrice: {price} coins\nGuess the name and add it to your collection!",
+        caption=f"A New {character['rarity']} Car Appeared...\nPrice: {price} coins\nTo buy this car, click 'Name 🔥'.",
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
-
 
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
@@ -143,28 +145,23 @@ async def guess(update: Update, context: CallbackContext) -> None:
         first_correct_guesses[chat_id] = user_id
 
         price = last_characters[chat_id].get('price', 0)
-        
+
         user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
         if user_balance and user_balance.get('balance', 0) >= price:
-            if random.random() < 0.7:  # 70% chance of winning
-                await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -price}})
-                await user_collection.update_one({'id': user_id}, {'$push': {'characters': last_characters[chat_id]}})
-                await update.message.reply_text(f"Congratulations! You won the car!\nYou've been charged {price} coins.")
-            else:
-                await update.message.reply_text("Unfortunately, you lost the race. Try again next time!")
+            await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -price}})
+            await user_collection.update_one({'id': user_id}, {'$push': {'characters': last_characters[chat_id]}})
+            await update.message.reply_text(f"Congratulations! You bought the car!\nYou've been charged {price} coins.\n\nName: {last_characters[chat_id]['car name']}\nPrice: {price} coins\nCompany: {last_characters[chat_id]['company']}")
         else:
             await update.message.reply_text("You don't have enough coins to buy this car.")
 
     else:
         await update.message.reply_text('Incorrect guess. Try again!')
 
-
 async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     car_name = last_characters.get(query.message.chat_id, {}).get('car name', 'Unknown Car')
     await query.answer(text=f"The car name is: {car_name}", show_alert=True)
-
 
 # In your main function or setup code
 application.add_handler(CallbackQueryHandler(button_click, pattern='^car_name$'))
