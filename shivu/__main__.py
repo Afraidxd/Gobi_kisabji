@@ -164,15 +164,13 @@ async def button_click(update: Update, context: CallbackContext) -> None:
 application.add_handler(CallbackQueryHandler(button_click, pattern='^car_name$'))
 
 
-    application.run_polling(drop_pending_updates=True)
-
-
 def main() -> None:
     """Run bot."""
 
     application.add_handler(CommandHandler(["guess"], guess, block=False))
 application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
 
+    application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     shivuu.start()
