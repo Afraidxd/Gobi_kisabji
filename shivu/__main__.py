@@ -170,7 +170,7 @@ def main() -> None:
     application.add_handler(CommandHandler(["guess"], guess, block=False))
 application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
 
-    application.run_polling(drop_pending_updates=True)
+        application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     shivuu.start()
