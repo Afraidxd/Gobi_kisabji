@@ -90,7 +90,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         '🟡 Legendary': (20000, 50000)
     }
 
-    all_characters = list(await collection.find({'rarity': {'$in': rarities_prices.keys()}}).to_list(length=None))
+    all_characters = list(await collection.find({'rarity': {'$in': list(rarities_prices.keys())}}).to_list(length=None))
 
     if chat_id not in sent_characters:
         sent_characters[chat_id] = []
@@ -98,13 +98,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     if len(sent_characters[chat_id]) == len(all_characters):
         sent_characters[chat_id] = []
 
-    valid_characters = [c for c in all_characters if 'id' in c and c['id'] not in sent_characters[chat_id]]
-
-    if not valid_characters:
-        # Handle case when all characters have been sent
-        return
-
-    character = random.choice(valid_characters)
+    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
 
     sent_characters[chat_id].append(character['id'])
     last_characters[chat_id] = character
@@ -124,6 +118,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
+
 
        
 async def guess(update: Update, context: CallbackContext) -> None:
