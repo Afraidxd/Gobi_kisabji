@@ -1,19 +1,9 @@
-import importlib
-import time
 import random
-import re
-import asyncio
-from html import escape 
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler
+from Grabber import application, PHOTO_URL, SUPPORT_CHAT, db, GROUP_ID
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
-from telegram import Update
-from telegram.ext import CommandHandler, CallbackContext, MessageHandler, filters, CallbackQueryHandler
-
-from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu
-from shivu import application, PHOTO_URL, SUPPORT_CHAT, UPDATE_CHAT, BOT_USERNAME, db, GROUP_ID, LOGGER
-from shivu import pm_users as collection 
-from shivu.modules import ALL_MODULES
+collection = db['total_pm_users']
 
 async def start(update: Update, context: CallbackContext) -> None:
     user_id = update.effective_user.id
@@ -23,65 +13,35 @@ async def start(update: Update, context: CallbackContext) -> None:
     user_data = await collection.find_one({"_id": user_id})
 
     if user_data is None:
-
         await collection.insert_one({"_id": user_id, "first_name": first_name, "username": username})
-
-        await context.bot.send_message(chat_id=GROUP_ID, text=f"<a href='tg://user?id={user_id}'>{first_name}</a> STARTED THE BOT", parse_mode='HTML')
+        await context.bot.send_message(chat_id=GROUP_ID, text=f"#𝐍𝐄𝐖 𝐔𝐒𝐄𝐑\nΔ 𝖨𝖣 : {user_id}\nΔ 𝖡𝖸 : {first_name}", parse_mode='HTML')
     else:
-
         if user_data['first_name'] != first_name or user_data['username'] != username:
-
             await collection.update_one({"_id": user_id}, {"$set": {"first_name": first_name, "username": username}})
 
+    caption = f"""
+    ***Hey there! {update.effective_user.first_name}***\n
+    ***ɪ ᴀᴍ ꜱʟᴀᴠᴇꜱ ɢʀᴀʙʙᴇʀ ʙᴏᴛ ᴀᴅᴅ ᴍᴇ ɪɴ ʏᴏᴜ'ʀᴇ ɢʀᴏᴜᴘ ᴀɴᴅ ᴛᴀᴘ ᴏɴ ʜᴇʟᴘ ʙᴜᴛᴛᴏɴ ᴛᴏ ꜱᴇᴇ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅS***\n
+    """
 
+    photo_url = random.choice(PHOTO_URL)
 
-    if update.effective_chat.type== "private":
-
-
-        caption = f"""
-        ***𝐇𝐞𝐲 𝐭𝐡𝐞𝐫𝐞! {update.effective_user.first_name} 🌻***
-              
-***𝗜 𝗮𝗺 𝗖𝗮𝗿 𝗚𝗿𝗮𝗯𝗯𝗲𝗿 𝗚𝗮𝗻𝗲 𝗕𝗼𝘁 𝗮𝗱𝗱 𝗺𝗲 𝗶𝗻 𝘆𝗼𝘂𝗿 𝗴𝗿𝗼𝘂𝗽 𝗮𝗻𝗱 𝗽𝗿𝗲𝘀𝘀 𝗵𝗲𝗹𝗽 𝘀𝗲𝗰𝘁𝗶𝗼𝗻 𝘁𝗼 𝘀𝗲𝗲 𝗰𝗼𝗺𝗺𝗮𝗻𝗱
-
-𝗥𝗲𝗮𝗿𝗶𝘁𝘆 𝗘𝘅𝗽𝗹𝗮𝗻𝗮𝘁𝗶𝗼𝗻 
-
-𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗴𝗲𝘁 𝘁𝗵𝗲𝘀𝗲 𝗯𝘆 𝗴𝘂𝗲𝘀𝘀𝗶𝗻𝗴 
-⚪️ 𝗖𝗼𝗺𝗺𝗼𝗻  
-🟣 𝗥𝗮𝗿𝗲         
-🟡 𝗟𝗲𝗴𝗲𝗻𝗱𝗮𝗿𝘆
-🟢 𝗠𝗲𝗱𝗶𝘂𝗺.    
-💮 𝗠𝘆𝘁𝗵𝗶𝗰
-
-𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗴𝗲𝘁 𝘁𝗵𝗲𝘀𝗲 𝗯𝘆 𝗰𝗼𝗺𝗺𝗮𝗻𝗱 /𝗰𝗵𝗮𝗹𝗹𝗲𝗻𝗴𝗲 
-💪 𝗰𝗵𝗮𝗹𝗹𝗲𝗻𝗴𝗲 𝗲𝗱𝗶𝘁𝗶𝗼𝗻 
-💮 𝗠𝘆𝘁𝗵𝗶𝗰
-
-𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗴𝗲𝘁 𝘁𝗵𝗶𝘀 𝗯𝘆 𝗯𝗶𝗱𝗱𝗶𝗻𝗴 𝗳𝗼𝗿 𝘁𝗵𝗶𝘀 𝗬𝗼𝘂 𝗵𝗮𝘃𝗲 𝘁𝗼 𝗷𝗼𝗶𝗻 𝘀𝘂𝗽𝗽𝗼𝗿𝘁
-
-🫧 𝗔𝘂𝗰𝘁𝗶𝗼𝗻 𝗲𝗱𝗶𝘁𝗶𝗼𝗻***
-               """
+    if update.effective_chat.type == "private":
         keyboard = [
-            [InlineKeyboardButton("𝐀ᴅᴅ 𝐌ᴇ", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
-            [InlineKeyboardButton("𝐇ᴇʟᴘ", callback_data='help'),
-             InlineKeyboardButton("𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/{SUPPORT_CHAT}')],
-            [InlineKeyboardButton("𝗨𝗣𝗗𝗔𝗧𝗘𝗦", url=f'https://t.me/BotupdateXD')],
+            [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f'https://t.me/Grab_Yourslave_bot?startgroup=new')],
+            [InlineKeyboardButton("ᴄʜᴀɴɴᴇʟ", url=f'https://t.me/BotupdateXD'), InlineKeyboardButton("ɢʀᴏᴜᴘ", url=f'{SUPPORT_CHAT}')],
+            [InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'), InlineKeyboardButton("ᴄʀᴇᴅɪᴛꜱ", callback_data='credits')]
         ]
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        photo_url = random.choice(PHOTO_URL)
-
-        await context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo_url, caption=caption, reply_markup=reply_markup, parse_mode='markdown')
-
     else:
-        photo_url = random.choice(PHOTO_URL)
         keyboard = [
-
-            [InlineKeyboardButton("𝐇ᴇʟᴘ", callback_data='help'),
-             InlineKeyboardButton("𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/carbotsupport')],
-
+            [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f'https://t.me/Grab_Yourslave_bot?startgroup=new')],
+            [InlineKeyboardButton("ᴄʜᴀɴɴᴇʟ", url=f'https://t.me/BotupdateXD'), InlineKeyboardButton("ɢʀᴏᴜᴘ", url=f'{SUPPORT_CHAT}')],
+            [InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'), InlineKeyboardButton("ᴄʀᴇᴅɪᴛꜱ", callback_data='credits')]
         ]
 
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo_url, caption="𝐯𝐫𝐨𝐨𝐨𝐨𝐨𝐨𝐨𝐦 ! 𝐈 𝐚𝐦 𝐚𝐥𝐢𝐯𝐞",reply_markup=reply_markup )
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await context.bot.send_photo(chat_id=update.effective_chat.id, photo=photo_url, caption=caption, reply_markup=reply_markup, parse_mode='markdown')
 
 async def button(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
@@ -89,63 +49,93 @@ async def button(update: Update, context: CallbackContext) -> None:
 
     if query.data == 'help':
         help_text = """
-    ***Help Section :***
-***/guess: To Guess car (only works in group)
-/fav: Add Your fav
-/trade : To trade Characters
-/gift: Give any Character from Your Collection to another user.. (only works in groups)
-/collection: To see Your Collection
-/topgroups : See Top Groups.. Ppl Guesses Most in that Groups
-/top: Too See Top Users
-/ctop : Your ChatTop
-/changetime: Change Character appear time (only works in Groups)
-/bal : To Check Your Balance 
-/bonus : To claim daily bonus 
-/wbonus: To claim weekly bonus
-/pay : to give your coin to another user
-/race: to race car and win random amount of coin between (30000-90000)
-/challenge: To win 💪 challenge edition car 
-/buy : to buy car to see prices do /store***
-   """
-        help_keyboard = [[InlineKeyboardButton("Back", callback_data='back')]]
+        ***Choose a category:***
+
+        1. USER
+        2. GAMES
+        """
+        help_keyboard = [
+            [InlineKeyboardButton("USER", callback_data='user_help'), InlineKeyboardButton("GAMES", callback_data='games_help')],
+            [InlineKeyboardButton("Back", callback_data='back')]
+        ]
         reply_markup = InlineKeyboardMarkup(help_keyboard)
 
         await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=help_text, reply_markup=reply_markup, parse_mode='markdown')
 
-    elif query.data == 'back':
+    elif query.data == 'user_help':
+        user_help_text = """
+        ***User Commands:***
 
-        caption = f"""
-        ***Hey there! {update.effective_user.first_name}*** 🌻
-        
-***𝗜 𝗮𝗺 𝗖𝗮𝗿 𝗚𝗿𝗮𝗯𝗯𝗲𝗿 𝗚𝗮𝗻𝗲 𝗕𝗼𝘁 𝗮𝗱𝗱 𝗺𝗲 𝗶𝗻 𝘆𝗼𝘂𝗿 𝗴𝗿𝗼𝘂𝗽 𝗮𝗻𝗱 𝗽𝗿𝗲𝘀𝘀 𝗵𝗲𝗹𝗽 𝘀𝗲𝗰𝘁𝗶𝗼𝗻 𝘁𝗼 𝘀𝗲𝗲 𝗰𝗼𝗺𝗺𝗮𝗻𝗱
-
-𝗥𝗲𝗮𝗿𝗶𝘁𝘆 𝗘𝘅𝗽𝗹𝗮𝗻𝗮𝘁𝗶𝗼𝗻 
-
-𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗴𝗲𝘁 𝘁𝗵𝗲𝘀𝗲 𝗯𝘆 𝗴𝘂𝗲𝘀𝘀𝗶𝗻𝗴 
-⚪️ 𝗖𝗼𝗺𝗺𝗼𝗻  
-🟣 𝗥𝗮𝗿𝗲         
-🟡 𝗟𝗲𝗴𝗲𝗻𝗱𝗮𝗿𝘆
-🟢 𝗠𝗲𝗱𝗶𝘂𝗺.    
-💮 𝗠𝘆𝘁𝗵𝗶𝗰
-
-𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗴𝗲𝘁 𝘁𝗵𝗲𝘀𝗲 𝗯𝘆 𝗰𝗼𝗺𝗺𝗮𝗻𝗱 /𝗰𝗵𝗮𝗹𝗹𝗲𝗻𝗴𝗲 
-💪 𝗰𝗵𝗮𝗹𝗹𝗲𝗻𝗴𝗲 𝗲𝗱𝗶𝘁𝗶𝗼𝗻 
-💮 𝗠𝘆𝘁𝗵𝗶𝗰
-
-𝗬𝗼𝘂 𝘄𝗶𝗹𝗹 𝗴𝗲𝘁 𝘁𝗵𝗶𝘀 𝗯𝘆 𝗯𝗶𝗱𝗱𝗶𝗻𝗴 𝗳𝗼𝗿 𝘁𝗵𝗶𝘀 𝗬𝗼𝘂 𝗵𝗮𝘃𝗲 𝘁𝗼 𝗷𝗼𝗶𝗻 𝘀𝘂𝗽𝗽𝗼𝗿𝘁
-
-🫧 𝗔𝘂𝗰𝘁𝗶𝗼𝗻 𝗲𝗱𝗶𝘁𝗶𝗼𝗻***
+        ***/grab: To Guess waifu (only works in group)***
+        ***/marry: To marry a waifu and make it favorite***
+        ***/strade : To trade slaves with other users***
+        ***/sgift: Give any slaves to another user.. (only works in groups)***
+        ***/slaves: To see Your slaves collection***
+        ***/tops: Too See Top coin Users***
+        ***/ctop: To see top character grabbers ***
+        ***/propose: Too propose a random waifu***
+        ***/sinv: To check current token balance***
+        ***/spay: To pay other users from you own balance***
+        ***/changetime: Change slaves appear time (only works in Groups)***
         """
+        user_help_keyboard = [[InlineKeyboardButton("Back", callback_data='help')]]
+        reply_markup = InlineKeyboardMarkup(user_help_keyboard)
+
+        await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=user_help_text, reply_markup=reply_markup, parse_mode='markdown')
+
+    elif query.data == 'games_help':
+        games_help_text = """
+        ***Game Commands:***
+
+        ***/sexplore: To explore and find random loots***
+        ***/scrime: Do random crime ***
+        ***/shunt: To hunt in the wild 💀💀 ***
+        ***/bonus: To claim daily bonus***
+        ***/store: To buy from daily store***
+        ***/mines: To mine some ores***
+        ***/mode: To toggle between safe and war mode***
+        ***/sfight: To fight a user***
+        ***/rps: To play rock paper and scissors ***
+        ***/sbet: To bet some balance***
+        """
+        games_help_keyboard = [[InlineKeyboardButton("Back", callback_data='help')]]
+        reply_markup = InlineKeyboardMarkup(games_help_keyboard)
+
+        await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=games_help_text, reply_markup=reply_markup, parse_mode='markdown')
+
+    elif query.data == 'credits':
+        credits_text = """
+        ***Credits:***
+
+        ᴀ ᴛᴇʟᴇɢʀᴀᴍ ᴘʀɪᴠᴀᴛᴇ ɢᴀᴍᴇ ʙᴏᴛ\n
+        ᴡʀɪᴛᴛᴇɴ ɪɴ ᴩʏᴛʜᴏɴ ᴡɪᴛʜ ᴛʜᴇ ʜᴇʟᴩ ᴏғ [ᴩʏʀᴏɢʀᴀᴍ](https://github.com/pyrogram/pyrogram) [ᴩʏᴛʜᴏɴ-ᴛᴇʟᴇɢʀᴀᴍ-ʙᴏᴛ](https://github.com/python-telegram-bot/python-telegram-bot) ᴀɴᴅ ᴜsɪɴɢ [ᴍᴏɴɢᴏ](https://cloud.mongodb.com) ᴀs ᴅᴀᴛᴀʙᴀsᴇ.
+
+        ʜᴇʀᴇ ᴀʀᴇ ᴍʏ ᴅᴇᴠᴇʟᴏᴘᴇʀꜱ:
+        
+        Δ : [Alpha](https://t.me/ShutupKeshav)
+        Δ : [𝐃𝐞𝐥𝐭𝐚](https://t.me/Notrealgeek)
+        """
+        credits_keyboard = [[InlineKeyboardButton("Back", callback_data='help')]]
+        reply_markup = InlineKeyboardMarkup(credits_keyboard)
+
+        await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=credits_text, reply_markup=reply_markup, parse_mode='markdown')
+
+    elif query.data == 'back':
+        start_text = """
+        ***Hey there! {first_name}***\n
+        ***ɪ ᴀᴍ ꜱʟᴀᴠᴇꜱ ɢʀᴀʙʙᴇʀ ʙᴏᴛ ᴀᴅᴅ ᴍᴇ ɪɴ ʏᴏᴜ'ʀᴇ ɢʀᴏᴜᴘ ᴀɴᴅ ᴛᴀᴘ ᴏɴ ʜᴇʟᴘ ʙᴜᴛᴛᴏɴ ᴛᴏ ꜱᴇᴇ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅS***\n
+        """.format(first_name=update.effective_user.first_name)
+
+        photo_url = random.choice(PHOTO_URL)
         keyboard = [
-            [InlineKeyboardButton("𝐀ᴅᴅ 𝐌ᴇ", url=f'http://t.me/Grabyourcar_bot?startgroup=new')],
-            [InlineKeyboardButton("𝐇ᴇʟᴘ", callback_data='help'),
-             InlineKeyboardButton("𝐒ᴜᴘᴘᴏʀᴛ", url=f'https://t.me/botsupportXD')],
-            [InlineKeyboardButton("𝐎ᴡɴᴇʀ", url=f'https://t.me/ownerxd')],
+            [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f'https://t.me/Grab_Yourslave_bot?startgroup=new')],
+            [InlineKeyboardButton("ᴄʜᴀɴɴᴇʟ", url=f'https://t.me/BotupdateXD'), InlineKeyboardButton("ɢʀᴏᴜᴘ", url=f'{SUPPORT_CHAT}')],
+            [InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'), InlineKeyboardButton("ᴄʀᴇᴅɪᴛꜱ", callback_data='credits')]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=caption, reply_markup=reply_markup, parse_mode='markdown')
+        await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=start_text, reply_markup=reply_markup, parse_mode='markdown')
 
-application.add_handler(CallbackQueryHandler(button, pattern='^help$|^back$', block=False))
-start_handler = CommandHandler('start', start, block=False)
+# application.add_handler(CallbackQueryHandler(button, pattern='^help$|^credits$|^back$|^user_help$|^games_help$'))
+start_handler = CommandHandler('start', start)
 application.add_handler(start_handler)
