@@ -77,46 +77,37 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
             await send_image(update, context)
 
             message_counts[chat_id] = 0
-
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
-
     all_characters = list(await collection.find({}).to_list(length=None))
-
 
     if chat_id not in sent_characters:
         sent_characters[chat_id] = []
 
-
     if len(sent_characters[chat_id]) == len(all_characters):
         sent_characters[chat_id] = []
 
-
     character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
-
 
     sent_characters[chat_id].append(character['id'])
     last_characters[chat_id] = character
 
-
     if chat_id in first_correct_guesses:
         del first_correct_guesses[chat_id]
-    
-keyboard = [[InlineKeyboardButton("Name 🔥", callback_data='name')]]
+
+    keyboard = [[InlineKeyboardButton("Name 🔥", callback_data='name')]]
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"""𝘼 𝙉𝙚𝙬{character['rarity']} 𝘾𝙖𝙧 𝘼𝙥𝙥𝙚𝙖𝙧𝙚𝙙...\n/guess 𝙉𝙖𝙢𝙚 𝙖𝙣𝙙 𝙖𝙙𝙙 𝙞𝙣 𝙔𝙤𝙪𝙧 𝙂𝙖𝙧𝙖𝙜𝙚""",
+        caption=f"""A New {character['rarity']} Car Appeared...\n/guess Name and add in Your Garage""",
         parse_mode='Markdown')
 
 async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     name = last_characters.get(query.message.chat_id, {}).get('car name', 'Unknown car')
-    await query.answer(text=f"The slave name is: {name}", show_alert=True)
+    await query.answer(text=f"The car name is: {name}", show_alert=True)
 
-# In your main function or setup code
-# application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
 
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
