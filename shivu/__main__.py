@@ -110,6 +110,14 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         caption=f"""𝘼 𝙉𝙚𝙬{character['rarity']} 𝘾𝙖𝙧 𝘼𝙥𝙥𝙚𝙖𝙧𝙚𝙙...\n/guess 𝙉𝙖𝙢𝙚 𝙖𝙣𝙙 𝙖𝙙𝙙 𝙞𝙣 𝙔𝙤𝙪𝙧 𝙂𝙖𝙧𝙖𝙜𝙚""",
         parse_mode='Markdown')
 
+async def button_click(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    name = last_characters.get(query.message.chat_id, {}).get('car name', 'Unknown car')
+    await query.answer(text=f"The slave name is: {name}", show_alert=True)
+
+# In your main function or setup code
+# application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
+
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
     user_id = update.effective_user.id
