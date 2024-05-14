@@ -78,6 +78,8 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 
             message_counts[chat_id] = 0
 
+           keyboard = [[InlineKeyboardButton("Name 🔥", callback_data='name')]]
+
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
