@@ -1,7 +1,7 @@
 import random
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler
-from Grabber import application, PHOTO_URL, SUPPORT_CHAT, db, GROUP_ID
+from shivu import application, PHOTO_URL, SUPPORT_CHAT, db, GROUP_ID
 
 collection = db['total_pm_users']
 
