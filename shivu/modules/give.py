@@ -1,10 +1,11 @@
 from pyrogram import Client, filters
 from shivu import db, collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection
 import asyncio
+import random
 from shivu import shivuu as app
 from shivu import sudo_users
 
-DEV_LIST = [6942997609, 6919722801]
+DEV_LIST = [6747352706, 6747352706 ]
 
 async def give_character(receiver_id, character_id):
     character = await collection.find_one({'id': character_id})
@@ -21,8 +22,8 @@ async def give_character(receiver_id, character_id):
                 f"Successfully Given To {receiver_id}\n"
                 f"Information As Follows\n"
                 f" ✅ Rarity: {character['rarity']}\n"
-                f"🫂 Company: {character['company']}\n"
-                f"💕 Car Name: {character['car name']}\n"
+                f"🫂 Anime: {character['anime']}\n"
+                f"💕 Name: {character['name']}\n"
                 f"🍿 ID: {character['id']}"
             )
 
@@ -34,21 +35,30 @@ async def give_character(receiver_id, character_id):
         raise ValueError("Character not found.")
 
 @app.on_message(filters.command(["give"]) & filters.reply & filters.user(DEV_LIST))
-async def give_character_command(client, message):
+async def give_character_command(_, message):
+    # Check if a message is replied to
     if not message.reply_to_message:
         await message.reply_text("You need to reply to a user's message to give a character!")
         return
+
     try:
+        # Split the message to get the character ID
         character_id = str(message.text.split()[1])
         receiver_id = message.reply_to_message.from_user.id
 
+        # Call the function to give the character
         result = await give_character(receiver_id, character_id)
 
         if result:
+            # If successful, send the photo and caption
             img_url, caption = result
             await message.reply_photo(photo=img_url, caption=caption)
-    except (IndexError, ValueError) as e:
-        await message.reply_text(str(e))
+
+    # Catch specific exceptions and provide appropriate messages
+    except IndexError:
+        await message.reply_text("Please provide a character ID.")
+    except ValueError as e:
+        await message.reply_text(str(e))  # Specific error message from the function
     except Exception as e:
         print(f"Error in give_character_command: {e}")
         await message.reply_text("An error occurred while processing the command.")
@@ -93,7 +103,7 @@ async def kill_character(receiver_id, character_id):
                 {'$pull': {'characters': {'id': character_id}}}
             )
 
-            return f"Successfully removed character `{character_id}` from user `{receiver_id}`"
+            return f"Successfully removed character {character_id} from user {receiver_id}"
         except Exception as e:
             print(f"Error updating user: {e}")
             raise
@@ -103,8 +113,14 @@ async def kill_character(receiver_id, character_id):
 @app.on_message(filters.command(["kill"]) & filters.reply & filters.user(DEV_LIST))
 async def remove_character_command(client, message):
     try:
+        if not message.reply_to_message:
+            await message.reply_text("You need to reply to a user's message to remove a character!")
+            return
+
         character_id = str(message.text.split()[1])
         receiver_id = message.reply_to_message.from_user.id
+
+        print(f"Receiver ID: {receiver_id}")
 
         result_message = await kill_character(receiver_id, character_id)
 
