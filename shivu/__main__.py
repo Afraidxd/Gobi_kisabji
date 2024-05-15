@@ -243,6 +243,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    shivu.start()
+    shivuu.start()
     LOGGER.info("lund started")
     main()
