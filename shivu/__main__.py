@@ -113,13 +113,6 @@ async def button_click(update: Update, context: CallbackContext) -> None:
     else:
         await query.answer(text="You don't have sufficient balance.", show_alert=True)
 
-# Create an Updater object with your bot token
-updater = Updater(token='6627459799:AAEiY_xENQUklRGc3OWMmwF6rkNdMPkv4OA', use_context=True)
-
-# Get the dispatcher from the updater
-dispatcher = updater.dispatcher
-
-# Add the callback query handler to the dispatcher
 dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
 
 
