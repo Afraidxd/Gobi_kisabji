@@ -107,15 +107,13 @@ async def button_click(update: Update, context: CallbackContext) -> None:
 
     if user_balance is not None:
         if user_balance >= 1000:
-            # Deduct 1000 tokens from user's balance
             await user_collection.update_one({"chat_id": chat_id}, {"$inc": {"balance": -1000}})
             name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
             await query.answer(text=f"The slave name is: {name}", show_alert=True)
         else:
             await query.answer(text="You don't have sufficient balance.", show_alert=True)
     else:
-        # If the user is not found, add them to the user_collection with an initial balance
-        await user_collection.insert_one({"chat_id": chat_id, "balance": 5000})  # Assuming initial balance is 5000
+        await user_collection.insert_one({"chat_id": chat_id, "balance": 5000})
         name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
         await query.answer(text=f"Welcome, {name}! You've been added to our system with an initial balance.", show_alert=True)
 
@@ -123,7 +121,6 @@ async def get_user_balance(chat_id: int) -> Optional[int]:
     user = await user_collection.find_one({"chat_id": chat_id})
     return user.get("balance") if user else None
 
-# Add the callback query handlers without using dispatcher
 application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
 
 
