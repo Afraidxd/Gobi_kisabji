@@ -118,11 +118,8 @@ async def button_click(update: Update, context: CallbackContext) -> None:
     character_name = query.data  # Assuming query.data contains the character name
     await query.answer(text=f"The slave name is: {character_name}", show_alert=True)
 
-
-
 # In your main function or setup code
 application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
-
 
 
 
