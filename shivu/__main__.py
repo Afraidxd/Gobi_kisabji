@@ -99,7 +99,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-async def button_click(update: Update, context: CallbackContext) -> None:
+async def button_click(update: Update, context: CallbackContext, dispatcher) -> None:
     query = update.callback_query
     chat_id = query.message.chat_id
     user = await user_collection.find_one({"chat_id": chat_id})
@@ -113,7 +113,9 @@ async def button_click(update: Update, context: CallbackContext) -> None:
     else:
         await query.answer(text="You don't have sufficient balance.", show_alert=True)
 
-dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
+    # Add the callback query handler to the dispatcher
+    dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
+
 
 
 async def guess(update: Update, context: CallbackContext) -> None:
@@ -232,6 +234,9 @@ def main() -> None:
     application.add_handler(CommandHandler(["grab"], guess, block=False))
     application.add_handler(CommandHandler("marry", fav, block=False))
     application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
+
+dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^name$', pass_dispatcher=True))
+
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
