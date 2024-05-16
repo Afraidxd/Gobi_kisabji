@@ -114,8 +114,9 @@ async def button_click(update: Update, context: CallbackContext) -> None:
     else:
         await query.answer(text="You don't have sufficient balance.", show_alert=True)
 
-# Add the callback query handler to the dispatcher outside of the function
-dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^name$'), run_async=True)
+# Add the callback query handler without using dispatcher
+updater.dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^name$'), run_async=True)
+
 
 
 
