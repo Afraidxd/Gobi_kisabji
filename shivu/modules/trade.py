@@ -1,207 +1,299 @@
-from pyrogram import filters
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+import importlib
+import time
+import random
+import re
+import asyncio
+from html import escape
 
-from shivu import user_collection, shivuu
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import CommandHandler, CallbackContext, MessageHandler, CallbackQueryHandler, Filters, Updater
 
-pending_trades = {}
+# Assuming these imports and variables are defined elsewhere in your project
+from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu 
+from shivu import application, LOGGER
+from shivu.modules import ALL_MODULES
 
+locks = {}
+message_counters = {}
+spam_counters = {}
+last_characters = {}
+sent_characters = {}
+first_correct_guesses = {}
+message_counts = {}
 
-@shivuu.on_message(filters.command("trade"))
-async def trade(client, message):
-    sender_id = message.from_user.id
+for module_name in ALL_MODULES:
+    imported_module = importlib.import_module("shivu.modules." + module_name)
 
-    if not message.reply_to_message:
-        await message.reply_text("𝐘𝐨𝐮 𝐧𝐞𝐞𝐝 𝐭𝐨 𝐫𝐞𝐩𝐥𝐲 𝐭𝐨 𝐚 𝐮𝐬𝐞𝐫'𝐬 𝐦𝐞𝐬𝐬𝐚𝐠𝐞 𝐭𝐨 𝐭𝐫𝐚𝐝𝐞 𝐚 𝐜𝐚𝐫!")
-        return
+last_user = {}
+warned_users = {}
 
-    receiver_id = message.reply_to_message.from_user.id
+def escape_markdown(text):
+    escape_chars = r'\*_`\\~>#+-=|{}.!'
+    return re.sub(r'([%s])' % re.escape(escape_chars), r'\\\1', text)
 
-    if sender_id == receiver_id:
-        await message.reply_text("𝐘𝐨𝐮 𝐜𝐚𝐧'𝐭 𝐭𝐫𝐚𝐝𝐞 𝐚 𝐜𝐚𝐫 𝐰𝐢𝐭𝐡 𝐲𝐨𝐮𝐫𝐬𝐞𝐥𝐟!")
-        return
+async def message_counter(update: Update, context: CallbackContext) -> None:
+    chat_id = str(update.effective_chat.id)
+    user_id = update.effective_user.id
 
-    if len(message.command) != 3:
-        await message.reply_text("𝐘𝐨𝐮 𝐧𝐞𝐞𝐝 𝐭𝐨 𝐩𝐫𝐨𝐯𝐢𝐝𝐞 𝐭𝐰𝐨 𝐜𝐚𝐫 𝐈𝐃𝐬!")
-        return
+    if chat_id not in locks:
+        locks[chat_id] = asyncio.Lock()
+    lock = locks[chat_id]
 
-    sender_character_id, receiver_character_id = message.command[1], message.command[2]
-
-    sender = await user_collection.find_one({'id': sender_id})
-    receiver = await user_collection.find_one({'id': receiver_id})
-
-    sender_character = next((character for character in sender['characters'] if character['id'] == sender_character_id), None)
-    receiver_character = next((character for character in receiver['characters'] if character['id'] == receiver_character_id), None)
-
-    if not sender_character:
-        await message.reply_text("𝐘𝐨𝐮 𝐝𝐨𝐧'𝐭 𝐡𝐚𝐯𝐞 𝐭𝐡𝐞 𝐜𝐚𝐫 𝐲𝐨𝐮'𝐫𝐞 𝐭𝐫𝐲𝐢𝐧𝐠 𝐭𝐨 𝐭𝐫𝐚𝐝𝐞!")
-        return
-
-    if not receiver_character:
-        await message.reply_text("𝐓𝐡𝐞 𝐨𝐭𝐡𝐞𝐫 𝐮𝐬𝐞𝐫 𝐝𝐨𝐞𝐬𝐧'𝐭 𝐡𝐚𝐯𝐞 𝐭𝐡𝐞 𝐜𝐚𝐫 𝐭𝐡𝐞𝐲'𝐫𝐞 𝐭𝐫𝐲𝐢𝐧𝐠 𝐭𝐨 𝐭𝐫𝐚𝐝𝐞!")
-        return
-
-
-
-
-
-
-    if len(message.command) != 3:
-        await message.reply_text("/trade [Your Character ID] [Other User Character ID]!")
-        return
-
-    sender_character_id, receiver_character_id = message.command[1], message.command[2]
-
-    
-    pending_trades[(sender_id, receiver_id)] = (sender_character_id, receiver_character_id)
-
-    
-    keyboard = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("𝐂𝐨𝐧𝐟𝐢𝐫𝐦 𝐓𝐫𝐚𝐝𝐞", callback_data="confirm_trade")],
-            [InlineKeyboardButton("𝐂𝐚𝐧𝐜𝐞𝐥 𝐓𝐫𝐚𝐝𝐞", callback_data="cancel_trade")]
-        ]
-    )
-
-    await message.reply_text(f"{message.reply_to_message.from_user.mention}, do you accept this trade?", reply_markup=keyboard)
-
-
-@shivuu.on_callback_query(filters.create(lambda _, __, query: query.data in ["confirm_trade", "cancel_trade"]))
-async def on_callback_query(client, callback_query):
-    receiver_id = callback_query.from_user.id
-
-    
-    for (sender_id, _receiver_id), (sender_character_id, receiver_character_id) in pending_trades.items():
-        if _receiver_id == receiver_id:
-            break
-    else:
-        await callback_query.answer("This is not for you!", show_alert=True)
-        return
-
-    if callback_query.data == "confirm_trade":
-        
-        sender = await user_collection.find_one({'id': sender_id})
-        receiver = await user_collection.find_one({'id': receiver_id})
-
-        sender_character = next((character for character in sender['characters'] if character['id'] == sender_character_id), None)
-        receiver_character = next((character for character in receiver['characters'] if character['id'] == receiver_character_id), None)
-
-        
-        
-        sender['characters'].remove(sender_character)
-        receiver['characters'].remove(receiver_character)
-
-        
-        await user_collection.update_one({'id': sender_id}, {'$set': {'characters': sender['characters']}})
-        await user_collection.update_one({'id': receiver_id}, {'$set': {'characters': receiver['characters']}})
-
-        
-        sender['characters'].append(receiver_character)
-        receiver['characters'].append(sender_character)
-
-        
-        await user_collection.update_one({'id': sender_id}, {'$set': {'characters': sender['characters']}})
-        await user_collection.update_one({'id': receiver_id}, {'$set': {'characters': receiver['characters']}})
-
-        
-        del pending_trades[(sender_id, receiver_id)]
-
-        await callback_query.message.edit_text(f"𝐘𝐨𝐮 𝐡𝐚𝐯𝐞 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲 𝐭𝐫𝐚𝐝𝐞𝐝 𝐲𝐨𝐮𝐫 𝐜𝐚𝐫 𝐰𝐢𝐭𝐡 {callback_query.message.reply_to_message.from_user.mention}!")
-
-    elif callback_query.data == "cancel_trade":
-        
-        del pending_trades[(sender_id, receiver_id)]
-
-        await callback_query.message.edit_text("❌️ 𝐒𝐚𝐝 𝐭𝐫𝐚𝐝𝐞 𝐂𝐚𝐧𝐜𝐞𝐥𝐥𝐞𝐝......")
-
-
-
-
-pending_gifts = {}
-
-
-@shivuu.on_message(filters.command("gift"))
-async def gift(client, message):
-    sender_id = message.from_user.id
-
-    if not message.reply_to_message:
-        await message.reply_text("𝐘𝐨𝐮 𝐧𝐞𝐞𝐝 𝐭𝐨 𝐫𝐞𝐩𝐥𝐲 𝐭𝐨 𝐚 𝐮𝐬𝐞𝐫'𝐬 𝐦𝐞𝐬𝐬𝐚𝐠𝐞 𝐭𝐨 𝐠𝐢𝐟𝐭 𝐚 𝐜𝐚𝐫!")
-        return
-
-    receiver_id = message.reply_to_message.from_user.id
-    receiver_username = message.reply_to_message.from_user.username
-    receiver_first_name = message.reply_to_message.from_user.first_name
-
-    if sender_id == receiver_id:
-        await message.reply_text("𝐘𝐨𝐮 𝐜𝐚𝐧'𝐭 𝐠𝐢𝐟𝐭 𝐚 𝐜𝐚𝐫 𝐭𝐨 𝐲𝐨𝐮𝐫𝐬𝐞𝐥𝐟!")
-        return
-
-    if len(message.command) != 2:
-        await message.reply_text("𝐘𝐨𝐮 𝐧𝐞𝐞𝐝 𝐭𝐨 𝐩𝐫𝐨𝐯𝐢𝐝𝐞 𝐚 𝐜𝐚𝐫 𝐈𝐃!")
-        return
-
-    character_id = message.command[1]
-
-    sender = await user_collection.find_one({'id': sender_id})
-
-    character = next((character for character in sender['characters'] if character['id'] == character_id), None)
-
-    if not character:
-        await message.reply_text("𝐘𝐨𝐮 𝐝𝐨𝐧'𝐭 𝐡𝐚𝐯𝐞 𝐭𝐡𝐢𝐬 𝐜𝐚𝐫 𝐢𝐧 𝐲𝐨𝐮𝐫 𝐆𝐚𝐫𝐚𝐠𝐞!")
-        return
-
-    
-    pending_gifts[(sender_id, receiver_id)] = {
-        'character': character,
-        'receiver_username': receiver_username,
-        'receiver_first_name': receiver_first_name
-    }
-
-    
-    keyboard = InlineKeyboardMarkup(
-        [
-            [InlineKeyboardButton("𝐂𝐨𝐧𝐟𝐢𝐫𝐦 𝐆𝐢𝐟𝐭", callback_data="confirm_gift")],
-            [InlineKeyboardButton("𝐂𝐚𝐧𝐜𝐞𝐥 𝐆𝐢𝐟𝐭", callback_data="cancel_gift")]
-        ]
-    )
-
-    await message.reply_text(f"𝐝𝐨 𝐘𝐨𝐮 𝐑𝐞𝐚𝐥𝐥𝐲 𝐖𝐚𝐧𝐧𝐬 𝐓𝐨 𝐆𝐢𝐟𝐭 {message.reply_to_message.from_user.mention} ?", reply_markup=keyboard)
-
-@shivuu.on_callback_query(filters.create(lambda _, __, query: query.data in ["confirm_gift", "cancel_gift"]))
-async def on_callback_query(client, callback_query):
-    sender_id = callback_query.from_user.id
-
-    
-    for (_sender_id, receiver_id), gift in pending_gifts.items():
-        if _sender_id == sender_id:
-            break
-    else:
-        await callback_query.answer("𝐓𝐡𝐢𝐬 𝐢𝐬 𝐧𝐨𝐭 𝐟𝐨𝐫 𝐲𝐨𝐮!", show_alert=True)
-        return
-
-    if callback_query.data == "confirm_gift":
-        
-        sender = await user_collection.find_one({'id': sender_id})
-        receiver = await user_collection.find_one({'id': receiver_id})
-
-        
-        sender['characters'].remove(gift['character'])
-        await user_collection.update_one({'id': sender_id}, {'$set': {'characters': sender['characters']}})
-
-        
-        if receiver:
-            await user_collection.update_one({'id': receiver_id}, {'$push': {'characters': gift['character']}})
+    async with lock:
+        chat_frequency = await user_totals_collection.find_one({'chat_id': chat_id})
+        if chat_frequency:
+            message_frequency = chat_frequency.get('message_frequency', 100)
         else:
-            
+            message_frequency = 100
+
+        if chat_id in last_user and last_user[chat_id]['user_id'] == user_id:
+            last_user[chat_id]['count'] += 1
+            if last_user[chat_id]['count'] >= 10:
+                if user_id in warned_users and time.time() - warned_users[user_id] < 600:
+                    return
+                else:
+                    await update.message.reply_text(
+                        f"⚠️ Don't Spam {update.effective_user.first_name}...\nYour Messages Will be Ignored for 10 Minutes...")
+                    warned_users[user_id] = time.time()
+                    return
+        else:
+            last_user[chat_id] = {'user_id': user_id, 'count': 1}
+
+        if chat_id in message_counts:
+            message_counts[chat_id] += 1
+        else:
+            message_counts[chat_id] = 1
+
+        if message_counts[chat_id] % message_frequency == 0:
+            await send_image(update, context)
+            message_counts[chat_id] = 0
+
+async def send_image(update: Update, context: CallbackContext) -> None:
+    chat_id = update.effective_chat.id
+
+    all_characters = await collection.find({}).to_list(None)
+
+    if chat_id not in sent_characters:
+        sent_characters[chat_id] = []
+
+    if len(sent_characters[chat_id]) == len(all_characters):
+        sent_characters[chat_id] = []
+
+    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
+
+    sent_characters[chat_id].append(character['id'])
+    last_characters[chat_id] = character
+
+    if chat_id in first_correct_guesses:
+        del first_correct_guesses[chat_id]
+
+    keyboard = [[InlineKeyboardButton("Name 🔥", callback_data='name')]]
+
+    await context.bot.send_photo(
+        chat_id=chat_id,
+        photo=character['img_url'],
+        caption=f"A New {character['rarity']} slave Appeared...\n/grab the Name and add it to Your slave list",
+        parse_mode='HTML',
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
+
+async def button_click(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    chat_id = query.message.chat_id
+    name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
+    await query.answer(text=f"The slave name is: {name}", show_alert=True)
+
+async def guess(update: Update, context: CallbackContext) -> None:
+    chat_id = update.effective_chat.id
+    user_id = update.effective_user.id
+
+    if chat_id not in last_characters:
+        return
+
+    if chat_id in first_correct_guesses:
+        await update.message.reply_text(f'❌ 𝘼𝙡𝙧𝙚𝙖𝙙𝙮 𝙜𝙪𝙚𝙨𝙨𝙚𝙙 𝙗𝙮 𝙎𝙤𝙢𝙚𝙤𝙣𝙚 𝙚𝙡𝙨𝙚..')
+        return
+
+    guess = ' '.join(context.args).lower() if context.args else ''
+
+    if "()" in guess or "&" in guess.lower():
+        await update.message.reply_text("𝙉𝙖𝙝𝙝 𝙔𝙤𝙪 𝘾𝙖𝙣'𝙩 𝙪𝙨𝙚 𝙏𝙝𝙞𝙨 𝙏𝙮𝙥𝙚𝙨 𝙤𝙛 𝙬𝙤𝙧𝙙𝙨 ❌️")
+        return
+
+    name_parts = last_characters[chat_id]['name'].lower().split()
+
+    if sorted(name_parts) == sorted(guess.split()) or any(part == guess for part in name_parts):
+        first_correct_guesses[chat_id] = user_id
+
+        user = await user_collection.find_one({'id': user_id})
+        if user:
+            update_fields = {}
+            if hasattr(update.effective_user, 'username') and update.effective_user.username != user.get('username'):
+                update_fields['username'] = update.effective_user.username
+            if update.effective_user.first_name != user.get('first_name'):
+                update_fields['first_name'] = update.effective_user.first_name
+            if update_fields:
+                await user_collection.update_one({'id': user_id}, {'$set': update_fields})
+
+            await user_collection.update_one({'id': user_id}, {'$push': {'characters': last_characters[chat_id]}})
+
+        elif hasattr(update.effective_user, 'username'):
             await user_collection.insert_one({
-                'id': receiver_id,
-                'username': gift['receiver_username'],
-                'first_name': gift['receiver_first_name'],
-                'characters': [gift['character']],
+                'id': user_id,
+                'username': update.effective_user.username,
+                'first_name': update.effective_user.first_name,
+                'characters': [last_characters[chat_id]],
             })
 
-        
-        del pending_gifts[(sender_id, receiver_id)]
+        group_user_total = await group_user_totals_collection.find_one({'user_id': user_id, 'group_id': chat_id})
+        if group_user_total:
+            update_fields = {}
+            if hasattr(update.effective_user, 'username') and update.effective_user.username != group_user_total.get('username'):
+                update_fields['username'] = update.effective_user.username
+            if update.effective_user.first_name != group_user_total.get('first_name'):
+                update_fields['first_name'] = update.effective_user.first_name
+            if update_fields:
+                await group_user_totals_collection.update_one({'user_id': user_id, 'group_id': chat_id}, {'$set': update_fields})
 
-        await callback_query.message.edit_text(f"𝐘𝐨𝐮 𝐡𝐚𝐯𝐞 𝐬𝐮𝐜𝐜𝐞𝐬𝐬𝐟𝐮𝐥𝐥𝐲 𝐠𝐢𝐟𝐭𝐞𝐝 𝐲𝐨𝐮𝐫 𝐜𝐚𝐫 𝐭𝐨 [{gift['receiver_first_name']}](tg://user?id={receiver_id})!")
+            await group_user_totals_collection.update_one({'user_id': user_id, 'group_id': chat_id}, {'$inc': {'count': 1}})
 
+        else:
+            await group_user_totals_collection.insert_one({
+                'user_id': user_id,
+                'group_id': chat_id,
+                'username': update.effective_user.username,
+                'first_name': update.effective_user.first_name,
+                'count': 1,
+            })
 
+        group_info = await top_global_groups_collection.find_one({'group_id': chat_id})
+        if group_info:
+            update_fields = {}
+            if update.effective_chat.title != group_info.get('group_name'):
+                update_fields['group_name'] = update.effective_chat.title
+            if update_fields:
+                await top_global_groups_collection.update_one({'group_id': chat_id}, {'$set': update_fields})
+
+            await top_global_groups_collection.update_one({'group_id': chat_id}, {'$inc': {'count': 1}})
+
+        else:
+            await top_global_groups_collection.insert_one({
+                'group_id': chat_id,
+                'group_name': update.effective_chat.title,
+                'count': 1,
+            })
+
+        keyboard = [[InlineKeyboardButton(f"Slaves 🔥", switch_inline_query_current_chat=f"collection.{user_id}")]]
+        await update.message.reply_text(
+            f'<b><a href="https://justpaste.it/redirect/cia8f/https%3A%2F%2Ftguser%3Fid%3D%7Buser_id%7D">{escape(update.effective_user.first_name)}</a></b> 𝙔𝙤𝙪 𝙂𝙤𝙩 𝙉𝙚𝙬 Slave🫧 \n🌸𝗡𝗔𝗠𝗘: <b>{last_characters[chat_id]["name"]}</b> \n🧩𝘾𝙤𝙢𝙥𝙖𝙣𝙮: <b>{last_characters[chat_id]["anime"]}</b> \n𝗥𝗔𝗜𝗥𝗧𝗬: <b>{last_characters[chat_id]["rarity"]}</b> 🔥 ',
+            parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+    else:
+        await update.message.reply_text(f'❌ 𝙒𝙧𝙤𝙣𝙜 𝙋𝙚𝙧𝙨𝙤𝙣... 𝙏𝙧𝙮 𝘼𝙜𝙖𝙞𝙣.')
+
+async def fav(update: Update, context: CallbackContext) -> None:
+    chat_id = update.effective_chat.id
+    user_id = update.effective_user.id
+
+    if chat_id not in last_characters:
+        return
+
+    if chat_id in first_correct_guesses:
+        await update.message.reply_text(f'❌ 𝘼𝙡𝙧𝙚𝙖𝙙𝙮 𝙂𝙪𝙚𝙨𝙨𝙚𝙙 𝙗𝙮 𝙎𝙤𝙢𝙚𝙤𝙣𝙚 𝙚𝙡𝙨𝙚..')
+        return
+
+    fav = ' '.join(context.args).lower() if context.args else ''
+
+    if "()" in fav or "&" in fav.lower():
+        await update.message.reply_text("𝙉𝙖𝙝𝙝 𝙔𝙤𝙪 𝘾𝙖𝙣'𝙩 𝙪𝙨𝙚 𝙏𝙝𝙞𝙨 𝙏𝙮𝙥𝙚𝙨 𝙤𝙛 𝙬𝙤𝙧𝙙𝙨 ❌️")
+        return
+
+    name_parts = last_characters[chat_id]['name'].lower().split()
+
+    if sorted(name_parts) == sorted(fav.split()) or any(part == fav for part in name_parts):
+        first_correct_guesses[chat_id] = user_id
+
+        user = await user_collection.find_one({'id': user_id})
+        if user:
+            update_fields = {}
+            if hasattr(update.effective_user, 'username') and update.effective_user.username != user.get('username'):
+                update_fields['username'] = update.effective_user.username
+            if update.effective_user.first_name != user.get('first_name'):
+                update_fields['first_name'] = update.effective_user.first_name
+            if update_fields:
+                await user_collection.update_one({'id': user_id}, {'$set': update_fields})
+
+            await user_collection.update_one({'id': user_id}, {'$push': {'fav_characters': last_characters[chat_id]}})
+
+        elif hasattr(update.effective_user, 'username'):
+            await user_collection.insert_one({
+                'id': user_id,
+                'username': update.effective_user.username,
+                'first_name': update.effective_user.first_name,
+                'fav_characters': [last_characters[chat_id]],
+            })
+
+        group_user_total = await group_user_totals_collection.find_one({'user_id': user_id, 'group_id': chat_id})
+        if group_user_total:
+            update_fields = {}
+            if hasattr(update.effective_user, 'username') and update.effective_user.username != group_user_total.get('username'):
+                update_fields['username'] = update.effective_user.username
+            if update.effective_user.first_name != group_user_total.get('first_name'):
+                update_fields['first_name'] = update.effective_user.first_name
+            if update_fields:
+                await group_user_totals_collection.update_one({'user_id': user_id, 'group_id': chat_id}, {'$set': update_fields})
+
+            await group_user_totals_collection.update_one({'user_id': user_id, 'group_id': chat_id}, {'$inc': {'fav_count': 1}})
+
+        else:
+            await group_user_totals_collection.insert_one({
+                'user_id': user_id,
+                'group_id': chat_id,
+                'username': update.effective_user.username,
+                'first_name': update.effective_user.first_name,
+                'fav_count': 1,
+            })
+
+        group_info = await top_global_groups_collection.find_one({'group_id': chat_id})
+        if group_info:
+            update_fields = {}
+            if update.effective_chat.title != group_info.get('group_name'):
+                update_fields['group_name'] = update.effective_chat.title
+            if update_fields:
+                await top_global_groups_collection.update_one({'group_id': chat_id}, {'$set': update_fields})
+
+            await top_global_groups_collection.update_one({'group_id': chat_id}, {'$inc': {'fav_count': 1}})
+
+        else:
+            await top_global_groups_collection.insert_one({
+                'group_id': chat_id,
+                'group_name': update.effective_chat.title,
+                'fav_count': 1,
+            })
+
+        keyboard = [[InlineKeyboardButton(f"Favs 🔥", switch_inline_query_current_chat=f"favcollection.{user_id}")]]
+        await update.message.reply_text(
+            f'<b><a href="https://justpaste.it/redirect/cia8f/https%3A%2F%2Ftguser%3Fid%3D%7Buser_id%7D">{escape(update.effective_user.first_name)}</a></b> 𝙔𝙤𝙪 𝙂𝙤𝙩 𝙉𝙚𝙬 Favorite Slave🫧 \n🌸𝗡𝗔𝗠𝗘: <b>{last_characters[chat_id]["name"]}</b> \n🧩𝘾𝙤𝙢𝙥𝙖𝙣𝙮: <b>{last_characters[chat_id]["anime"]}</b> \n𝗥𝗔𝗜𝗥𝗧𝗬: <b>{last_characters[chat_id]["rarity"]}</b> 🔥 ',
+            parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard)
+        )
+    else:
+        await update.message.reply_text(f'❌ 𝙒𝙧𝙤𝙣𝙜 𝙋𝙚𝙧𝙨𝙤𝙣... 𝙏𝙧𝙮 𝘼𝙜𝙖𝙞𝙣.')
+
+def main() -> None:
+    """Run bot."""
+    updater = Updater("YOUR_API_KEY")  # Replace with your bot's API key
+    dispatcher = updater.dispatcher
+
+    dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
+
+    dispatcher.add_handler(CommandHandler("grab", guess, run_async=True))
+    dispatcher.add_handler(CommandHandler("marry", fav, run_async=True))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, message_counter, run_async=True))
+
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == "__main__":
+    Grabberu.start()
+    LOGGER.info("Bot started")
+    main()
