@@ -111,6 +111,9 @@ async def button_click(update: Update, context: CallbackContext) -> None:
     else:
         await query.answer(text="You don't have sufficient balance.", show_alert=True)
 
+updater.dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
+
+
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
     user_id = update.effective_user.id
