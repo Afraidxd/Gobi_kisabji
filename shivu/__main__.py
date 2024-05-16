@@ -8,6 +8,7 @@ from html import escape
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import Update
 from telegram.ext import Updater, CallbackQueryHandler
+from telegram.ext import CommandHandler, MessageHandler, filters
 
 from telegram.ext import CommandHandler, CallbackContext, MessageHandler, CallbackQueryHandler, filters
 
@@ -231,13 +232,15 @@ async def fav(update: Update, context: CallbackContext) -> None:
 
 def main() -> None:
     """Run bot."""
-    application.add_handler(CommandHandler(["grab"], guess, block=False))
-    application.add_handler(CommandHandler("marry", fav, block=False))
-    application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
+
+application.add_handler(CommandHandler(["grab"], guess, block=False))
+application.add_handler(CommandHandler("marry", fav, block=False))
+application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
 
 dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^name$', pass_dispatcher=True))
 
-    application.run_polling(drop_pending_updates=True)
+application.run_polling(drop_pending_updates=True)
+
 
 if __name__ == "__main__":
     shivuu.start()
