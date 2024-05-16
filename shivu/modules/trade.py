@@ -6,7 +6,7 @@ import asyncio
 from html import escape
 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, MessageHandler, CallbackQueryHandler, Filters, Updater
+from telegram.ext import CommandHandler, CallbackContext, MessageHandler, CallbackQueryHandler,Updater
 
 # Assuming these imports and variables are defined elsewhere in your project
 from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu 
