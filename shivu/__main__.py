@@ -103,10 +103,9 @@ async def send_image(update: Update, context: CallbackContext) -> None:
 async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     chat_id = query.message.chat_id
-    user = await user_collection.find_one({"chat_id": chat_id})
+    user_balance = await get_user_balance(chat_id)
 
-    if user is not None:
-        user_balance = user.get("balance", 0)
+    if user_balance is not None:
         if user_balance >= 1000:
             # Deduct 1000 tokens from user's balance
             await user_collection.update_one({"chat_id": chat_id}, {"$inc": {"balance": -1000}})
@@ -120,7 +119,11 @@ async def button_click(update: Update, context: CallbackContext) -> None:
         name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
         await query.answer(text=f"Welcome, {name}! You've been added to our system with an initial balance.", show_alert=True)
 
-# Add the callback query handler without using dispatcher
+async def get_user_balance(chat_id: int) -> Optional[int]:
+    user = await user_collection.find_one({"chat_id": chat_id})
+    return user.get("balance") if user else None
+
+# Add the callback query handlers without using dispatcher
 application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
 
 
