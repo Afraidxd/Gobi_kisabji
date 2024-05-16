@@ -100,7 +100,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-async def button_click(update: Update, context: CallbackContext, dispatcher) -> None:
+async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     chat_id = query.message.chat_id
     user = await user_collection.find_one({"chat_id": chat_id})
@@ -114,8 +114,8 @@ async def button_click(update: Update, context: CallbackContext, dispatcher) -> 
     else:
         await query.answer(text="You don't have sufficient balance.", show_alert=True)
 
-    # Add the callback query handler to the dispatcher
-    dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
+# Add the callback query handler to the dispatcher outside of the function
+dispatcher.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
 
 
 
