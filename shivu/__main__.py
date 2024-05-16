@@ -105,14 +105,20 @@ async def button_click(update: Update, context: CallbackContext) -> None:
     chat_id = query.message.chat_id
     user = await user_collection.find_one({"chat_id": chat_id})
 
-    if user is not None and user.get("balance", 0) >= 1000:
-        # Deduct 10000 tokens from user's balance
-        await user_collection.update_one({"chat_id": chat_id}, {"$inc": {"balance": -1000}})
-
-        name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
-        await query.answer(text=f"The slave name is: {name}", show_alert=True)
+    if user is not None:
+        user_balance = user.get("balance", 0)
+        print(f"User's balance before deduction: {user_balance}")
+        if user_balance >= 1000:
+            # Deduct 1000 tokens from user's balance
+            await user_collection.update_one({"chat_id": chat_id}, {"$inc": {"balance": -1000}})
+            name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
+            await query.answer(text=f"The slave name is: {name}", show_alert=True)
+            print(f"User's balance after deduction: {user_balance - 1000}")
+        else:
+            await query.answer(text="You don't have sufficient balance.", show_alert=True)
     else:
-        await query.answer(text="You don't have sufficient balance.", show_alert=True)
+        print("User not found in the database.")
+        await query.answer(text="Error: User not found.", show_alert=True)
 
 # Add the callback query handler without using dispatcher
 application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
