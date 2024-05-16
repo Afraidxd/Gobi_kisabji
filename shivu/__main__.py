@@ -22,7 +22,7 @@ first_correct_guesses = {}
 message_counts = {}
 
 for module_name in ALL_MODULES:
-    imported_module = importlib.import_module("Grabber.modules." + module_name)
+    imported_module = importlib.import_module("shivu.modules." + module_name)
 
 last_user = {}
 warned_users = {}
