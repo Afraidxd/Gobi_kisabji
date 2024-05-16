@@ -115,8 +115,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
 
 async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
-    character_name = query.data  # Assuming query.data contains the character name
-    await query.answer(text=f"The slave name is: {character_name}", show_alert=True)
+    await query.answer(text=f"The slave name is: {query.data}", show_alert=True)
 
 # In your main function or setup code
 application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
