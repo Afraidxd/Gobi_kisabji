@@ -99,11 +99,17 @@ async def send_image(update: Update, context: CallbackContext) -> None:
 
 async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
-    name = last_characters.get(query.message.chat_id, {}).get('name', 'Unknown slave')
-    await query.answer(text=f"The slave name is: {name}", show_alert=True)
+    chat_id = query.message.chat_id
+    user = await user_collection.find_one({"chat_id": chat_id})
 
-# In your main function or setup code
-application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
+    if user and user.get("balance", 0) >= 10000:
+        # Deduct 10000 tokens from user's balance
+        await user_collection.update_one({"chat_id": chat_id}, {"$inc": {"balance": -10000}})
+
+        name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
+        await query.answer(text=f"The slave name is: {name}", show_alert=True)
+    else:
+        await query.answer(text="You don't have sufficient balance.", show_alert=True)
 
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
