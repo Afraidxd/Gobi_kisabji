@@ -12,7 +12,6 @@ from telegram.ext import CommandHandler, CallbackContext, MessageHandler, Callba
 from shivu import collection,shivuu, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection
 from shivu import application, LOGGER
 from shivu.modules import ALL_MODULES
-from shivu.modules.ptb_wordle import cwf
 
 locks = {}
 message_counters = {}
