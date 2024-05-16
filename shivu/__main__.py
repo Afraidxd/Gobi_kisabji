@@ -3,15 +3,17 @@ import time
 import random
 import re
 import asyncio
-from html import escape
-
+from html import escape 
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram import Update
-from telegram.ext import CommandHandler,  CallbackContext, MessageHandler, CallbackQueryHandler, filters
+from telegram.ext import CommandHandler, CallbackContext, MessageHandler, filters, CallbackQueryHandler
 
-from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu 
-from shivu import application, LOGGER
+from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu
+from shivu import application, PHOTO_URL, SUPPORT_CHAT, UPDATE_CHAT, BOT_USERNAME, db, GROUP_ID, LOGGER
+from shivu import pm_users as collection 
 from shivu.modules import ALL_MODULES
+
 
 locks = {}
 message_counters = {}
@@ -21,14 +23,14 @@ sent_characters = {}
 first_correct_guesses = {}
 message_counts = {}
 
+
+
 for module_name in ALL_MODULES:
     imported_module = importlib.import_module("shivu.modules." + module_name)
 
 
 last_user = {}
 warned_users = {}
-
-
 def escape_markdown(text):
     escape_chars = r'\*_`\\~>#+-=|{}.!'
     return re.sub(r'([%s])' % re.escape(escape_chars), r'\\\1', text)
@@ -50,6 +52,7 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
         else:
             message_frequency = 100
 
+
         if chat_id in last_user and last_user[chat_id]['user_id'] == user_id:
             last_user[chat_id]['count'] += 1
             if last_user[chat_id]['count'] >= 10:
@@ -58,71 +61,56 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
                     return
                 else:
 
-                    await update.message.reply_text(
-                        f"⚠️ Don't Spam {update.effective_user.first_name}...\nYour Messages Will be Ignored for 10 Minutes...")
+                    await update.message.reply_text(f"⚠️ Don't Spam {update.effective_user.first_name}...\nyour messages will be ignored for 10 minutes...")
                     warned_users[user_id] = time.time()
                     return
         else:
             last_user[chat_id] = {'user_id': user_id, 'count': 1}
+
 
         if chat_id in message_counts:
             message_counts[chat_id] += 1
         else:
             message_counts[chat_id] = 1
 
+
         if message_counts[chat_id] % message_frequency == 0:
             await send_image(update, context)
 
             message_counts[chat_id] = 0
 
-
-
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
+
     all_characters = list(await collection.find({}).to_list(length=None))
+
 
     if chat_id not in sent_characters:
         sent_characters[chat_id] = []
 
+
     if len(sent_characters[chat_id]) == len(all_characters):
         sent_characters[chat_id] = []
 
+
     character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
 
-    print("Selected character's name:", character['name'])  # Debug print
 
     sent_characters[chat_id].append(character['id'])
     last_characters[chat_id] = character
 
-    # Set the name explicitly
-    last_characters[chat_id]['name'] = character['name']
-
-    print("Updated last_characters for chat_id:", chat_id, last_characters[chat_id]) 
 
     if chat_id in first_correct_guesses:
         del first_correct_guesses[chat_id]
 
-    keyboard = [[InlineKeyboardButton("Name 🔥", callback_data='name')]]
 
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"A New {character['rarity']} slave Appeared...\n/grab the Name and add it to Your slave list",
-        parse_mode='HTML',
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-
-async def button_click(update: Update, context: CallbackContext) -> None:
-    query = update.callback_query
-    await query.answer(text=f"The slave name is: {query.data}", show_alert=True)
-
-# In your main function or setup code
-application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
-
-
-
-
+        caption="""A New Character Has Just Appeared Use /guess [name]
+And Add This Character In Your Collection""",
+        parse_mode='Markdown')
 
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
@@ -132,13 +120,13 @@ async def guess(update: Update, context: CallbackContext) -> None:
         return
 
     if chat_id in first_correct_guesses:
-        await update.message.reply_text(f'❌ 𝘼𝙡𝙧𝙚𝙖𝙙𝙮 𝙜𝙪𝙚𝙨𝙨𝙚𝙙 𝙗𝙮 𝙎𝙤𝙢𝙚𝙤𝙣𝙚 𝙚𝙡𝙨𝙚..')
+        await update.message.reply_text(f'❌️ Already guessed by Someone..So Try Next Time Bruhh')
         return
 
     guess = ' '.join(context.args).lower() if context.args else ''
 
     if "()" in guess or "&" in guess.lower():
-        await update.message.reply_text("𝙉𝙖𝙝𝙝 𝙔𝙤𝙪 𝘾𝙖𝙣'𝙩 𝙪𝙨𝙚 𝙏𝙝𝙞𝙨 𝙏𝙮𝙥𝙚𝙨 𝙤𝙛 𝙬𝙤𝙧𝙙𝙨 ❌️")
+        await update.message.reply_text("You can't use '&' in your guess.")
         return
 
 
@@ -211,21 +199,17 @@ async def guess(update: Update, context: CallbackContext) -> None:
             })
 
 
-
-        keyboard = [[InlineKeyboardButton(f"Slaves 🔥", switch_inline_query_current_chat=f"collection.{user_id}")]]
-
-
-        await update.message.reply_text(f'<b><a href="tg://user?id={user_id}">{escape(update.effective_user.first_name)}</a></b> 𝙔𝙤𝙪 𝙂𝙤𝙩 𝙉𝙚𝙬 Slave🫧 \n🌸𝗡𝗔𝗠𝗘: <b>{last_characters[chat_id]["name"]}</b> \n🧩𝘾𝙤𝙢𝙥𝙖𝙣𝙮: <b>{last_characters[chat_id]["anime"]}</b> \n𝗥𝗔𝗜𝗥𝗧𝗬: <b>{last_characters[chat_id]["rarity"]}</b>\n\n⛩ 𝘾𝙝𝙚𝙘𝙠 𝙮𝙤𝙪𝙧 /slaves 𝙉𝙤𝙬', parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard))
+        await update.message.reply_text(f'<b><a href="tg://user?id={user_id}">{update.effective_user.first_name}</a></b> You Got New Character ✅️ \n\nCharacter name: <b>{last_characters[chat_id]["name"]}</b> \nAnime: <b>{last_characters[chat_id]["anime"]}</b> \nRairty: <b>{last_characters[chat_id]["rarity"]}</b>\n\nThis character has been added to your harem now do /collection to check your new character', parse_mode='HTML')
 
     else:
-        await update.message.reply_text('𝙋𝙡𝙚𝙖𝙨𝙚 𝙒𝙧𝙞𝙩𝙚 𝘾𝙤𝙧𝙧𝙚𝙘𝙩 𝙉𝙖𝙢𝙚... ❌️')
+        await update.message.reply_text('Incorrect Name.. ❌️')
 
 async def fav(update: Update, context: CallbackContext) -> None:
     user_id = update.effective_user.id
 
 
     if not context.args:
-        await update.message.reply_text('𝙋𝙡𝙚𝙖𝙨𝙚 𝙥𝙧𝙤𝙫𝙞𝙙𝙚 Slave 𝙞𝙙...')
+        await update.message.reply_text('Please provide a character ID.')
         return
 
     character_id = context.args[0]
@@ -233,13 +217,13 @@ async def fav(update: Update, context: CallbackContext) -> None:
 
     user = await user_collection.find_one({'id': user_id})
     if not user:
-        await update.message.reply_text('𝙔𝙤𝙪 𝙝𝙖𝙫𝙚 𝙣𝙤𝙩 𝙂𝙤𝙩 𝘼𝙣𝙮 Slave 𝙮𝙚𝙩...')
+        await update.message.reply_text('You have not guessed any characters yet.')
         return
 
 
     character = next((c for c in user['characters'] if c['id'] == character_id), None)
     if not character:
-        await update.message.reply_text('𝙏𝙝𝙞𝙨 slave 𝙞𝙨 𝙉𝙤𝙩 𝙄𝙣 𝙮𝙤𝙪𝙧 list')
+        await update.message.reply_text('This character is not in your collection.')
         return
 
 
@@ -248,18 +232,18 @@ async def fav(update: Update, context: CallbackContext) -> None:
 
     await user_collection.update_one({'id': user_id}, {'$set': {'favorites': user['favorites']}})
 
-    await update.message.reply_text(f'🥳slave {character["name"]} is your favorite 𝙣𝙤𝙬...')
+    await update.message.reply_text(f'Character {character["name"]} has been added to your favorites.')
 
 
 def main() -> None:
     """Run bot."""
 
-    application.add_handler(CommandHandler(["grab"], guess, block=False))
-    application.add_handler(CommandHandler("marry", fav, block=False))
+
+    application.add_handler(CommandHandler(["guess", "protecc", "collect", "grab", "hunt"], guess, block=False))
+    application.add_handler(CommandHandler("fav", fav, block=False))
     application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     shivuu.start()
-    LOGGER.info("Aaji lund mera")
     main()
