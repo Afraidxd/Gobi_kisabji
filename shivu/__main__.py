@@ -105,9 +105,9 @@ async def button_click(update: Update, context: CallbackContext) -> None:
     chat_id = query.message.chat_id
     user = await user_collection.find_one({"chat_id": chat_id})
 
-    if user and user.get("balance", 0) >= 10000:
+    if user and user.get("balance", 0) >= 1000:
         # Deduct 10000 tokens from user's balance
-        await user_collection.update_one({"chat_id": chat_id}, {"$inc": {"balance": -10000}})
+        await user_collection.update_one({"chat_id": chat_id}, {"$inc": {"balance": -1000}})
 
         name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
         await query.answer(text=f"The slave name is: {name}", show_alert=True)
