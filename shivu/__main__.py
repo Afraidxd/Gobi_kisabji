@@ -120,7 +120,7 @@ async def button_click(update: Update, context: CallbackContext) -> None:
             await query.answer(text="You don't have sufficient balance.", show_alert=True)
     else:
         await user_collection.insert_one({"id": user_id, "balance": 5000})
-        name = last_characters.get(user_id, {}).get('name', 'Unknown slave')
+            name = last_characters.get(query.message.chat_id, {}).get('name', 'Unknown slave')
         await query.answer(text=f"Welcome, {name}! You've been added to our system with an initial balance.", show_alert=True)
 
 async def get_user_balance(user_id: int) -> int:
