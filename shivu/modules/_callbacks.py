@@ -1,4 +1,4 @@
-from Grabber import application
+from shivu import application
 from telegram.ext import CallbackQueryHandler, CommandHandler
 from telegram import Update
 
