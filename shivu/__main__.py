@@ -1,263 +1,176 @@
-import importlib
-import time
 import random
-import re
-import asyncio
-from html import escape
+from datetime import datetime as dt
 
-from typing import Optional
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import Update
-from telegram.ext import Updater, CallbackQueryHandler
-from telegram.ext import CommandHandler, MessageHandler, filters
+from telegram import InlineKeyboardButton as IKB, InlineKeyboardMarkup as IKM, InputMediaPhoto as IMP, Update
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler
 
-from telegram.ext import CommandHandler, CallbackContext, MessageHandler, CallbackQueryHandler, filters
+from shivu import db, collection, user_collection
 
-from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu 
-from shivu import application, LOGGER
-from shivu.modules import ALL_MODULES
+# Database setup
+sdb = db.new_store
+user_db = db.bought
 
-locks = {}
-message_counters = {}
-spam_counters = {}
-last_characters = {}
-sent_characters = {}
-first_correct_guesses = {}
-message_counts = {}
+# Helper functions
+async def set_today_characters(user_id: int, data):
+    await sdb.update_one({"user_id": user_id}, {"$set": {"data": data}}, upsert=True)
 
-for module_name in ALL_MODULES:
-    imported_module = importlib.import_module("shivu.modules." + module_name)
+async def get_today_characters(user_id: int):
+    x = await sdb.find_one({"user_id": user_id})
+    return x["data"] if x else None
 
-last_user = {}
-warned_users = {}
+async def clear_today(user_id):
+    await sdb.delete_one({'user_id': user_id})
 
-def escape_markdown(text):
-    escape_chars = r'\*_`\\~>#+-=|{}.!'
-    return re.sub(r'([%s])' % re.escape(escape_chars), r'\\\1', text)
+async def get_image_and_caption(id: int):
+    char = await get_character(id)
+    form = '𝙉𝘼𝙈𝙀 : {}\n\n𝘼𝙉𝙄𝙈𝙀 : {}\n\n🆔: {}\n\n𝙋𝙍𝙄𝘾𝙀 : {} coins\n'
+    return char['img_url'], form.format(char['name'], char['anime'], char['id'], char['price'])
 
-async def message_counter(update: Update, context: CallbackContext) -> None:
-    chat_id = str(update.effective_chat.id)
-    user_id = update.effective_user.id
+def today():
+    return str(dt.now()).split()[0]
 
-    if chat_id not in locks:
-        locks[chat_id] = asyncio.Lock()
-    lock = locks[chat_id]
+def get_time():
+    time_now = str(dt.now()).split()[1].split(":")
+    return int(time_now[0]), int(time_now[1])
 
-    async with lock:
-        chat_frequency = await user_totals_collection.find_one({'chat_id': chat_id})
-        if chat_frequency:
-            message_frequency = chat_frequency.get('message_frequency', 100)
-        else:
-            message_frequency = 100
+async def get_character(id: int):
+    return await collection.find_one({'id': id})
 
-        if chat_id in last_user and last_user[chat_id]['user_id'] == user_id:
-            last_user[chat_id]['count'] += 1
-            if last_user[chat_id]['count'] >= 10:
-                if user_id in warned_users and time.time() - warned_users[user_id] < 600:
-                    return
-                else:
-                    await update.message.reply_text(
-                        f"⚠️ Don't Spam {update.effective_user.first_name}...\nYour Messages Will be Ignored for 10 Minutes...")
-                    warned_users[user_id] = time.time()
-                    return
-        else:
-            last_user[chat_id] = {'user_id': user_id, 'count': 1}
+async def get_character_ids() -> list:
+    all_characters = await collection.find({}).to_list(length=None)
+    return [x['id'] for x in all_characters]
 
-        if chat_id in message_counts:
-            message_counts[chat_id] += 1
-        else:
-            message_counts[chat_id] = 1
+async def update_user_bought(user_id: int, data):
+    await user_db.update_one({"user_id": user_id}, {"$set": {"data": data}}, upsert=True)
 
-        if message_counts[chat_id] % message_frequency == 0:
-            await send_image(update, context)
-            message_counts[chat_id] = 0
+async def get_user_bought(user_id: int):
+    x = await user_db.find_one({"user_id": user_id})
+    return x["data"] if x else None
 
-async def send_image(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id
+# Command handler for /store
+async def shop(update: Update, context: CallbackContext):
+    user_id = update.message.from_user.id
+    x = await get_today_characters(user_id)
 
-    all_characters = list(await collection.find({}).to_list(length=None))
+    if not x or x[0] != today():
+        ids = await get_character_ids()
+        ch_ids = random.sample(ids, 3)
+        await set_today_characters(user_id, [today(), ch_ids])
+    else:
+        ch_ids = x[1]
 
-    if chat_id not in sent_characters:
-        sent_characters[chat_id] = []
+    ch_info = [await get_character(cid) for cid in ch_ids]
+    photo, caption = await get_image_and_caption(ch_ids[0])
 
-    if len(sent_characters[chat_id]) == len(all_characters):
-        sent_characters[chat_id] = []
+    markup = IKM([
+        [IKB("⬅️", callback_data=f"pg3_{user_id}"), IKB("buy 🔖", callback_data=f"buya_{user_id}"), IKB("➡️", callback_data=f"pg2_{user_id}")],
+        [IKB("close 🗑️", callback_data=f"saleslist:close_{user_id}")]
+    ])
 
-    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
+    await update.message.reply_photo(photo, caption=f"__PAGE 1__\n\n{caption}", reply_markup=markup)
 
-    sent_characters[chat_id].append(character['id'])
-    last_characters[chat_id] = character
-
-    if chat_id in first_correct_guesses:
-        del first_correct_guesses[chat_id]
-
-    keyboard = [[InlineKeyboardButton("ɴᴀᴍᴇ 🔥", callback_data='name')]]
-
-    await context.bot.send_photo(
-        chat_id=chat_id,
-        photo=character['img_url'],
-        caption=f"ᴀ ɴᴇᴡ ᴄᴀʀ ᴀᴘᴘᴇᴀʀ {character['rarity']} ᴜsᴇ /guess (ɴᴀᴍᴇ) ᴀɴᴅ ᴍᴀᴋᴇ ɪᴛ ʏᴏᴜʀs \n\n⚠️ ɴᴏᴛᴇ ᴡʜᴇɴ ʏᴏᴜ ᴄʟɪᴄᴋ ᴏɴ ɴᴀᴍᴇ ʙᴜᴛᴛᴏɴ ʙᴏᴛ ᴡɪʟʟ ᴅᴇᴅᴜᴄᴛ 10ᴋ ᴄᴏɪɴ ᴇᴠᴇʀʏᴛɪᴍᴇ",
-        parse_mode='HTML',
-        reply_markup=InlineKeyboardMarkup(keyboard)
-    )
-
-
-
-
-
-async def button_click(update: Update, context: CallbackContext) -> None:
+# Callback query handler
+async def store_callback_handler(update: Update, context: CallbackContext):
     query = update.callback_query
+    query_data = query.data
+    spl = query_data.split('_')
+    origin = int(spl[1])
     user_id = query.from_user.id
-    chat_id = query.message.chat_id
-
-    # Get user balance
-    user_balance = await get_user_balance(user_id)
-
-    if user_balance is not None:
-        if user_balance >= 1000:
-            await user_collection.update_one({"id": user_id}, {"$inc": {"balance": -1000}})
-            name = last_characters.get(chat_id, {}).get('name', 'Unknown car')
-            await query.answer(text=f"ᴛʜᴇ ᴄᴀʀ ɴᴀᴍᴇ ɪs: {name}", show_alert=True)
-        else:
-            await query.answer(text="ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ sᴜғғɪᴄɪᴇɴᴛ ʙᴀʟᴀɴᴄᴇ.", show_alert=True)
-    else:
-        await user_collection.insert_one({"id": user_id, "balance": 5000})
-        name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
-        await query.answer(text=f"ᴡᴇʟᴄᴏᴍᴇ, ᴜsᴇʀ ! ʏᴏᴜ'ᴠᴇ ʙᴇᴇɴ ᴀᴅᴅᴇᴅ ᴛᴏ ᴏᴜʀ sʏsᴛᴇᴍ ᴡɪᴛʜ ᴀɴ ɪɴɪᴛɪᴀʟ ʙᴀʟᴀɴᴄᴇ ᴏғ 50ᴋ", show_alert=True)
-
-async def get_user_balance(user_id: int) -> int:
-    user = await user_collection.find_one({"id": user_id})
-    return user.get("balance") if user else None
-
-application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
-
-
-
-
-
-
-
-async def guess(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id
-    user_id = update.effective_user.id
-
-    if chat_id not in last_characters:
-        return
-
-    if chat_id in first_correct_guesses:
-        await update.message.reply_text(f'❌ 𝘼𝙡𝙧𝙚𝙖𝙙𝙮 𝙜𝙪𝙚𝙨𝙨𝙚𝙙 𝙗𝙮 𝙎𝙤𝙢𝙚𝙤𝙣𝙚 𝙚𝙡𝙨𝙚..')
-        return
-
-    guess = ' '.join(context.args).lower() if context.args else ''
-
-    if "()" in guess or "&" in guess.lower():
-        await update.message.reply_text("𝙉𝙖𝙝𝙝 𝙔𝙤𝙪 𝘾𝙖𝙣'𝙩 𝙪𝙨𝙚 𝙏𝙝𝙞𝙨 𝙏𝙮𝙥𝙚𝙨 𝙤𝙛 𝙬𝙤𝙧𝙙𝙨 ❌️")
-        return
-
-    name_parts = last_characters[chat_id]['name'].lower().split()
-
-    if sorted(name_parts) == sorted(guess.split()) or any(part == guess for part in name_parts):
-        first_correct_guesses[chat_id] = user_id
-
-        user = await user_collection.find_one({'id': user_id})
-        if user:
-            update_fields = {}
-            if hasattr(update.effective_user, 'username') and update.effective_user.username != user.get('username'):
-                update_fields['username'] = update.effective_user.username
-            if update.effective_user.first_name != user.get('first_name'):
-                update_fields['first_name'] = update.effective_user.first_name
-            if update_fields:
-                await user_collection.update_one({'id': user_id}, {'$set': update_fields})
-
-            await user_collection.update_one({'id': user_id}, {'$push': {'characters': last_characters[chat_id]}})
-
-        elif hasattr(update.effective_user, 'username'):
-            await user_collection.insert_one({
-                'id': user_id,
-                'username': update.effective_user.username,
-                'first_name': update.effective_user.first_name,
-                'characters': [last_characters[chat_id]],
-            })
-
-        group_user_total = await group_user_totals_collection.find_one({'user_id': user_id, 'group_id': chat_id})
-        if group_user_total:
-            update_fields = {}
-            if hasattr(update.effective_user, 'username') and update.effective_user.username != group_user_total.get('username'):
-                update_fields['username'] = update.effective_user.username
-            if update.effective_user.first_name != group_user_total.get('first_name'):
-                update_fields['first_name'] = update.effective_user.first_name
-            if update_fields:
-                await group_user_totals_collection.update_one({'user_id': user_id, 'group_id': chat_id}, {'$set': update_fields})
-
-            await group_user_totals_collection.update_one({'user_id': user_id, 'group_id': chat_id}, {'$inc': {'count': 1}})
-
-        else:
-            await group_user_totals_collection.insert_one({
-                'user_id': user_id,
-                'group_id': chat_id,
-                'username': update.effective_user.username,
-                'first_name': update.effective_user.first_name,
-                'count': 1,
-            })
-
-        group_info = await top_global_groups_collection.find_one({'group_id': chat_id})
-        if group_info:
-            update_fields = {}
-            if update.effective_chat.title != group_info.get('group_name'):
-                update_fields['group_name'] = update.effective_chat.title
-            if update_fields:
-                await top_global_groups_collection.update_one({'group_id': chat_id}, {'$set': update_fields})
-
-            await top_global_groups_collection.update_one({'group_id': chat_id}, {'$inc': {'count': 1}})
-
-        else:
-            await top_global_groups_collection.insert_one({
-                'group_id': chat_id,
-                'group_name': update.effective_chat.title,
-                'count': 1,
-            })
-
-        keyboard = [[InlineKeyboardButton(f"Slaves 🔥", switch_inline_query_current_chat=f"collection.{user_id}")]]
-        await update.message.reply_text(f'<b><a href="https://justpaste.it/redirect/cia8f/https%3A%2F%2Ftguser%3Fid%3D%7Buser_id%7D">{escape(update.effective_user.first_name)}</a></b> 𝙔𝙤𝙪 𝙂𝙤𝙩 𝙉𝙚𝙬 Slave🫧 \n🌸𝗡𝗔𝗠𝗘: <b>{last_characters[chat_id]["name"]}</b> \n🧩𝘾𝙤𝙢𝙥𝙖𝙣𝙮: <b>{last_characters[chat_id]["anime"]}</b> \n𝗥𝗔𝗜𝗥𝗧𝗬: <b>{last_characters[chat_id]["rarity"]}</b>\n\n⛩ 𝘾𝙝𝙚𝙘𝙠 𝙮𝙤𝙪𝙧 /slaves 𝙉𝙤𝙬', parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard))
-
-    else:
-        await update.message.reply_text('𝙋𝙡𝙚𝙖𝙨𝙚 𝙒𝙧𝙞𝙩𝙚 𝘾𝙤𝙧𝙧𝙚𝙘𝙩 𝙉𝙖𝙢𝙚... ❌️')
-
-async def fav(update: Update, context: CallbackContext) -> None:
-    user_id = update.effective_user.id
-
-    if not context.args:
-        await update.message.reply_text('𝙋𝙡𝙚𝙖𝙨𝙚 𝙥𝙧𝙤𝙫𝙞𝙙𝙚 𝗖𝗮𝗿 𝙞𝙙...')
-        return
-
-    character_id = context.args[0]
 
     user = await user_collection.find_one({'id': user_id})
-    if not user:
-        await update.message.reply_text('𝙔𝙤𝙪 𝙝𝙖𝙫𝙚 𝙣𝙤𝙩 𝙂𝙤𝙩 𝘼𝙣𝙮 𝗖𝗮𝗿 𝙮𝙚𝙩...')
-        return
+    if not user or origin != user_id:
+        return await query.answer("This is not for you baka.", show_alert=True)
 
-    character = next((c for c in user['characters'] if c['id'] == character_id), None)
-    if not character:
-        await update.message.reply_text('ᴛʜɪs ᴄᴀʀ ɪs ɴᴏᴛ ɪɴ ʏᴏᴜʀ ᴄᴏʟʟᴇᴄᴛɪᴏɴ')
-        return
+    if query_data.startswith("buy"):
+        await handle_buy(query, spl[0], origin, user_id)
+    elif query_data.startswith("pg"):
+        await handle_page(query, int(query_data[2]), origin, user_id)
+    elif query_data.startswith("charcnf/"):
+        await handle_char_confirm(query, spl[0].split("/")[1], user_id)
+    elif query_data.startswith("charback/"):
+        await handle_char_back(query, spl[0].split("/")[1], user_id)
+    elif query_data == 'terminate':
+        await terminate(update, context)
+    elif query_data == 'startwordle':
+        await start_ag(update, context)
 
-    user['favorites'] = [character_id]
+async def handle_buy(query, buy_type, origin, user_id):
+    char_index = "abc".index(buy_type[-1])
+    y = await get_today_characters(origin)
+    char = y[1][char_index]
+    bought = await get_user_bought(user_id)
 
-    await user_collection.update_one({'id': user_id}, {'$set': {'favorites': user['favorites']}})
+    if bought and bought[0] == today() and char in bought[1]:
+        return await query.answer("You've already bought this character!", show_alert=True)
 
-    await update.message.reply_text(f'🥳 ᴄᴀʀ {character["name"]} ɪs ʏᴏᴜʀ ғᴀᴠᴏʀɪᴛᴇ ɴᴏᴡ...')
+    await query.answer()
+    await query.edit_message_caption(
+        f"{query.message.caption}\n\n__Click on button below to purchase!__",
+        reply_markup=IKM([
+            [IKB("purchase 💵", callback_data=f"charcnf/{char}_{user_id}")],
+            [IKB("back 🔙", callback_data=f"charback/{char}_{user_id}")]
+        ])
+    )
 
-def main() -> None:
-    """Run bot."""
+async def handle_page(query, page, origin, user_id):
+    if str(query.message.date).split()[0] != today():
+        return await query.answer("Query expired, use /store to continue!", show_alert=True)
 
-    application.add_handler(CommandHandler(["guess"], guess, block=False))
-    application.add_handler(CommandHandler(["favorite"], fav, block=False))
-    application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
-    application.run_polling(drop_pending_updates=True)
+    await query.answer()
+    y = await get_today_characters(origin)
+    char = y[1][page - 1]
+    photo, caption = await get_image_and_caption(char)
+    nav_buttons = ["pg1", "pg2", "pg3", 'pg1']
+    buy_buttons = ["buya", "buyb", "buyc", 'buya']
 
+    await query.edit_message_media(
+        media=IMP(photo, caption=f"__PAGE {page}__\n\n{caption}"),
+        reply_markup=IKM([
+            [IKB("⬅️", callback_data=f"{nav_buttons[page-2]}_{user_id}"), IKB("buy 🔖", callback_data=f"{buy_buttons[page-1]}_{user_id}"), IKB("➡️", callback_data=f"{nav_buttons[page]}_{user_id}")],
+            [IKB("close 🗑️", callback_data=f"saleslist:close_{user_id}")]
+        ])
+    )
 
-if __name__ == "__main__":
-    shivuu.start()
-    LOGGER.info("Bot started")
-    main()
+async def handle_char_confirm(query, char, user_id):
+    det = await get_character(char)
+    user = await user_collection.find_one({'id': user_id})
+    if det['price'] > user['balance']:
+        return await query.answer("You do not have enough coins", show_alert=True)
+
+    bought = await get_user_bought(user_id)
+    if bought and bought[0] == today() and char in bought[1]:
+        return await query.answer("You've already bought it!", show_alert=True)
+
+    await query.edit_message_caption(
+        f"__You've successfully purchased {det['name']} for {det['price']} 🔖.__",
+        reply_markup=IKM([[IKB("back 🔙", callback_data=f"charback/{char}_{user_id}")]])
+    )
+
+    new_bought = bought[1] if bought and bought[0] == today() else []
+    new_bought.append(char)
+    await update_user_bought(user_id, [today(), new_bought])
+    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -det['price']}})
+    await user_collection.update_one({'id': user_id}, {'$addToSet': {'characters': det}})
+    await query.answer("Character bought successfully!", show_alert=True)
+
+async def handle_char_back(query, char, user_id):
+    await query.answer()
+    y = await get_today_characters(user_id)
+    ch_ids = y[1]
+    ind = ch_ids.index(char) + 1
+    nav_buttons = {1: [3, 2], 2: [1, 3], 3: [2, 1]}
+    buy_buttons = {1: "a", 2: "b", 3: "c"}
+
+    photo, caption = await get_image_and_caption(char)
+    await query.edit_message_caption(
+        f"__PAGE {ind}__\n\n{caption}",
+        reply_markup=IKM([
+            [IKB("⬅️", callback_data=f"pg{nav_buttons[ind][0]}_{user_id}"), IKB("buy 🔖", callback_data=f"buy{buy_buttons[ind]}_{user_id}"), IKB("➡️", callback_data=f"pg{nav_buttons[ind][1]}_{user_id}")],
+            [IKB("close 🗑️", callback_data=f"saleslist:close_{user_id}")]
+        ])
+    )
+
+# Register handlers
+def register_handlers(application):
+    application.add_handler(CommandHandler("store", shop))
+    application.add_handler(CallbackQueryHandler(store_callback_handler))
