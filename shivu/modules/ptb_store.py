@@ -1,9 +1,10 @@
-from telegram import Update, InlineKeyboardButton as IKB, InlineKeyboardMarkup as IKM, InputMediaPhoto as IMP
-from telegram.ext import CommandHandler, CallbackContext
-from datetime import datetime as dt
 import random
-from shivu import application, db, collection, user_collection
-from .ptb_wordle import start_ag, terminate
+from datetime import datetime as dt
+
+from telegram import InlineKeyboardButton as IKB, InlineKeyboardMarkup as IKM, InputMediaPhoto as IMP, Update
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler
+
+from shivu import db, collection, user_collection
 
 # Database setup
 sdb = db.new_store
@@ -169,4 +170,7 @@ async def handle_char_back(query, char, user_id):
         ])
     )
 
-application.add_handler(CommandHandler("store", shop))
+# Register handlers
+def register_handlers(application):
+    application.add_handler(CommandHandler("store", shop))
+    application.add_handler(CallbackQueryHandler(store_callback_handler))
