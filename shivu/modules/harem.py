@@ -1,6 +1,6 @@
 import random
 import math
-from html import escape 
+from html import escape
 from itertools import groupby
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler
@@ -20,10 +20,10 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
     characters = sorted(user['characters'], key=lambda x: (x['anime'], x['id']))
     character_counts = {k: len(list(v)) for k, v in groupby(characters, key=lambda x: x['id'])}
     unique_characters = list({character['id']: character for character in characters}.values())
-    total_pages = math.ceil(len(unique_characters) / 7)  
+    total_pages = math.ceil(len(unique_characters) / 7)
 
     if page < 0 or page >= total_pages:
-        page = 0  
+        page = 0
 
     harem_message = f"ᴘᴀɢᴇ  {page+1}/{total_pages}\n\n"
 
@@ -41,7 +41,7 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
     total_count = len(user['characters'])
 
     keyboard = [[InlineKeyboardButton(f"ɪɴʟɪɴᴇ ({total_count})", switch_inline_query_current_chat=f"collection.{user_id}")]]
-
+    
     if total_pages > 1:
         nav_buttons = []
         if page > 0:
@@ -118,3 +118,5 @@ async def harem_callback(update: Update, context: CallbackContext) -> None:
     await harem(update, context, page)
 
 application.add_handler(CommandHandler(["collection"], harem, block=False))
+application.add_handler(CallbackQueryHandler(harem_callback, pattern="^harem:"))
+application.add_handler(CallbackQueryHandler(harem_callback, pattern="^saleslist:close_"))
