@@ -74,5 +74,4 @@ async def shop(update, context):
 
 # Register the new /shop command handler
 shop_handler = CommandHandler("store", shop, block=False)
-application.add_handler(shop_handler)
-***
+application.add_handler(shop_handler)***
