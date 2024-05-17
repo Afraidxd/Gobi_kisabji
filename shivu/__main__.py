@@ -96,7 +96,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"ᴀ ɴᴇᴡ  {character['rarity']} ᴜsᴇ /ɢᴜᴇss (ɴᴀᴍᴇ)ᴀɴᴅ ᴍᴀᴋᴇ ɪᴛ ʏᴏᴜʀs \n/ɴᴏᴛᴇ ᴡʜᴇɴ ʏᴏᴜ ᴄʟɪᴄᴋ ᴏɴ ɴᴀᴍᴇ ʙᴜᴛᴛᴏɴ ʙᴏᴛ ᴡɪʟʟ ᴅᴇᴅᴜᴄᴛ 10ᴋ ᴄᴏɪɴ ᴇᴠᴇʀʏᴛɪᴍᴇ",
+        caption=f"ᴀ ɴᴇᴡ  {character['rarity']} ᴜsᴇ /guess (ɴᴀᴍᴇ) ᴀɴᴅ ᴍᴀᴋᴇ ɪᴛ ʏᴏᴜʀs \n\n⚠️ ɴᴏᴛᴇ ᴡʜᴇɴ ʏᴏᴜ ᴄʟɪᴄᴋ ᴏɴ ɴᴀᴍᴇ ʙᴜᴛᴛᴏɴ ʙᴏᴛ ᴡɪʟʟ ᴅᴇᴅᴜᴄᴛ 10ᴋ ᴄᴏɪɴ ᴇᴠᴇʀʏᴛɪᴍᴇ",
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
