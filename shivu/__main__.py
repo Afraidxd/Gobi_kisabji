@@ -116,7 +116,7 @@ async def button_click(update: Update, context: CallbackContext) -> None:
     if user_balance is not None:
         if user_balance >= 1000:
             await user_collection.update_one({"id": user_id}, {"$inc": {"balance": -1000}})
-            name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
+            name = last_characters.get(chat_id, {}).get('name', 'Unknown car')
             await query.answer(text=f"ᴛʜᴇ ᴄᴀʀ ɴᴀᴍᴇ ɪs: {name}", show_alert=True)
         else:
             await query.answer(text="ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ sᴜғғɪᴄɪᴇɴᴛ ʙᴀʟᴀɴᴄᴇ.", show_alert=True)
