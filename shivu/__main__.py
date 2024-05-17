@@ -119,7 +119,7 @@ async def button_click(update: Update, context: CallbackContext) -> None:
             name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
             await query.answer(text=f"ᴛʜᴇ ᴄᴀʀ ɴᴀᴍᴇ ɪs: {name}", show_alert=True)
         else:
-            await query.answer(text="You don't have sufficient balance.", show_alert=True)
+            await query.answer(text="ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ sᴜғғɪᴄɪᴇɴᴛ ʙᴀʟᴀɴᴄᴇ.", show_alert=True)
     else:
         await user_collection.insert_one({"id": user_id, "balance": 5000})
         name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
