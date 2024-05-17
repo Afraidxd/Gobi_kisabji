@@ -101,28 +101,34 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
+
+
+
 async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
-    chat_id = query.message.chat_id
-    user_balance = await get_user_balance(chat_id)
+    user_id = query.from_user.id
+
+    # Get user balance
+    user_balance = await get_user_balance(user_id)
 
     if user_balance is not None:
         if user_balance >= 1000:
-            await user_collection.update_one({"chat_id": chat_id}, {"$inc": {"balance": -1000}})
-            name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
+            await user_collection.update_one({"id": user_id}, {"$inc": {"balance": -1000}})
+            name = last_characters.get(user_id, {}).get('name', 'Unknown slave')
             await query.answer(text=f"The slave name is: {name}", show_alert=True)
         else:
             await query.answer(text="You don't have sufficient balance.", show_alert=True)
     else:
-        await user_collection.insert_one({"chat_id": chat_id, "balance": 5000})
-        name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
+        await user_collection.insert_one({"id": user_id, "balance": 5000})
+        name = last_characters.get(user_id, {}).get('name', 'Unknown slave')
         await query.answer(text=f"Welcome, {name}! You've been added to our system with an initial balance.", show_alert=True)
 
-async def get_user_balance(chat_id: int) -> Optional[int]:
-    user = await user_collection.find_one({"chat_id": chat_id})
+async def get_user_balance(user_id: int) -> int:
+    user = await user_collection.find_one({"id": user_id})
     return user.get("balance") if user else None
 
 application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
+
 
 
 
