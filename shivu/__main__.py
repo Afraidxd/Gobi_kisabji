@@ -117,13 +117,13 @@ async def button_click(update: Update, context: CallbackContext) -> None:
         if user_balance >= 1000:
             await user_collection.update_one({"id": user_id}, {"$inc": {"balance": -1000}})
             name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
-            await query.answer(text=f"The slave name is: {name}", show_alert=True)
+            await query.answer(text=f"ᴛʜᴇ ᴄᴀʀ ɴᴀᴍᴇ ɪs: {name}", show_alert=True)
         else:
             await query.answer(text="You don't have sufficient balance.", show_alert=True)
     else:
         await user_collection.insert_one({"id": user_id, "balance": 5000})
         name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
-        await query.answer(text=f"Welcome, {name}! You've been added to our system with an initial balance.", show_alert=True)
+        await query.answer(text=f"ᴡᴇʟᴄᴏᴍᴇ, ᴜsᴇʀ ! ʏᴏᴜ'ᴠᴇ ʙᴇᴇɴ ᴀᴅᴅᴇᴅ ᴛᴏ ᴏᴜʀ sʏsᴛᴇᴍ ᴡɪᴛʜ ᴀɴ ɪɴɪᴛɪᴀʟ ʙᴀʟᴀɴᴄᴇ ᴏғ 50ᴋ", show_alert=True)
 
 async def get_user_balance(user_id: int) -> int:
     user = await user_collection.find_one({"id": user_id})
