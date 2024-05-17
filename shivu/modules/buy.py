@@ -1,4 +1,4 @@
-from telegram.ext import CommandHandler
+***from telegram.ext import CommandHandler
 from shivu import collection, user_collection, application
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 from telegram import InputMediaPhoto
@@ -75,3 +75,4 @@ async def shop(update, context):
 # Register the new /shop command handler
 shop_handler = CommandHandler("store", shop, block=False)
 application.add_handler(shop_handler)
+***
