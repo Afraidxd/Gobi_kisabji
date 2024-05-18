@@ -59,7 +59,8 @@ async def button(update, context):
         result_message = "🎉 You won!"
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': amount}})
     else:
-        result_message = "😔 You lost!/nYour updated balance is {'balance}"
+        result_message = "😔 You lost! 
+Your updated balance is {'user_balance'}"
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -amount}})
 
     await query.message.edit_text(
