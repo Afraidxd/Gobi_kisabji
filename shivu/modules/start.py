@@ -77,18 +77,15 @@ async def button(update: Update, context: CallbackContext) -> None:
 
     elif query.data == 'games_help':
         games_help_text = """
-        ***Game Commands:***
+        ***ɢᴀᴍᴇ ᴄᴏᴍᴍᴀɴᴅs:***
 
-***/sexplore: To explore and find random loots***
-***/scrime: Do random crime ***
-***/shunt: To hunt in the wild 💀💀 ***
-***/bonus: To claim daily bonus***
+***/bal: ᴛᴏ ᴄʜᴇᴄᴋ ʏᴏᴜʀ ʙᴀʟᴀɴᴄᴇ***
+***/challenge: ᴄʜᴀɴᴄᴇ ᴛᴏ ᴡɪɴ 1 ʀᴀɴᴅᴏᴍ ᴄᴀʀ ***
+***/bonus: ᴛᴏ ᴄʟᴀɪᴍ ᴅᴀɪʟʏ ʙᴏɴᴜs ***
+***/wbonus: ᴛᴏ ᴄʟᴀɪᴍ ᴡᴇᴇᴋʟʏ ʙᴏɴᴜs***
 ***/store: To buy from daily store***
-***/mines: To mine some ores***
-***/mode: To toggle between safe and war mode***
-***/sfight: To fight a user***
-***/rps: To play rock paper and scissors ***
-***/sbet: To bet some balance***
+***/race: ᴛᴏ ᴡɪɴ sᴏᴍᴇ ᴛᴏᴋᴇɴs ʙᴇᴛᴡᴇᴇɴ 10ᴋ - 50ᴋ ***
+***/bet: ᴛᴏ ʙᴇᴛ sᴏᴍᴇ ᴛᴏᴋᴇɴs***
         """
         games_help_keyboard = [[InlineKeyboardButton("Back", callback_data='help')]]
         reply_markup = InlineKeyboardMarkup(games_help_keyboard)
