@@ -129,7 +129,7 @@ async def button(update: Update, context: CallbackContext) -> None:
         photo_url = random.choice(PHOTO_URL)
         keyboard = [
             [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f'https://t.me/Grab_Yourslave_bot?startgroup=new')],
-            [InlineKeyboardButton("ᴄʜᴀɴɴᴇʟ", url=f'https://t.me/BotupdateXD'), InlineKeyboardButton("ɢʀᴏᴜᴘ", url=f'{SUPPORT_CHAT}')],
+            [InlineKeyboardButton("ᴄʜᴀɴɴᴇʟ", url=f'https://t.me/BotupdateXD'), InlineKeyboardButton("ɢʀᴏᴜᴘ", url=f'{https://t.me/BotsupportXD}')],
             [InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'), InlineKeyboardButton("ᴄʀᴇᴅɪᴛꜱ", callback_data='credits')]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
