@@ -104,10 +104,10 @@ async def button(update: Update, context: CallbackContext) -> None:
 
 ʜᴇʀᴇ ᴀʀᴇ ᴍʏ ᴅᴇᴠᴇʟᴏᴘᴇʀꜱ:
         
-Δ : [Alpha](https://t.me/ShutupKeshav)
+Δ : [𝙰ʟᴇx](https://t.me/ipcxd)
 Δ : [𝐃𝐞𝐥𝐭𝐚](https://t.me/Notrealgeek)
         """
-        credits_keyboard = [[InlineKeyboardButton("Back", callback_data='back')]]
+        credits_keyboard = [[InlineKeyboardButton("ʙᴀᴄᴋ", callback_data='back')]]
         reply_markup = InlineKeyboardMarkup(credits_keyboard)
 
         await query.edit_message_caption(caption=credits_text, reply_markup=reply_markup, parse_mode='markdown')
@@ -115,7 +115,7 @@ async def button(update: Update, context: CallbackContext) -> None:
     elif query.data == 'back':
         start_text = f"""
         ***Hey there! {update.effective_user.first_name}***\n
-        ***ɪ ᴀᴍ ꜱʟᴀᴠᴇꜱ ɢʀᴀʙʙᴇʀ ʙᴏᴛ ᴀᴅᴅ ᴍᴇ ɪɴ ʏᴏᴜ'ʀᴇ ɢʀᴏᴜᴘ ᴀɴᴅ ᴛᴀᴘ ᴏɴ ʜᴇʟᴘ ʙᴜᴛᴛᴏɴ ᴛᴏ ꜱᴇᴇ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅS***\n
+        ***I am ᴄᴀʀ ɢʀᴀʙʙᴇʀ ʙᴏᴛ. ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ ᴀɴᴅ ᴛᴀᴘ ᴏɴ ᴛʜᴇ ʜᴇʟᴘ ʙᴜᴛᴛᴏɴ ᴛᴏ ᴅɪꜱᴄᴏᴠᴇʀ ᴀʟʟ ᴍʏ ғᴇᴀᴛᴜʀᴇꜱ ᴀɴᴅ ᴄᴏᴍᴍᴀɴᴅꜱ. ʟᴇᴛ'ꜱ ʀᴀᴄᴇ ᴛᴏ ᴛʜᴇ ᴛᴏᴘ!***\n
         """
 
         photo_url = random.choice(PHOTO_URL)
