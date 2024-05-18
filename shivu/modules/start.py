@@ -20,7 +20,7 @@ async def start(update: Update, context: CallbackContext) -> None:
             await collection.update_one({"_id": user_id}, {"$set": {"first_name": first_name, "username": username}})
 
     caption = f"""
-    ***Hey there! {first_name}***\n
+    ***ʜᴇʏ ᴛʜᴇʀᴇ! {first_name}***\n
     ***ɪ am ᴄᴀʀ ɢʀᴀʙʙᴇʀ ʙᴏᴛ. ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ ᴀɴᴅ ᴛᴀᴘ ᴏɴ ᴛʜᴇ ʜᴇʟᴘ ʙᴜᴛᴛᴏɴ ᴛᴏ ᴅɪꜱᴄᴏᴠᴇʀ ᴀʟʟ ᴍʏ ғᴇᴀᴛᴜʀᴇꜱ ᴀɴᴅ ᴄᴏᴍᴍᴀɴᴅꜱ. ʟᴇᴛ'ꜱ ʀᴀᴄᴇ ᴛᴏ ᴛʜᴇ ᴛᴏᴘ!***\n
     """
 
