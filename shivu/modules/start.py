@@ -27,7 +27,7 @@ async def start(update: Update, context: CallbackContext) -> None:
     photo_url = random.choice(PHOTO_URL)
 
     keyboard = [
-        [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f'https://t.me/Grab_Yourslave_bot?startgroup=new')],
+        [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f'https://t.me/getyourcar_bot?startgroup=new')],
         [InlineKeyboardButton("ᴄʜᴀɴɴᴇʟ", url='https://t.me/BotupdateXD'), InlineKeyboardButton("ɢʀᴏᴜᴘ", url=SUPPORT_CHAT)],
         [InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'), InlineKeyboardButton("ᴄʀᴇᴅɪᴛꜱ", callback_data='credits')]
     ]
@@ -43,12 +43,12 @@ async def button(update: Update, context: CallbackContext) -> None:
     if query.data == 'help':
         help_text = """
         ***Choose a category:***
-1. USER
-2. GAMES
+1. ᴜsᴇʀ
+2. ɢᴀᴍᴇs
         """
         help_keyboard = [
-            [InlineKeyboardButton("USER", callback_data='user_help'), InlineKeyboardButton("GAMES", callback_data='games_help')],
-            [InlineKeyboardButton("Back", callback_data='back')]
+            [InlineKeyboardButton("ᴜsᴇʀ", callback_data='user_help'), InlineKeyboardButton("GAMES", callback_data='games_help')],
+            [InlineKeyboardButton("ʙᴀᴄᴋ", callback_data='back')]
         ]
         reply_markup = InlineKeyboardMarkup(help_keyboard)
 
