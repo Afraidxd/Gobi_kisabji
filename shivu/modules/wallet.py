@@ -116,25 +116,28 @@ async def pay(update, context):
         f"Payment Successful! You Paid Ŧ{amount} Tokens to {update.message.reply_to_message.from_user.username}."
     )
 
-async def mtop(update, context):
+
+async def mtop(update: Update, context: CallbackContext):
     top_users = await user_collection.find({}, {'id': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}).sort('balance', -1).limit(10).to_list(10)
 
     top_users_message = """
-<b>Top 10 Token Users:</b>
+Top 10 Token Users:
 ───────────────────
 """
 
     for i, user in enumerate(top_users, start=1):
         first_name = user.get('first_name', 'Unknown')
-        last_name = user.get('last_name', '')
         user_id = user.get('id', 'Unknown')
-        profile_url = f"tg://user?id={user_id}"
-        full_name = f"<a href='{profile_url}'>{first_name} {last_name}</a>" if last_name else f"<a href='{profile_url}'>{first_name}</a>"
 
-        top_users_message += f"{i}. {full_name} - Ŧ{user.get('balance', 0):,}\n"
+        if user_id != 'Unknown':
+            user_link = f'<a href="tg://user?id={user_id}">{first_name}</a>'
+        else:
+            user_link = first_name
+
+        top_users_message += f"{i}. {user_link} - Ŧ{user.get('balance', 0):,}\n"
 
     top_users_message += """
-────────────────────
+───────────────────
 """
 
     photo_url = "https://telegra.ph/file/3474a548e37ab8f0604e8.jpg"
@@ -145,6 +148,8 @@ async def mtop(update, context):
         await update.message.reply_photo(photo=photo_data, caption=top_users_message, parse_mode='HTML')
     else:
         await update.message.reply_text("Failed to download photo")
+
+application.add_handler(CommandHandler("mtop", mtop))
 
 async def daily_reward(update, context):
     user_id = update.effective_user.id
