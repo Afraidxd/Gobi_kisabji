@@ -1,21 +1,29 @@
 import asyncio
 from telegram.ext import CommandHandler
-from shivu import application, user_collection, collection
-from telegram import Update 
+from telegram import Update
 import random
 from datetime import datetime, timedelta
+from shivu import collection, user_collection, user_totals_collection , application 
 
-# Dictionary to store last propose times
 last_propose_times = {}
-last_command_time = {}
+proposing_users = {}
 
-async def race(update, context):
+async def propose(update, context):
     user_id = update.effective_user.id
+
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
-    if not user_balance or user_balance.get('balance', 0) < 600000:
-        await update.message.reply_text("You need at least 600000 tokens to challenge.")
+    if not user_balance or user_balance.get('balance', 0) < 20000:
+        await update.message.reply_text("You need at least 20000 tokens to challenge.")
+        proposing_users[user_id] = False  # Setting to False if balance requirement is not met
         return
+
+    if proposing_users.get(user_id):
+        await update.message.reply_text("You are already proposing. Please wait for the current proposal to finish.")
+        proposing_users[user_id] = False  # Setting to False if user is already proposing
+        return
+    else:
+        proposing_users[user_id] = True
 
     last_propose_time = last_propose_times.get(user_id)
     if last_propose_time:
@@ -24,13 +32,14 @@ async def race(update, context):
             remaining_cooldown = timedelta(minutes=5) - time_since_last_propose
             remaining_cooldown_minutes = remaining_cooldown.total_seconds() // 60
             remaining_cooldown_seconds = remaining_cooldown.total_seconds() % 60
-            await update.message.reply_text(f"Cooldown! Please wait {int(remaining_cooldown_minutes)}m {int(remaining_cooldown_seconds)}s before proposing again.")
+            await update.message.reply_text(f"Cooldown! Please wait {int(remaining_cooldown_minutes)}m {int(remaining_cooldown_seconds)}s before challengeing again.")
+            proposing_users[user_id] = False  # Setting to False if cooldown is active
             return
 
-    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -500000}})
+    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -10000}})
 
-    proposal_message = "Challenge Accepted "
-    photo_path = 'https://telegra.ph/file/938a03f66ce32dfeaee87.jpg'  # Replace with your photo path
+    proposal_message = "Challenge accepted"
+    photo_path = 'https://telegra.ph/file/6abcb8278a66a11778841.jpg'
     await update.message.reply_photo(photo=photo_path, caption=proposal_message)
 
     await asyncio.sleep(2)
@@ -39,24 +48,17 @@ async def race(update, context):
 
     await asyncio.sleep(2)
 
-    winning_chances = ["💮 Mythic", "💪 Challenge edition", "You lost"]
-    outcomes = random.choices(winning_chances, weights=[0.3, 0.2, 0.5])[0]
-
-    if outcomes == "You lost":
-        await update.message.reply_text("Ha ha ha-you lost You noob go and get some car knowledge.")
+    if random.random() < 0.6:
+        rejection_message = "You lost"
+        rejection_photo_path = 'https://telegra.ph/file/b94d4950840f4360b7b1d.jpg'
+        await update.message.reply_photo(photo=rejection_photo_path, caption=rejection_message)
     else:
-        selected_rarity = outcomes
-        filtered_characters = await collection.find({'rarity': selected_rarity}).to_list(length=None)
-
-        if not filtered_characters:
-            await update.message.reply_text("No characters found with the specified rarity.")
-            return
-
-        character = random.choice(filtered_characters)
-
+        all_characters = list(await collection.find({}).to_list(length=None))
+        character = random.choice(all_characters)
         await user_collection.update_one({'id': user_id}, {'$push': {'characters': character}})
-        await update.message.reply_photo(photo=character['img_url'], caption=f"Congratulations! You won {character['rarity']} {character['car name']} as a reward.")
+        await update.message.reply_photo(photo=character['img_url'],caption=f" congratulations you won here is your reward {character['name']} ")
 
     last_propose_times[user_id] = datetime.now()
+    proposing_users[user_id] = False  # Setting to False after the proposal process completes
 
-application.add_handler(CommandHandler("challenge", race, block=False))
+application.add_handler(CommandHandler("challenge", propose, block=False))
