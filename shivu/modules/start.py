@@ -50,9 +50,8 @@ async def button(update: Update, context: CallbackContext) -> None:
     if query.data == 'help':
         help_text = """
         ***Choose a category:***
-
-        1. USER
-        2. GAMES
+1. USER
+2. GAMES
         """
         help_keyboard = [
             [InlineKeyboardButton("USER", callback_data='user_help'), InlineKeyboardButton("GAMES", callback_data='games_help')],
@@ -66,17 +65,17 @@ async def button(update: Update, context: CallbackContext) -> None:
         user_help_text = """
         ***User Commands:***
 
-        ***/grab: To Guess waifu (only works in group)***
-        ***/marry: To marry a waifu and make it favorite***
-        ***/strade : To trade slaves with other users***
-        ***/sgift: Give any slaves to another user.. (only works in groups)***
-        ***/slaves: To see Your slaves collection***
-        ***/tops: Too See Top coin Users***
-        ***/ctop: To see top character grabbers ***
-        ***/propose: Too propose a random waifu***
-        ***/sinv: To check current token balance***
-        ***/spay: To pay other users from you own balance***
-        ***/changetime: Change slaves appear time (only works in Groups)***
+***/grab: To Guess waifu (only works in group)***
+***/marry: To marry a waifu and make it favorite***
+***/strade : To trade slaves with other users***
+***/sgift: Give any slaves to another user.. (only works in groups)***
+***/slaves: To see Your slaves collection***
+***/tops: Too See Top coin Users***
+***/ctop: To see top character grabbers ***
+***/propose: Too propose a random waifu***
+***/sinv: To check current token balance***
+***/spay: To pay other users from you own balance***
+***/changetime: Change slaves appear time (only works in Groups)***
         """
         user_help_keyboard = [[InlineKeyboardButton("Back", callback_data='help')]]
         reply_markup = InlineKeyboardMarkup(user_help_keyboard)
@@ -87,16 +86,16 @@ async def button(update: Update, context: CallbackContext) -> None:
         games_help_text = """
         ***Game Commands:***
 
-        ***/sexplore: To explore and find random loots***
-        ***/scrime: Do random crime ***
-        ***/shunt: To hunt in the wild 💀💀 ***
-        ***/bonus: To claim daily bonus***
-        ***/store: To buy from daily store***
-        ***/mines: To mine some ores***
-        ***/mode: To toggle between safe and war mode***
-        ***/sfight: To fight a user***
-        ***/rps: To play rock paper and scissors ***
-        ***/sbet: To bet some balance***
+***/sexplore: To explore and find random loots***
+***/scrime: Do random crime ***
+***/shunt: To hunt in the wild 💀💀 ***
+***/bonus: To claim daily bonus***
+***/store: To buy from daily store***
+***/mines: To mine some ores***
+***/mode: To toggle between safe and war mode***
+***/sfight: To fight a user***
+***/rps: To play rock paper and scissors ***
+***/sbet: To bet some balance***
         """
         games_help_keyboard = [[InlineKeyboardButton("Back", callback_data='help')]]
         reply_markup = InlineKeyboardMarkup(games_help_keyboard)
@@ -107,15 +106,16 @@ async def button(update: Update, context: CallbackContext) -> None:
         credits_text = """
         ***Credits:***
 
-        ᴀ ᴛᴇʟᴇɢʀᴀᴍ ᴘʀɪᴠᴀᴛᴇ ɢᴀᴍᴇ ʙᴏᴛ\n
-        ᴡʀɪᴛᴛᴇɴ ɪɴ ᴩʏᴛʜᴏɴ ᴡɪᴛʜ ᴛʜᴇ ʜᴇʟᴩ ᴏғ [ᴩʏʀᴏɢʀᴀᴍ](https://github.com/pyrogram/pyrogram) [ᴩʏᴛʜᴏɴ-ᴛᴇʟᴇɢʀᴀᴍ-ʙᴏᴛ](https://github.com/python-telegram-bot/python-telegram-bot) ᴀɴᴅ ᴜsɪɴɢ [ᴍᴏɴɢᴏ](https://cloud.mongodb.com) ᴀs ᴅᴀᴛᴀʙᴀsᴇ.
+ᴀ ᴛᴇʟᴇɢʀᴀᴍ ᴘʀɪᴠᴀᴛᴇ ɢᴀᴍᴇ ʙᴏᴛ\n
+ᴡʀɪᴛᴛᴇɴ ɪɴ ᴩʏᴛʜᴏɴ ᴡɪᴛʜ ᴛʜᴇ ʜᴇʟᴩ ᴏғ [ᴩʏʀᴏɢʀᴀᴍ](https://github.com/pyrogram/pyrogram) [ᴩʏᴛʜᴏɴ-ᴛᴇʟᴇɢʀᴀᴍ-ʙᴏᴛ](https://github.com/python-telegram-bot/python-telegram-bot) ᴀɴᴅ ᴜsɪɴɢ [ᴍᴏɴɢᴏ](https://cloud.mongodb.com) ᴀs ᴅᴀᴛᴀʙᴀsᴇ.
 
-        ʜᴇʀᴇ ᴀʀᴇ ᴍʏ ᴅᴇᴠᴇʟᴏᴘᴇʀꜱ:
+ʜᴇʀᴇ ᴀʀᴇ ᴍʏ ᴅᴇᴠᴇʟᴏᴘᴇʀꜱ:
         
-        Δ : [Alpha](https://t.me/ShutupKeshav)
-        Δ : [𝐃𝐞𝐥𝐭𝐚](https://t.me/Notrealgeek)
+Δ : [Alpha](https://t.me/ShutupKeshav)
+Δ : [𝐃𝐞𝐥𝐭𝐚](https://t.me/Notrealgeek)
+
         """
-        credits_keyboard = [[InlineKeyboardButton("Back", callback_data='help')]]
+        credits_keyboard = [[InlineKeyboardButton("Back", callback_data='back')]]
         reply_markup = InlineKeyboardMarkup(credits_keyboard)
 
         await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=credits_text, reply_markup=reply_markup, parse_mode='markdown')
