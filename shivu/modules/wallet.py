@@ -14,7 +14,7 @@ async def balance(update, context):
     user_id = update.effective_user.id
 
     user_data = await user_collection.find_one({'id': user_id}, projection={'balance': 1, 'bank_balance': 1, 'gems': 1, 'characters': 1, 'profile_media': 1, 'gender': 1})
-    
+
     profile = update.effective_user
 
     if user_data:
@@ -41,7 +41,7 @@ async def balance(update, context):
 
         coins_rank = await user_collection.count_documents({'balance': {'$gt': user_balance}}) + 1
         total_characters = len(characters)
-        all_characters = await collection.find({}).to_list(length=None)
+        all_characters = await user_collection.find({}).to_list(length=None)  # Corrected line
         total_database_characters = len(all_characters)
 
         gender_icon = '👦🏻' if gender == 'male' else '👧🏻' if gender == 'female' else '🏳️‍🌈'
@@ -51,10 +51,8 @@ async def balance(update, context):
             f"ɴᴀᴍᴇ: {profile.full_name} [{gender_icon}]\n"
             f"ɪᴅ: <code>{profile.id}</code>\n\n"
             f"ᴄᴏɪɴꜱ: Ŧ<code>{format_number(user_balance)}</code> coins\n"
-           
             f"ʙᴀɴᴋ: Ŧ<code>{format_number(bank_balance)}</code> coins\n"
             f"ᴄᴏɪɴꜱ ʀᴀɴᴋ: <code>{coins_rank}</code>\n"
-          
             f"ᴄʜᴀʀᴀᴄᴛᴇʀꜱ: <code>{total_characters}</code>/<code>{total_database_characters}</code>\n"
         )
 
