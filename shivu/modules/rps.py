@@ -35,6 +35,10 @@ async def button(update, context):
     query = update.callback_query
     choice = query.data
 
+    if choice == 'play_again':
+        await play_again(update, context)
+        return
+
     # Get the saved amount from user_data
     amount = context.user_data.get('amount')
 
@@ -66,9 +70,6 @@ async def button(update, context):
 async def play_again(update, context):
     query = update.callback_query
 
-    # Get the saved amount from user_data
-    amount = context.user_data.get('amount')
-
     # Re-enable the game by sending the original message again
     keyboard = [
         [InlineKeyboardButton("Rock 🪨", callback_data='rock')],
@@ -78,9 +79,5 @@ async def play_again(update, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
     await query.message.edit_text("Choose your move:", reply_markup=reply_markup)
 
-    # Clear user data
-    context.user_data.clear()
-
 application.add_handler(CommandHandler("rps", rps))
-application.add_handler(CallbackQueryHandler(button))
-application.add_handler(CallbackQueryHandler(play_again, pattern='play_again'))
+application.add_handler(CallbackQueryHandler(button, pattern='^(rock|paper|scissors|play_again)$'))
