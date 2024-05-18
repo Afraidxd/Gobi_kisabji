@@ -62,8 +62,12 @@ async def button(update, context):
         result_message = "😔 You lost!"
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -amount}})
 
+    # Retrieve updated balance
+    updated_user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
+    updated_balance = updated_user_balance.get('balance', 0)
+
     await query.message.edit_text(
-        f"You chose {choice.capitalize()} and the computer chose {computer_choice.capitalize()}.\n{result_message}\nPlay again?",
+        f"You chose {choice.capitalize()} and the computer chose {computer_choice.capitalize()}.\n{result_message}\n\nYour new balance is: Ŧ{updated_balance}\n\nPlay again?",
         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Play Again 🔄", callback_data='play_again')]])
     )
 
