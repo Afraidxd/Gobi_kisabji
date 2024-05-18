@@ -14,7 +14,7 @@ async def balance(update, context):
     user_id = update.effective_user.id
 
     user_data = await user_collection.find_one({'id': user_id}, projection={'balance': 1, 'bank_balance': 1, 'gems': 1, 'characters': 1, 'profile_media': 1, 'gender': 1})
-    wordle_rank = await gwp(user_id)
+    
     profile = update.effective_user
 
     if user_data:
