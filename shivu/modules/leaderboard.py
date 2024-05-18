@@ -5,7 +5,7 @@ import html
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler
 
-from shivu import (
+from Grabber import (
     application, PHOTO_URL, OWNER_ID,
     user_collection, top_global_groups_collection, group_user_totals_collection,
     sudo_users as SUDO_USERS
