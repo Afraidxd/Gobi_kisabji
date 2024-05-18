@@ -1,5 +1,5 @@
 from telegram.ext import CommandHandler
-from shivu import application, user_collection
+from shivu import application, user_collection, collection 
 from telegram import Update
 from datetime import datetime, timedelta
 import asyncio
@@ -9,6 +9,11 @@ from itertools import groupby
 from telegram.ext import CommandHandler, CallbackContext
 # Dictionary to store last payment times
 last_payment_times = {}
+
+async def get_collection_length():
+    length = await collection.count_documents({})
+    return length
+
 
 async def balance(update, context):
     user_id = update.effective_user.id
@@ -42,8 +47,8 @@ async def balance(update, context):
         coins_rank = await user_collection.count_documents({'balance': {'$gt': user_balance}}) + 1
         total_user_characters = len(characters)
         
-        # Counting the total number of characters available in the database
-        total_database_characters = await user_collection.count_documents({'characters': {'$exists': True}})
+        
+        total_database_characters = await get_collection_length()
 
         gender_icon = '👦🏻' if gender == 'male' else '👧🏻' if gender == 'female' else '🏳️‍🌈'
 
