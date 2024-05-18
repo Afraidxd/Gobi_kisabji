@@ -84,6 +84,7 @@ async def button(update: Update, context: CallbackContext) -> None:
 ***/race: ᴛᴏ ᴡɪɴ sᴏᴍᴇ ᴛᴏᴋᴇɴs ʙᴇᴛᴡᴇᴇɴ 10ᴋ - 50ᴋ ***
 ***/bet: ᴛᴏ ʙᴇᴛ sᴏᴍᴇ ᴛᴏᴋᴇɴs***
 ***/pay: ᴛᴏ ɢɪᴠᴇ ʏᴏᴜʀ ᴄᴏɪɴ ᴛᴏ ᴀɴᴏᴛʜᴇʀ ᴜsᴇʀ***
+***/rps: ᴛᴏ ᴘʟᴀʏ ʀᴏᴄᴋ ᴘᴀᴘᴇʀ sᴄɪssᴏʀs ᴜsɪɴɢ ᴛᴏᴋᴇɴs***
         """
         games_help_keyboard = [[InlineKeyboardButton("ʙᴀᴄᴋ", callback_data='help')]]
         reply_markup = InlineKeyboardMarkup(games_help_keyboard)
