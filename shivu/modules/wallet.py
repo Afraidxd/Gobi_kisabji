@@ -145,7 +145,7 @@ Top 10 Token Users:
 
     if photo_response.status_code == 200:
         photo_data = io.BytesIO(photo_response.content)
-        await update.message.reply_photo(photo=photo_data, caption=top_users_message, parse_mode='HTML')
+        await update.message.reply_photo(photo=photo_data, caption=top_users_message, parse_mode='Markdown')
     else:
         await update.message.reply_text("Failed to download photo")
 
