@@ -20,9 +20,9 @@ async def rps(update, context):
         return
 
     keyboard = [
-        [InlineKeyboardButton("Rock", callback_data='rock')],
-        [InlineKeyboardButton("Paper", callback_data='paper')],
-        [InlineKeyboardButton("Scissors", callback_data='scissors')]
+        [InlineKeyboardButton("Rock 🪨", callback_data='rock')],
+        [InlineKeyboardButton("Paper 📄", callback_data='paper')],
+        [InlineKeyboardButton("Scissors ✂️", callback_data='scissors')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     message = await update.message.reply_text("Choose your move:", reply_markup=reply_markup)
@@ -35,12 +35,8 @@ async def button(update, context):
     query = update.callback_query
     choice = query.data
 
-    # Get the saved amount and message ID
+    # Get the saved amount from user_data
     amount = context.user_data.get('amount')
-    message_id = context.user_data.get('message_id')
-
-    # Retrieve the original message
-    original_message = query.message.reply_to_message
 
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
@@ -62,33 +58,29 @@ async def button(update, context):
         result_message = "😔 You lost!"
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -amount}})
 
-    await original_message.edit_text(
+    await query.message.edit_text(
         f"You chose {choice.capitalize()} and the computer chose {computer_choice.capitalize()}.\n{result_message}\nPlay again?",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Play Again", callback_data='play_again')]])
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Play Again 🔄", callback_data='play_again')]])
     )
 
 async def play_again(update, context):
     query = update.callback_query
 
-    # Get the saved amount and message ID
+    # Get the saved amount from user_data
     amount = context.user_data.get('amount')
-    message_id = context.user_data.get('message_id')
-
-    # Retrieve the original message
-    original_message = query.message.reply_to_message
 
     # Re-enable the game by sending the original message again
     keyboard = [
-        [InlineKeyboardButton("Rock", callback_data='rock')],
-        [InlineKeyboardButton("Paper", callback_data='paper')],
-        [InlineKeyboardButton("Scissors", callback_data='scissors')]
+        [InlineKeyboardButton("Rock 🪨", callback_data='rock')],
+        [InlineKeyboardButton("Paper 📄", callback_data='paper')],
+        [InlineKeyboardButton("Scissors ✂️", callback_data='scissors')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await original_message.edit_text("Choose your move:", reply_markup=reply_markup)
+    await query.message.edit_text("Choose your move:", reply_markup=reply_markup)
 
     # Clear user data
     context.user_data.clear()
 
 application.add_handler(CommandHandler("rps", rps))
 application.add_handler(CallbackQueryHandler(button))
-application.add_handler(CallbackQueryHandler(play_again))
+application.add_handler(CallbackQueryHandler(play_again, pattern='play_again'))
