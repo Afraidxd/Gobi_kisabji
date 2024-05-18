@@ -47,7 +47,7 @@ async def button(update: Update, context: CallbackContext) -> None:
 2. ɢᴀᴍᴇs
         """
         help_keyboard = [
-            [InlineKeyboardButton("ᴜsᴇʀ", callback_data='user_help'), InlineKeyboardButton("GAMES", callback_data='games_help')],
+            [InlineKeyboardButton("ᴜsᴇʀ", callback_data='user_help'), InlineKeyboardButton("ɢᴀᴍᴇs", callback_data='games_help')],
             [InlineKeyboardButton("ʙᴀᴄᴋ", callback_data='back')]
         ]
         reply_markup = InlineKeyboardMarkup(help_keyboard)
@@ -56,7 +56,7 @@ async def button(update: Update, context: CallbackContext) -> None:
 
     elif query.data == 'user_help':
         user_help_text = """
-        ***User Commands:***
+        ***ᴜsᴇʀ ᴄᴏᴍᴍᴀɴᴅs:***
 
 ***/grab: To Guess waifu (only works in group)***
 ***/marry: To marry a waifu and make it favorite***
@@ -101,8 +101,8 @@ async def button(update: Update, context: CallbackContext) -> None:
 
 ʜᴇʀᴇ ᴀʀᴇ ᴍʏ ᴅᴇᴠᴇʟᴏᴘᴇʀꜱ:
         
-Δ : [𝙰ʟᴇx](https://t.me/ipcxd)
-Δ : [𝐃𝐞𝐥𝐭𝐚](https://t.me/Notrealgeek)
+✪ : [𝙰ʟᴇx](https://t.me/ipcxd)
+✪ : [𝐃𝐞𝐥𝐭𝐚](https://t.me/Notrealgeek)
         """
         credits_keyboard = [[InlineKeyboardButton("ʙᴀᴄᴋ", callback_data='back')]]
         reply_markup = InlineKeyboardMarkup(credits_keyboard)
