@@ -18,7 +18,7 @@ else:
     TOKEN = "6627459799:AAEiY_xENQUklRGc3OWMmwF6rkNdMPkv4OA"
     mongo_url = "mongodb+srv://Afraid:LhLMqfRcOadZMK4L@cluster0.g4r9uxr.mongodb.net/"
     PHOTO_URL = ["https://telegra.ph/file/2ed20f2783ebb9cbfd04c.jpg", "https://telegra.ph/file/ed9d1302a7d58b2b2f2a2.jpg", "https://telegra.ph/file/578547d3f14979d82e1ae.jpg"]
-    SUPPORT_CHAT = "carbotsupport"
+    SUPPORT_CHAT = "https://t.me/BotsupportXD"
     UPDATE_CHAT = "Divine_x_soul"
     BOT_USERNAME = "Grabyourcar_bot"
     CHARA_CHANNEL_ID = -1002048802596
