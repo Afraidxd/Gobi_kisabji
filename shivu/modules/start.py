@@ -20,24 +20,17 @@ async def start(update: Update, context: CallbackContext) -> None:
             await collection.update_one({"_id": user_id}, {"$set": {"first_name": first_name, "username": username}})
 
     caption = f"""
-    ***Hey there! {update.effective_user.first_name}***\n
+    ***Hey there! {first_name}***\n
     ***ɪ ᴀᴍ ꜱʟᴀᴠᴇꜱ ɢʀᴀʙʙᴇʀ ʙᴏᴛ ᴀᴅᴅ ᴍᴇ ɪɴ ʏᴏᴜ'ʀᴇ ɢʀᴏᴜᴘ ᴀɴᴅ ᴛᴀᴘ ᴏɴ ʜᴇʟᴘ ʙᴜᴛᴛᴏɴ ᴛᴏ ꜱᴇᴇ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅS***\n
     """
 
     photo_url = random.choice(PHOTO_URL)
 
-    if update.effective_chat.type == "private":
-        keyboard = [
-            [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f'https://t.me/Grab_Yourslave_bot?startgroup=new')],
-            [InlineKeyboardButton("ᴄʜᴀɴɴᴇʟ", url=f'https://t.me/BotupdateXD'), InlineKeyboardButton("ɢʀᴏᴜᴘ", url=f'{SUPPORT_CHAT}')],
-            [InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'), InlineKeyboardButton("ᴄʀᴇᴅɪᴛꜱ", callback_data='credits')]
-        ]
-    else:
-        keyboard = [
-            [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f'https://t.me/Grab_Yourslave_bot?startgroup=new')],
-            [InlineKeyboardButton("ᴄʜᴀɴɴᴇʟ", url=f'https://t.me/BotupdateXD'), InlineKeyboardButton("ɢʀᴏᴜᴘ", url=f'{SUPPORT_CHAT}')],
-            [InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'), InlineKeyboardButton("ᴄʀᴇᴅɪᴛꜱ", callback_data='credits')]
-        ]
+    keyboard = [
+        [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f'https://t.me/Grab_Yourslave_bot?startgroup=new')],
+        [InlineKeyboardButton("ᴄʜᴀɴɴᴇʟ", url='https://t.me/BotupdateXD'), InlineKeyboardButton("ɢʀᴏᴜᴘ", url=SUPPORT_CHAT)],
+        [InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'), InlineKeyboardButton("ᴄʀᴇᴅɪᴛꜱ", callback_data='credits')]
+    ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -59,7 +52,7 @@ async def button(update: Update, context: CallbackContext) -> None:
         ]
         reply_markup = InlineKeyboardMarkup(help_keyboard)
 
-        await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=help_text, reply_markup=reply_markup, parse_mode='markdown')
+        await query.edit_message_caption(caption=help_text, reply_markup=reply_markup, parse_mode='markdown')
 
     elif query.data == 'user_help':
         user_help_text = """
@@ -80,7 +73,7 @@ async def button(update: Update, context: CallbackContext) -> None:
         user_help_keyboard = [[InlineKeyboardButton("Back", callback_data='help')]]
         reply_markup = InlineKeyboardMarkup(user_help_keyboard)
 
-        await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=user_help_text, reply_markup=reply_markup, parse_mode='markdown')
+        await query.edit_message_caption(caption=user_help_text, reply_markup=reply_markup, parse_mode='markdown')
 
     elif query.data == 'games_help':
         games_help_text = """
@@ -100,7 +93,7 @@ async def button(update: Update, context: CallbackContext) -> None:
         games_help_keyboard = [[InlineKeyboardButton("Back", callback_data='help')]]
         reply_markup = InlineKeyboardMarkup(games_help_keyboard)
 
-        await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=games_help_text, reply_markup=reply_markup, parse_mode='markdown')
+        await query.edit_message_caption(caption=games_help_text, reply_markup=reply_markup, parse_mode='markdown')
 
     elif query.data == 'credits':
         credits_text = """
@@ -113,29 +106,29 @@ async def button(update: Update, context: CallbackContext) -> None:
         
 Δ : [Alpha](https://t.me/ShutupKeshav)
 Δ : [𝐃𝐞𝐥𝐭𝐚](https://t.me/Notrealgeek)
-
         """
         credits_keyboard = [[InlineKeyboardButton("Back", callback_data='back')]]
         reply_markup = InlineKeyboardMarkup(credits_keyboard)
 
-        await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=credits_text, reply_markup=reply_markup, parse_mode='markdown')
+        await query.edit_message_caption(caption=credits_text, reply_markup=reply_markup, parse_mode='markdown')
 
     elif query.data == 'back':
-        start_text = """
-        ***Hey there! {first_name}***\n
+        start_text = f"""
+        ***Hey there! {update.effective_user.first_name}***\n
         ***ɪ ᴀᴍ ꜱʟᴀᴠᴇꜱ ɢʀᴀʙʙᴇʀ ʙᴏᴛ ᴀᴅᴅ ᴍᴇ ɪɴ ʏᴏᴜ'ʀᴇ ɢʀᴏᴜᴘ ᴀɴᴅ ᴛᴀᴘ ᴏɴ ʜᴇʟᴘ ʙᴜᴛᴛᴏɴ ᴛᴏ ꜱᴇᴇ ᴀʟʟ ᴄᴏᴍᴍᴀɴᴅS***\n
-        """.format(first_name=update.effective_user.first_name)
+        """
 
         photo_url = random.choice(PHOTO_URL)
         keyboard = [
             [InlineKeyboardButton("ᴀᴅᴅ ᴍᴇ ᴛᴏ ʏᴏᴜʀ ɢʀᴏᴜᴘ", url=f'https://t.me/Grab_Yourslave_bot?startgroup=new')],
-            [InlineKeyboardButton("ᴄʜᴀɴɴᴇʟ", url=f'https://t.me/BotupdateXD'), InlineKeyboardButton("ɢʀᴏᴜᴘ", url=f'{https://t.me/BotsupportXD}')],
+            [InlineKeyboardButton("ᴄʜᴀɴɴᴇʟ", url='https://t.me/BotupdateXD'), InlineKeyboardButton("ɢʀᴏᴜᴘ", url='https://t.me/BotsupportXD')],
             [InlineKeyboardButton("ʜᴇʟᴘ", callback_data='help'), InlineKeyboardButton("ᴄʀᴇᴅɪᴛꜱ", callback_data='credits')]
         ]
         reply_markup = InlineKeyboardMarkup(keyboard)
 
-        await context.bot.edit_message_caption(chat_id=update.effective_chat.id, message_id=query.message.message_id, caption=start_text, reply_markup=reply_markup, parse_mode='markdown')
+        await query.edit_message_caption(caption=start_text, reply_markup=reply_markup, parse_mode='markdown')
 
-# application.add_handler(CallbackQueryHandler(button, pattern='^help$|^credits$|^back$|^user_help$|^games_help$'))
+# Ensure the callback query handler pattern matches the possible callback data
+application.add_handler(CallbackQueryHandler(button, pattern='^(help|credits|back|user_help|games_help)$'))
 start_handler = CommandHandler('start', start)
 application.add_handler(start_handler)
