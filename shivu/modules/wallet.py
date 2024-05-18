@@ -3,68 +3,103 @@ from shivu import application, user_collection
 from telegram import Update
 from datetime import datetime, timedelta
 import asyncio
-# Dictionary to store last payment times
-last_payment_times = {}
-from shivu import collection, user_collection, application
-
-from shivu import shivuu as app
-
+import requests
+import io
 from itertools import groupby
 
+# Dictionary to store last payment times
+last_payment_times = {}
 
 async def balance(update, context):
-    # Retrieve user balance and total collections from the database (replace this with your actual database query)
     user_id = update.effective_user.id
-    user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
-    if user_balance:
-        balance_amount = user_balance.get('balance', 0)
-        if balance_amount >= 1000000:
-            balance_display = f"{balance_amount // 1000000}m"
-        elif balance_amount >= 1000:
-            balance_display = f"{balance_amount // 1000}k"
+    user_data = await user_collection.find_one({'id': user_id}, projection={'balance': 1, 'bank_balance': 1, 'gems': 1, 'characters': 1, 'profile_media': 1, 'gender': 1})
+    wordle_rank = await gwp(user_id)
+    profile = update.effective_user
+
+    if user_data:
+        user_balance = user_data.get('balance', 0)
+        bank_balance = user_data.get('bank_balance', 0)
+        gems = user_data.get('gems', 0)
+        characters = user_data.get('characters', [])
+        profile_media = user_data.get('profile_media')
+        gender = user_data.get('gender')
+
+        def format_number(num):
+            if num >= 10**15:
+                return f"{num // 10**15}q"
+            elif num >= 10**12:
+                return f"{num // 10**12}t"
+            elif num >= 10**9:
+                return f"{num // 10**9}b"
+            elif num >= 10**6:
+                return f"{num // 10**6}m"
+            elif num >= 10**3:
+                return f"{num // 10**3}k"
+            else:
+                return str(num)
+
+        coins_rank = await user_collection.count_documents({'balance': {'$gt': user_balance}}) + 1
+        total_characters = len(characters)
+        all_characters = await collection.find({}).to_list(length=None)
+        total_database_characters = len(all_characters)
+
+        gender_icon = '👦🏻' if gender == 'male' else '👧🏻' if gender == 'female' else '🏳️‍🌈'
+
+        balance_message = (
+            f"\t\t 𝐖𝐀𝐑𝐑𝐈𝐎𝐑 𝐂𝐀𝐑𝐃\n\n"
+            f"ɴᴀᴍᴇ: {profile.full_name} [{gender_icon}]\n"
+            f"ɪᴅ: <code>{profile.id}</code>\n\n"
+            f"ᴄᴏɪɴꜱ: Ŧ<code>{format_number(user_balance)}</code> coins\n"
+           
+            f"ʙᴀɴᴋ: Ŧ<code>{format_number(bank_balance)}</code> coins\n"
+            f"ᴄᴏɪɴꜱ ʀᴀɴᴋ: <code>{coins_rank}</code>\n"
+          
+            f"ᴄʜᴀʀᴀᴄᴛᴇʀꜱ: <code>{total_characters}</code>/<code>{total_database_characters}</code>\n"
+        )
+
+        photo_file = profile_media or (await context.bot.get_user_profile_photos(user_id)).photos[0][-1].file_id if (await context.bot.get_user_profile_photos(user_id)).photos else None
+
+        if photo_file:
+            await update.message.reply_photo(photo=photo_file, caption=balance_message, parse_mode='HTML')
         else:
-            balance_display = f"Ŧ{balance_amount} Tokens"
-
-
-        balance_message = f"Balance: {balance_display}"
+            await update.message.reply_photo("https://graph.org/file/7ff03ebae9abc95c94a16.jpg", caption=balance_message, parse_mode='HTML')
     else:
-        balance_message = "Claim bonus first using /bonus and /wbonus "
-
-    await update.message.reply_text(balance_message)
+        await update.message.reply_text("Claim bonus first using /bonus and /wbonus")
 
 async def pay(update, context):
     sender_id = update.effective_user.id
 
-    # Check if the command was a reply
     if not update.message.reply_to_message:
         await update.message.reply_text("Please reply to a user to /pay.")
         return
 
-    # Extract the recipient's user ID
     recipient_id = update.message.reply_to_message.from_user.id
 
-    # Prevent user from paying themselves
     if sender_id == recipient_id:
         await update.message.reply_text("You can't pay yourself.")
         return
 
-    # Parse the amount from the command
     try:
-        amount = int(context.args[0])
+        amount_str = context.args[0]
+        if "+" in amount_str:
+            base_amount_str, additional_str = amount_str.split("+")
+            base_amount = int(base_amount_str)
+            additional = int(additional_str)
+            amount = base_amount * (10 ** len(additional_str)) + additional
+        else:
+            amount = int(amount_str)
         if amount <= 0:
             raise ValueError("Amount must be greater than zero.")
     except (IndexError, ValueError):
         await update.message.reply_text("Use /pay <amount>")
         return
 
-    # Check if the sender has enough balance
     sender_balance = await user_collection.find_one({'id': sender_id}, projection={'balance': 1})
     if not sender_balance or sender_balance.get('balance', 0) < amount:
         await update.message.reply_text("Insufficient balance to make the payment.")
         return
 
-    # Check last payment time and cooldown
     last_payment_time = last_payment_times.get(sender_id)
     if last_payment_time:
         time_since_last_payment = datetime.now() - last_payment_time
@@ -74,49 +109,48 @@ async def pay(update, context):
             await update.message.reply_text(f"Cooldown! You can pay again in `{formatted_cooldown}`.")
             return
 
-    # Perform the payment
     await user_collection.update_one({'id': sender_id}, {'$inc': {'balance': -amount}})
     await user_collection.update_one({'id': recipient_id}, {'$inc': {'balance': amount}}, upsert=True)
 
-    # Update last payment time
     last_payment_times[sender_id] = datetime.now()
 
-    # Fetch updated sender balance
-    updated_sender_balance = await user_collection.find_one({'id': sender_id}, projection={'balance': 1})
-
-    # Reply with payment success and updated balance
     await update.message.reply_text(
-        f"Payment Successful! You Paid Ŧ{amount} Tokens to {update.message.reply_to_message.from_user.username}. "
+        f"Payment Successful! You Paid Ŧ{amount} Tokens to {update.message.reply_to_message.from_user.username}."
     )
 
-
 async def mtop(update, context):
-    top_users = await user_collection.find({}, projection={'id': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}).sort('balance', -1).limit(10).to_list(10)
+    top_users = await user_collection.find({}, {'id': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}).sort('balance', -1).limit(10).to_list(10)
 
-    top_users_message = "Top 10 Users With Highest Tokens\n\n"
+    top_users_message = """
+<b>Top 10 Token Users:</b>
+───────────────────
+"""
+
     for i, user in enumerate(top_users, start=1):
         first_name = user.get('first_name', 'Unknown')
         last_name = user.get('last_name', '')
         user_id = user.get('id', 'Unknown')
+        profile_url = f"tg://user?id={user_id}"
+        full_name = f"<a href='{profile_url}'>{first_name} {last_name}</a>" if last_name else f"<a href='{profile_url}'>{first_name}</a>"
 
-        print(f"First Name: {first_name}, Last Name: {last_name}")
+        top_users_message += f"{i}. {full_name} - Ŧ{user.get('balance', 0):,}\n"
 
-        if first_name != 'Unknown' and last_name != '':
-            full_name = f"{first_name} {last_name}"
-        else:
-            full_name = first_name
+    top_users_message += """
+────────────────────
+"""
 
-        top_users_message += f"{i}. <a href='tg://user?id={user_id}'>{full_name}</a>, 💸{user.get('balance', 0)} Tokens\n"
+    photo_url = "https://telegra.ph/file/3474a548e37ab8f0604e8.jpg"
+    photo_response = requests.get(photo_url)
 
-    photo_path = 'https://telegra.ph/file/14cb27c83d171bd125de4.jpg'
-    await update.message.reply_photo(photo=photo_path, caption=top_users_message, parse_mode='HTML')
-
-
+    if photo_response.status_code == 200:
+        photo_data = io.BytesIO(photo_response.content)
+        await update.message.reply_photo(photo=photo_data, caption=top_users_message, parse_mode='HTML')
+    else:
+        await update.message.reply_text("Failed to download photo")
 
 async def daily_reward(update, context):
     user_id = update.effective_user.id
 
-    # Check if the user already claimed the daily reward today
     user_data = await user_collection.find_one({'id': user_id}, projection={'last_daily_reward': 1, 'balance': 1})
 
     if user_data:
@@ -135,8 +169,7 @@ async def daily_reward(update, context):
         upsert=True
     )
 
-    await update.message.reply_text("Congratulations! You claimed 50000 Tokens")
-
+    await update.message.reply_text("Congratulations! You claimed Ŧ50000 Tokens")
 
 def format_timedelta(td: timedelta) -> str:
     seconds = td.total_seconds()
@@ -147,7 +180,6 @@ def format_timedelta(td: timedelta) -> str:
 async def weekly(update, context):
     user_id = update.effective_user.id
 
-    # Check if the user already claimed the weekly bonus this week
     user_data = await user_collection.find_one({'id': user_id}, projection={'last_weekly_bonus': 1, 'balance': 1})
 
     if user_data:
@@ -166,11 +198,26 @@ async def weekly(update, context):
         upsert=True
     )
 
-    await update.message.reply_text("Congratulations! You claimed 100000 Tokens as your weekly bonus.")
+    await update.message.reply_text("Congratulations! You claimed Ŧ100000 Tokens as your weekly bonus.")
 
+async def set_profile_media(update, context):
+    if update.message.reply_to_message and update.message.reply_to_message.photo:
+        file_id = update.message.reply_to_message.photo[-1].file_id
+        user_id = update.effective_user.id
+        await user_collection.update_one({'id': user_id}, {'$set': {'profile_media': file_id}})
+        await update.message.reply_text("Profile media set successfully!")
+    else:
+        await update.message.reply_text("Please reply to a message containing a photo to set it as your profile media.")
 
+async def delete_profile_media(update, context):
+    user_id = update.effective_user.id
+    await user_collection.update_one({'id': user_id}, {'$unset': {'profile_media': 1}})
+    await update.message.reply_text("Profile media deleted successfully!")
+
+application.add_handler(CommandHandler("setprofilemedia", set_profile_media))
+application.add_handler(CommandHandler("deleteprofilemedia", delete_profile_media))
 application.add_handler(CommandHandler("bonus", daily_reward, block=False))
 application.add_handler(CommandHandler("wbonus", weekly, block=False))
-application.add_handler(CommandHandler("bal", balance, block=False))
-application.add_handler(CommandHandler("pay", pay, block=False))
+application.add_handler(CommandHandler("sprofile", balance, block=False))
+application.add_handler(CommandHandler("spay", pay, block=False))
 application.add_handler(CommandHandler("tops", mtop, block=False))
