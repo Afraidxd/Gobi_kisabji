@@ -40,9 +40,9 @@ async def balance(update, context):
                 return str(num)
 
         coins_rank = await user_collection.count_documents({'balance': {'$gt': user_balance}}) + 1
-        total_characters = len(characters)
+        total_user_characters = len(characters)
         
-        # Counting the total number of characters for the specific user
+        # Counting the total number of characters available in the database
         total_database_characters = await user_collection.count_documents({'characters': {'$exists': True}})
 
         gender_icon = '👦🏻' if gender == 'male' else '👧🏻' if gender == 'female' else '🏳️‍🌈'
@@ -54,7 +54,7 @@ async def balance(update, context):
             f"ᴄᴏɪɴꜱ: Ŧ<code>{format_number(user_balance)}</code> coins\n"
             f"ʙᴀɴᴋ: Ŧ<code>{format_number(bank_balance)}</code> coins\n"
             f"ᴄᴏɪɴꜱ ʀᴀɴᴋ: <code>{coins_rank}</code>\n"
-            f"ᴄʜᴀʀᴀᴄᴛᴇʀꜱ: <code>{total_characters}</code>/<code>{total_database_characters}</code>\n"
+            f"ᴄʜᴀʀᴀᴄᴛᴇʀꜱ: <code>{total_user_characters}</code>/<code>{total_database_characters}</code>\n"
         )
 
         photo_file = profile_media or (await context.bot.get_user_profile_photos(user_id)).photos[0][-1].file_id if (await context.bot.get_user_profile_photos(user_id)).photos else None
