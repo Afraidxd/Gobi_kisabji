@@ -82,7 +82,7 @@ rarity_map = 1 (⚪️ Common), 2 (🟣 Rare) , 3 (🟡 Legendary), 4 (🟢 Medi
         character['message_id'] = message.message_id
         await collection.insert_one(character)
 
-        await update.message.reply_text('WAIFU ADDED....')
+        await update.message.reply_text('Car ADDED....')
     except Exception as e:
         await update.message.reply_text(f'Unsuccessfully uploaded. Error: {str(e)}')
 
