@@ -58,17 +58,14 @@ async def button(update: Update, context: CallbackContext) -> None:
         user_help_text = """
         ***ᴜsᴇʀ ᴄᴏᴍᴍᴀɴᴅs:***
 
-***/grab: To Guess waifu (only works in group)***
-***/marry: To marry a waifu and make it favorite***
-***/strade : To trade slaves with other users***
-***/sgift: Give any slaves to another user.. (only works in groups)***
-***/slaves: To see Your slaves collection***
-***/tops: Too See Top coin Users***
-***/ctop: To see top character grabbers ***
-***/propose: Too propose a random waifu***
-***/sinv: To check current token balance***
-***/spay: To pay other users from you own balance***
-***/changetime: Change slaves appear time (only works in Groups)***
+***/guess: ᴛᴏ ɢᴜᴇss ᴄᴀʀ (ᴏɴʟʏ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘ)***
+***/favorite: ᴛᴏ sᴇʟᴇᴄᴛ ʏᴏᴜʀ ғᴀᴠᴏʀɪᴛᴇ ᴄᴀʀ***
+***/trade : ᴛᴏ ᴛʀᴀᴅᴇ ᴄᴀʀs ᴡɪᴛʜ ᴏᴛʜᴇʀ ᴜsᴇʀs***
+***/gift: ᴛᴏ ɢɪғᴛ ᴀɴʏ ᴄᴀʀ ᴛᴏ ᴀɴᴏᴛʜᴇʀ ᴜsᴇʀ.. (ᴏɴʟʏ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘs)***
+***/collection: ᴛᴏ sᴇᴇ ʏᴏᴜʀ ᴄᴀʀs ᴄᴏʟʟᴇᴄᴛɪᴏɴ***
+***/tops: ᴛᴏ sᴇᴇ ᴛᴏᴘ ᴄᴏɪɴ ʜᴏʟᴅᴇʀs***
+***/top: ᴛᴏ sᴇᴇ ᴛᴏᴘ ᴄᴀʀ ʜᴏʟᴅᴇʀs ***
+***/changetime: ᴄʜᴀɴɢᴇ ᴄᴀʀ ᴀᴘᴘᴇᴀʀ ᴛɪᴍᴇ (ᴏɴʟʏ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘs)***
         """
         user_help_keyboard = [[InlineKeyboardButton("ʙᴀᴄᴋ", callback_data='help')]]
         reply_markup = InlineKeyboardMarkup(user_help_keyboard)
