@@ -70,7 +70,7 @@ async def button(update: Update, context: CallbackContext) -> None:
 ***/spay: To pay other users from you own balance***
 ***/changetime: Change slaves appear time (only works in Groups)***
         """
-        user_help_keyboard = [[InlineKeyboardButton("Back", callback_data='help')]]
+        user_help_keyboard = [[InlineKeyboardButton("ʙᴀᴄᴋ", callback_data='help')]]
         reply_markup = InlineKeyboardMarkup(user_help_keyboard)
 
         await query.edit_message_caption(caption=user_help_text, reply_markup=reply_markup, parse_mode='markdown')
@@ -87,7 +87,7 @@ async def button(update: Update, context: CallbackContext) -> None:
 ***/race: ᴛᴏ ᴡɪɴ sᴏᴍᴇ ᴛᴏᴋᴇɴs ʙᴇᴛᴡᴇᴇɴ 10ᴋ - 50ᴋ ***
 ***/bet: ᴛᴏ ʙᴇᴛ sᴏᴍᴇ ᴛᴏᴋᴇɴs***
         """
-        games_help_keyboard = [[InlineKeyboardButton("Back", callback_data='help')]]
+        games_help_keyboard = [[InlineKeyboardButton("ʙᴀᴄᴋ", callback_data='help')]]
         reply_markup = InlineKeyboardMarkup(games_help_keyboard)
 
         await query.edit_message_caption(caption=games_help_text, reply_markup=reply_markup, parse_mode='markdown')
