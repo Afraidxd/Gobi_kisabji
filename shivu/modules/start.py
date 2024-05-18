@@ -42,7 +42,7 @@ async def button(update: Update, context: CallbackContext) -> None:
 
     if query.data == 'help':
         help_text = """
-        ***Choose a category:***
+        ***ᴄʜᴏᴏsᴇ ᴀ ᴄᴀᴛᴇɢᴏʀʏ:***
 1. ᴜsᴇʀ
 2. ɢᴀᴍᴇs
         """
@@ -83,6 +83,7 @@ async def button(update: Update, context: CallbackContext) -> None:
 ***/store: To buy from daily store***
 ***/race: ᴛᴏ ᴡɪɴ sᴏᴍᴇ ᴛᴏᴋᴇɴs ʙᴇᴛᴡᴇᴇɴ 10ᴋ - 50ᴋ ***
 ***/bet: ᴛᴏ ʙᴇᴛ sᴏᴍᴇ ᴛᴏᴋᴇɴs***
+***/pay: ᴛᴏ ɢɪᴠᴇ ʏᴏᴜʀ ᴄᴏɪɴ ᴛᴏ ᴀɴᴏᴛʜᴇʀ ᴜsᴇʀ***
         """
         games_help_keyboard = [[InlineKeyboardButton("ʙᴀᴄᴋ", callback_data='help')]]
         reply_markup = InlineKeyboardMarkup(games_help_keyboard)
