@@ -1,13 +1,9 @@
-import io
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import CallbackContext, CommandHandler, CallbackQueryHandler
 import requests
-import random
-import html
+import io
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import CommandHandler, CallbackContext
-from telegram.ext import CallbackQueryHandler, CommandHandler
-from shivu import application, user_collection, PHOTO_URL
-
+# Define the send_leaderboard_message function
 async def send_leaderboard_message(context: CallbackContext, chat_id: int, message: str, photo_url: str, message_id: int = None):
     keyboard = [
         [InlineKeyboardButton("Close", callback_data='lb_close')]
@@ -19,31 +15,34 @@ async def send_leaderboard_message(context: CallbackContext, chat_id: int, messa
             chat_id=chat_id,
             message_id=message_id,
             caption=message,
-            parse_mode='HTML',
             reply_markup=reply_markup
         )
     else:
-        await context.bot.send_photo(chat_id=chat_id, photo=photo_url, caption=message, parse_mode='HTML', reply_markup=reply_markup)
+        await context.bot.send_photo(chat_id=chat_id, photo=photo_url, caption=message, reply_markup=reply_markup)
 
+# Define the mtop function
 async def mtop(update: Update, context: CallbackContext):
-    top_users = await user_collection.find({}, {'id': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}).sort('balance', -1).limit(10).to_list(10)
+    # Fetch top users sorted by 'vers' balance
+    top_users = await user_collection.find({}, {'id': 1, 'first_name': 1, 'last_name': 1, 'vers': 1}).sort('vers', -1).limit(10).to_list(10)
 
     top_users_message = (
         "┌─────═━┈┈━═─────┐\n"
-        "Top 10 Token Users:\n"
+        "Top 10 Vers Users:\n"
         "───────────────────\n"
     )
 
     for i, user in enumerate(top_users, start=1):
-        first_name = html.escape(user.get('first_name', 'Unknown'))
+        first_name = user.get('first_name', 'Unknown')
+        last_name = user.get('last_name', '')
         user_id = user.get('id', 'Unknown')
+        full_name = f"{first_name} {last_name}".strip()
 
         if user_id != 'Unknown':
-            user_link = f'<a href="tg://user?id={user_id}">{first_name}</a>'
+            user_link = f'{full_name} (ID: {user_id})'
         else:
-            user_link = first_name
+            user_link = full_name
 
-        top_users_message += f"{i}. {user_link} - Ŧ{user.get('balance', 0):,}\n"
+        top_users_message += f"{i}. {user_link} - Ŧ{user.get('vers', 0):,}\n"
 
     top_users_message += (
         "───────────────────\n"
@@ -59,6 +58,7 @@ async def mtop(update: Update, context: CallbackContext):
     else:
         await update.message.reply_text("Failed to download photo")
 
+# Define the button handler function
 async def button_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     await query.answer()
@@ -66,5 +66,6 @@ async def button_handler(update: Update, context: CallbackContext) -> None:
     if query.data == 'lb_close':
         await query.message.delete()
 
+# Add the command and callback handlers
 application.add_handler(CommandHandler("tops", mtop))
 application.add_handler(CallbackQueryHandler(button_handler))
