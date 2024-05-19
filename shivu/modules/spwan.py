@@ -1,31 +1,36 @@
+import importlib
+import time
+import random
+import re
+import asyncio
+from html import escape
+
 from typing import Optional
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import Update
-from telegram.ext import CallbackContext
+from telegram.ext import Updater, CallbackQueryHandler
+from telegram.ext import CommandHandler, MessageHandler, filters
 
-from shivu import user_collection
+from telegram.ext import CommandHandler, CallbackContext, MessageHandler, CallbackQueryHandler, filters
 
-# A dictionary to keep track of the last character sent for each chat
+from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu 
+from shivu import application, LOGGER
+from shivu.modules import ALL_MODULES
+
+locks = {}
+message_counters = {}
+spam_counters = {}
 last_characters = {}
+sent_characters = {}
+first_correct_guesses = {}
+message_counts = {}
 
-async def button_click(update: Update, context: CallbackContext) -> None:
-    query = update.callback_query
-    user_id = query.from_user.id
-    chat_id = query.message.chat_id
+for module_name in ALL_MODULES:
+    imported_module = importlib.import_module("shivu.modules." + module_name)
 
-    user_balance = await get_user_balance(user_id)
+last_user = {}
+warned_users = {}
 
-    if user_balance is not None:
-        if user_balance >= 10000:
-            await user_collection.update_one({"id": user_id}, {"$inc": {"balance": -10000}})
-            name = last_characters.get(chat_id, {}).get('name', 'Unknown car')
-            await query.answer(text=f"ᴛʜᴇ ᴄᴀʀ ɴᴀᴍᴇ ɪs: {name}", show_alert=True)
-        else:
-            await query.answer(text="ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ sᴜғғɪᴄɪᴇɴᴛ ʙᴀʟᴀɴᴄᴇ.", show_alert=True)
-    else:
-        await user_collection.insert_one({"id": user_id, "balance": 50000})
-        name = last_characters.get(chat_id, {}).get('name', 'Unknown car')
-        await query.answer(text=f"ᴡᴇʟᴄᴏᴍᴇ, ᴜsᴇʀ ! ʏᴏᴜ'ᴠᴇ ʙᴇᴇɴ ᴀᴅᴅᴇᴅ ᴛᴏ ᴏᴜʀ sʏsᴛᴇᴍ ᴡɪᴛʜ ᴀɴ ɪɴɪᴛɪᴀʟ ʙᴀʟᴀɴᴄᴇ ᴏғ 50ᴋ", show_alert=True)
-
-async def get_user_balance(user_id: int) -> Optional[int]:
-    user = await user_collection.find_one({"id": user_id})
-    return user.get("balance") if user else None
+def escape_markdown(text):
+    escape_chars = r'\*_`\\~>#+-=|{}.!'
+    return re.sub(r'([%s])' % re.escape(escape_chars), r'\\\1', text)
