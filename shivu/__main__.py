@@ -12,10 +12,12 @@ from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageH
 from shivu import collection, user_collection, user_totals_collection, shivuu, application, LOGGER
 from shivu.modules import ALL_MODULES
 
+# Import the button click handler and last_characters from button_callbacks.py
+from button_callbacks import button_click, last_characters
+
 locks = {}
 message_counters = {}
 spam_counters = {}
-last_characters = {}
 sent_characters = {}
 first_correct_guesses = {}
 message_counts = {}
@@ -89,32 +91,6 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
-
-async def button_click(update: Update, context: CallbackContext) -> None:
-    query = update.callback_query
-    user_id = query.from_user.id
-    chat_id = query.message.chat_id
-
-    user_balance = await get_user_balance(user_id)
-
-    if user_balance is not None:
-        if user_balance >= 10000:
-            await user_collection.update_one({"id": user_id}, {"$inc": {"balance": -10000}})
-            name = last_characters.get(chat_id, {}).get('name', 'Unknown car')
-            await query.answer(text=f"ᴛʜᴇ ᴄᴀʀ ɴᴀᴍᴇ ɪs: {name}", show_alert=True)
-        else:
-            await query.answer(text="ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ sᴜғғɪᴄɪᴇɴᴛ ʙᴀʟᴀɴᴄᴇ.", show_alert=True)
-    else:
-        await user_collection.insert_one({"id": user_id, "balance": 50000})
-        name = last_characters.get(chat_id, {}).get('name', 'Unknown car')
-        await query.answer(text=f"ᴡᴇʟᴄᴏᴍᴇ, ᴜsᴇʀ ! ʏᴏᴜ'ᴠᴇ ʙᴇᴇɴ ᴀᴅᴅᴇᴅ ᴛᴏ ᴏᴜʀ sʏsᴛᴇᴍ ᴡɪᴛʜ ᴀɴ ɪɴɪᴛɪᴀʟ ʙᴀʟᴀɴᴄᴇ ᴏғ 50ᴋ", show_alert=True)
-
-async def get_user_balance(user_id: int) -> Optional[int]:
-    user = await user_collection.find_one({"id": user_id})
-    return user.get("balance") if user else None
-
-application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
-
 
 
 async def guess(update: Update, context: CallbackContext) -> None:
