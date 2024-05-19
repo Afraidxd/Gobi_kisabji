@@ -105,6 +105,10 @@ async def send_image(update: Update, context: CallbackContext) -> None:
 
 
 
+
+# Import or define user_collection and last_characters as needed
+# from your_database_module import user_collection, last_characters
+
 async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     user_id = query.from_user.id
@@ -129,6 +133,7 @@ async def get_user_balance(user_id: int) -> int:
     user = await user_collection.find_one({"id": user_id})
     return user.get("balance") if user else None
 
+# Add the handler to your application
 application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
 
 
