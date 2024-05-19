@@ -57,7 +57,7 @@ async def mtop(update: Update, context: CallbackContext):
         else:
             user_link = full_name
 
-        top_users_message += f"{i}. {user_link} - Ŧ{user.get('vers', 0):,}\n"
+        top_users_message += f"{i}. {user_link} - Ŧ{user.get('balance', 0):,}\n"
 
     top_users_message += (
         "───────────────────\n"
