@@ -1,5 +1,5 @@
 from telegram import Update, InlineKeyboardButton as IKB, InlineKeyboardMarkup as IKM, InputMediaPhoto as IMP
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, filters
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler
 from datetime import datetime as dt
 import random
 import time
@@ -58,10 +58,6 @@ async def get_image_and_caption(id: int):
 
 def today():
     return str(dt.now()).split()[0]
-
-def get_time():
-    time_now = str(dt.now()).split()[1].split(":")
-    return int(time_now[0]), int(time_now[1])
 
 async def get_character(id: int):
     return await collection.find_one({'id': id})
@@ -199,7 +195,7 @@ async def handle_char_back(query, char, user_id):
     await query.edit_message_media(
         media=IMP(photo, caption=f"__PAGE {page}__\n\n{caption}"),
         reply_markup=IKM([
-            [IKB("⬅️", callback_data=f"store_{nav_buttons[page-1]}_{user_id}"), IKB("Buy 🔖", callback_data=f"store_{buy_buttons[page-1]}_{user_id}"), IKB("➡️", callback_data=f"store_{nav_buttons[page]}_{user_id}")],
+            [IKB("⬅️", callback_data=f"store_{nav_buttons[page-2]}_{user_id}"), IKB("Buy 🔖", callback_data=f"store_{buy_buttons[page-1]}_{user_id}"), IKB("➡️", callback_data=f"store_{nav_buttons[page]}_{user_id}")],
             [IKB("Close 🗑️", callback_data=f"store_close_{user_id}")]
         ])
     )
@@ -207,6 +203,3 @@ async def handle_char_back(query, char, user_id):
 # Register handlers
 application.add_handler(CommandHandler("store", shop))
 application.add_handler(CallbackQueryHandler(store_callback_handler, pattern=r'^store_'))
-
-# Uncomment the following line to register the start_ag function
-# application.add_handler(CallbackQueryHandler(start_ag, pattern=r'^startwordle_'))
