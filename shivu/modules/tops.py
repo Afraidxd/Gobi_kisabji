@@ -82,7 +82,7 @@ async def button_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     await query.answer()
 
-    if query.data == 'lb_close':
+    if query.data == 'tlb_close':
         await query.message.delete()
 
 # Add the command and callback handlers
