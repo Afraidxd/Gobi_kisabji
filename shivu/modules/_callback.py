@@ -31,7 +31,7 @@ async def cbq(update: Update, context):
     elif data == 'name': 
         from .spwan import button_click
         await button_click(update, context),
-    elif data =='lb_close'   
+    elif data =='lb_close' :  
         from .tops import button_handler 
         await button_handler(update, context),
     elif data.startswith(('help', 'credits', 'back', 'user_help', 'game_help')): 
