@@ -3,11 +3,50 @@ from telegram.ext import CommandHandler, CallbackContext
 from datetime import datetime as dt
 import random
 from shivu import application, db, collection, user_collection
-from .ptb_wordle import start_ag, terminate
 
 # Database setup
 sdb = db.new_store
 user_db = db.bought
+
+async def terminate(u: Update, c):
+  global dic
+  user_id = u.effective_user.id
+  q = u.callback_query
+  if not user_id in dic:
+    return await q.answer(("you are not in a game !"), show_alert=True)
+  await q.answer(('terminating...'))
+  dic.pop(user_id)
+  markup = IKM(
+      [
+        [
+          IKB(('start again'), callback_data=f'startwordle_{user_id}')
+        ]
+      ]
+    )
+  await q.edit_message_text(("game terminated !"), reply_markup=markup)
+
+# @Grabberu.on_callback_query(filters.regex('startwordle'))   
+async def start_ag(u: Update, c: CallbackContext):
+  global dic
+  user_id = u.effective_user.id
+  q = u.callback_query
+  markup = IKM(
+    [
+      [
+        IKB(('cancel'), callback_data=f'terminate_{user_id}')
+      ]
+    ]
+  )
+  if user_id in dic:
+    return await q.answer(("you are already in a game !"), show_alert=True)
+  await q.answer(('starting...'))
+  word = random.choice(words)
+  dic[user_id] = [word, [], [], time.time()]
+  mention = f'[{q.from_user.first_name}](tg://user?id={user_id})'
+  txt = mention + ', ' + ('wordle has been started, guess the 5 lettered word within 6 chances !')
+  txt += '\n\n'
+  txt += ('enter your first word !')
+  return await c.bot.send_message(u.effective_chat.id, txt, reply_markup=markup)
 
 # Helper functions
 async def set_today_characters(user_id: int, data):
