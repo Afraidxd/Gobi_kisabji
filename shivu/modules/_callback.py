@@ -6,7 +6,7 @@ from .ptb_store import store_callback_handler, terminate, start_ag
 from .harem import harem_callback
 
 from .saleslist import sales_list_callback
-
+from .owner import button_handler
 
 async def cbq(update: Update, context):
     query = update.callback_query
@@ -24,6 +24,8 @@ async def cbq(update: Update, context):
         await start_ag(update, context)
     elif data.startswith('harem'):
         await harem_callback(update, context)
+    elif data.startswith('lb_'):
+        await button_handler(update, context)
     
 
 application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
