@@ -12,7 +12,7 @@ async def cbq(update: Update, context):
     data = query.data
 
     
-    elif data.startswith('saleslist') or data.startswith('saleslist:close'):
+    if data.startswith('saleslist') or data.startswith('saleslist:close'):
         await sales_list_callback(update, context)
     
     elif data.startswith(('buy', 'pg', 'charcnf/', 'charback/')):
