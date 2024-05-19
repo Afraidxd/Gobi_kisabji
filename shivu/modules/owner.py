@@ -4,15 +4,12 @@ import html
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackQueryHandler, CallbackContext
 
-from shivu import (
-    application, PHOTO_URL,
-    user_collection, top_global_groups_collection, group_user_totals_collection,
-)
+from shivu import application, user_collection, top_global_groups_collection, group_user_totals_collection, PHOTO_URL
 
 async def send_leaderboard(context: CallbackContext, chat_id: int, leaderboard_message: str, photo_url: str, message_id: int = None):
     keyboard = [
         [
-            InlineKeyboardButton("Top Group Users", callback_data='ctop'),
+            InlineKeyboardButton("Top Users", callback_data='top_users'),
             InlineKeyboardButton("Top Groups", callback_data='topgc')
         ],
         [InlineKeyboardButton("Close", callback_data='close')]
@@ -128,5 +125,5 @@ async def button_handler(update: Update, context: CallbackContext) -> None:
 async def top_command(update: Update, context: CallbackContext) -> None:
     await leaderboard(update, context)
 
-application.add_handler(CommandHandler('top', top_command, block=False))
-application.add_handler(CallbackQueryHandler(button_handler))
+application.add_handler(CommandHandler('top', top_command, run_async=True))
+application.add_handler(CallbackQueryHandler(button_handler, run_async=True))
