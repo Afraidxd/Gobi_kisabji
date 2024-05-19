@@ -67,6 +67,7 @@ def main() -> None:
     
     application.add_handler(CommandHandler(["favorite"], fav, block=False))
     
+application.run_polling(drop_pending_updates=True)
 
 
 if __name__ == "__main__":
