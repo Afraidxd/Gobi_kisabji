@@ -20,18 +20,17 @@ async def rps(update, context):
         return
 
     keyboard = [
-        [InlineKeyboardButton("Rock 🪨", callback_data='rock')],
-        [InlineKeyboardButton("Paper 📄", callback_data='paper')],
-        [InlineKeyboardButton("Scissors ✂️", callback_data='scissors')]
+        [InlineKeyboardButton("ʀᴏᴄᴋ 🪨", callback_data='rock'),
+         InlineKeyboardButton("ᴘᴀᴘᴇʀ 📄", callback_data='paper')],
+        [InlineKeyboardButton("sᴄɪssᴏʀs ✂️", callback_data='scissors')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     message = await update.message.reply_text("Choose your move:", reply_markup=reply_markup)
 
-    # Save the amount and message ID for future reference
     context.user_data['amount'] = amount
     context.user_data['message_id'] = message.message_id
 
-async def button(update, context):
+async def rps_button(update, context):
     query = update.callback_query
     choice = query.data
 
@@ -39,9 +38,7 @@ async def button(update, context):
         await play_again(update, context)
         return
 
-    # Get the saved amount from user_data
     amount = context.user_data.get('amount')
-
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
@@ -56,32 +53,29 @@ async def button(update, context):
     elif (choice == 'rock' and computer_choice == 'scissors') or \
          (choice == 'paper' and computer_choice == 'rock') or \
          (choice == 'scissors' and computer_choice == 'paper'):
-        result_message = "🎉 You won!"
+        result_message = "🎉 ʏᴏᴜ ᴡᴏɴ!"
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': amount}})
     else:
-        result_message = "😔 You lost!"
+        result_message = "😔You lost!"
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -amount}})
 
-    # Retrieve updated balance
-    updated_user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
-    updated_balance = updated_user_balance.get('balance', 0)
+
+    updated_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
     await query.message.edit_text(
-        f"You chose {choice.capitalize()} and the computer chose {computer_choice.capitalize()}.\n{result_message}\n\nYour new balance is: Ŧ{updated_balance}\n\nPlay again?",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Play Again 🔄", callback_data='play_again')]])
+        f"You chose {choice.capitalize()} and the computer chose {computer_choice.capitalize()}\n\n.\n{result_message} Your updated balance is {updated_balance['balance']}\n\nPlay again?",
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("ᴘʟᴀʏ ᴀɢᴀɪɴ🔄", callback_data='play_again')]])
     )
 
 async def play_again(update, context):
     query = update.callback_query
 
-    # Re-enable the game by sending the original message again
     keyboard = [
-        [InlineKeyboardButton("Rock 🪨", callback_data='rock')],
-        [InlineKeyboardButton("Paper 📄", callback_data='paper')],
-        [InlineKeyboardButton("Scissors ✂️", callback_data='scissors')]
+        [InlineKeyboardButton("ʀᴏᴄᴋ 🪨", callback_data='rock'),
+         InlineKeyboardButton("ᴘᴀᴘᴇʀ 📄", callback_data='paper')],
+        [InlineKeyboardButton("sᴄɪssᴏʀs ✂️", callback_data='scissors')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await query.message.edit_text("Choose your move:", reply_markup=reply_markup)
 
 application.add_handler(CommandHandler("rps", rps))
-application.add_handler(CallbackQueryHandler(button, pattern='^(rock|paper|scissors|play_again)$'))
