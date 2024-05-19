@@ -24,10 +24,11 @@ async def send_leaderboard(context: CallbackContext, chat_id: int, leaderboard_m
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     if message_id:
-        await context.bot.edit_message_media(
-            media={'type': 'photo', 'media': photo_url, 'caption': leaderboard_message, 'parse_mode': 'HTML'},
+        await context.bot.edit_message_caption(
             chat_id=chat_id,
             message_id=message_id,
+            caption=leaderboard_message,
+            parse_mode='HTML',
             reply_markup=reply_markup
         )
     else:
