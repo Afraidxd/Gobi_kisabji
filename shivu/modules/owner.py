@@ -124,4 +124,3 @@ async def top_command(update: Update, context: CallbackContext) -> None:
     await leaderboard(update, context)
 
 application.add_handler(CommandHandler('top', top_command, block=False))
-application.add_handler(CallbackQueryHandler(button_handler, pattern=r'^lb_'))
