@@ -23,9 +23,9 @@ async def rps(update: Update, context: CallbackContext):
         return
 
     keyboard = [
-        [InlineKeyboardButton("ʀᴏᴄᴋ 🪨", callback_data='rock'),
-         InlineKeyboardButton("ᴘᴀᴘᴇʀ 📄", callback_data='paper')],
-        [InlineKeyboardButton("sᴄɪssᴏʀs ✂️", callback_data='scissors')]
+        [InlineKeyboardButton("ʀᴏᴄᴋ 🪨", callback_data='rps_rock'),
+         InlineKeyboardButton("ᴘᴀᴘᴇʀ 📄", callback_data='rps_paper')],
+        [InlineKeyboardButton("sᴄɪssᴏʀs ✂️", callback_data='rps_scissors')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     message = await update.message.reply_text("Choose your move:", reply_markup=reply_markup)
@@ -36,6 +36,11 @@ async def rps(update: Update, context: CallbackContext):
 async def rps_button(update: Update, context: CallbackContext):
     query = update.callback_query
     choice = query.data
+
+    if not choice.startswith("rps_"):  # Check if the callback data starts with "rps_"
+        return
+
+    choice = choice.replace("rps_", "")  # Remove the "rps_" prefix from the choice
 
     if choice == 'play_again':
         await play_again(query, context)
@@ -64,7 +69,7 @@ async def rps_button(update: Update, context: CallbackContext):
     await query.message.edit_text(
         f"You chose {choice.capitalize()} and the computer chose {computer_choice.capitalize()}\n\n"
         f"{result_message} Your updated balance is {updated_balance['balance']}\n\nPlay again?",
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("ᴘʟᴀʏ ᴀɢᴀɪɴ🔄", callback_data='play_again')]])
+        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("ᴘʟᴀʏ ᴀɢᴀɪɴ🔄", callback_data='rps_play_again')]])
     )
 
 def determine_winner(user_choice, computer_choice, bet_amount):
@@ -79,9 +84,9 @@ def determine_winner(user_choice, computer_choice, bet_amount):
 
 async def play_again(query, context):
     keyboard = [
-        [InlineKeyboardButton("ʀᴏᴄᴋ 🪨", callback_data='rock'),
-         InlineKeyboardButton("ᴘᴀᴘᴇʀ 📄", callback_data='paper')],
-        [InlineKeyboardButton("sᴄɪssᴏʀs ✂️", callback_data='scissors')]
+        [InlineKeyboardButton("ʀᴏᴄᴋ 🪨", callback_data='rps_rock'),
+         InlineKeyboardButton("ᴘᴀᴘᴇʀ 📄", callback_data='rps_paper')],
+        [InlineKeyboardButton("sᴄɪssᴏʀs ✂️", callback_data='rps_scissors')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await query.message.edit_text("Choose your move:", reply_markup=reply_markup)
