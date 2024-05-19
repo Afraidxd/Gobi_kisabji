@@ -87,4 +87,3 @@ async def button_handler(update: Update, context: CallbackContext) -> None:
 
 # Add the command and callback handlers
 application.add_handler(CommandHandler("mtop", mtop))
-application.add_handler(CallbackQueryHandler(button_handler))
