@@ -13,7 +13,20 @@ from shivu import (
 
 photo = random.choice(PHOTO_URL)
 
-async def global_leaderboard(context: CallbackContext, update: Update = None, query=None) -> None:
+async def send_leaderboard(update: Update, context: CallbackContext, leaderboard_message: str, photo_url: str):
+    keyboard = [
+        [
+            InlineKeyboardButton("Top Users", callback_data='top_users'),
+            InlineKeyboardButton("Top Groups", callback_data='top_groups')
+        ],
+        [InlineKeyboardButton("Top Group Users", callback_data='ctop')],
+        [InlineKeyboardButton("Close", callback_data='close')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
+
+async def global_leaderboard(update: Update, context: CallbackContext) -> None:
     cursor = top_global_groups_collection.aggregate([
         {"$project": {"group_name": 1, "count": 1}},
         {"$sort": {"count": -1}},
@@ -33,26 +46,10 @@ async def global_leaderboard(context: CallbackContext, update: Update = None, qu
 
     photo_url = random.choice(PHOTO_URL)
 
-    keyboard = [
-        [
-            InlineKeyboardButton("Top Users", callback_data='top_users'),
-            InlineKeyboardButton("Top Groups", callback_data='top_groups')
-        ],
-        [InlineKeyboardButton("Top Group Users", callback_data='ctop')],
-        [InlineKeyboardButton("Close", callback_data='close')]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    await send_leaderboard(update, context, leaderboard_message, photo_url)
 
-    if query:
-        await query.edit_message_media(
-            media={'type': 'photo', 'media': photo_url, 'caption': leaderboard_message, 'parse_mode': 'HTML'},
-            reply_markup=reply_markup
-        )
-    elif update:
-        await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
-
-async def ctop(context: CallbackContext, update: Update = None, query=None) -> None:
-    chat_id = update.effective_chat.id if update else context.job.chat_id
+async def ctop(update: Update, context: CallbackContext) -> None:
+    chat_id = update.effective_chat.id
 
     cursor = group_user_totals_collection.aggregate([
         {"$match": {"group_id": chat_id}},
@@ -75,25 +72,9 @@ async def ctop(context: CallbackContext, update: Update = None, query=None) -> N
 
     photo_url = random.choice(PHOTO_URL)
 
-    keyboard = [
-        [
-            InlineKeyboardButton("Top Users", callback_data='top_users'),
-            InlineKeyboardButton("Top Groups", callback_data='top_groups')
-        ],
-        [InlineKeyboardButton("Top Group Users", callback_data='ctop')],
-        [InlineKeyboardButton("Close", callback_data='close')]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    await send_leaderboard(update, context, leaderboard_message, photo_url)
 
-    if query:
-        await query.edit_message_media(
-            media={'type': 'photo', 'media': photo_url, 'caption': leaderboard_message, 'parse_mode': 'HTML'},
-            reply_markup=reply_markup
-        )
-    elif update:
-        await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
-
-async def leaderboard(context: CallbackContext, update: Update = None, query=None) -> None:
+async def leaderboard(update: Update, context: CallbackContext) -> None:
     cursor = user_collection.aggregate([
         {"$match": {"characters": {"$exists": True, "$type": "array"}}},
         {"$project": {"username": 1, "first_name": 1, "character_count": {"$size": "$characters"}}},
@@ -116,39 +97,23 @@ async def leaderboard(context: CallbackContext, update: Update = None, query=Non
 
     photo_url = random.choice(PHOTO_URL)
 
-    keyboard = [
-        [
-            InlineKeyboardButton("Top Users", callback_data='top_users'),
-            InlineKeyboardButton("Top Groups", callback_data='top_groups')
-        ],
-        [InlineKeyboardButton("Top Group Users", callback_data='ctop')],
-        [InlineKeyboardButton("Close", callback_data='close')]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    if query:
-        await query.edit_message_media(
-            media={'type': 'photo', 'media': photo_url, 'caption': leaderboard_message, 'parse_mode': 'HTML'},
-            reply_markup=reply_markup
-        )
-    elif update:
-        await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
+    await send_leaderboard(update, context, leaderboard_message, photo_url)
 
 async def button_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     await query.answer()
 
     if query.data == 'top_users':
-        await leaderboard(context, query=query)
+        await leaderboard(update, context)
     elif query.data == 'top_groups':
-        await global_leaderboard(context, query=query)
+        await global_leaderboard(update, context)
     elif query.data == 'ctop':
-        await ctop(context, query=query)
+        await ctop(update, context)
     elif query.data == 'close':
         await query.message.delete()
 
 async def top_command(update: Update, context: CallbackContext) -> None:
-    await global_leaderboard(context, update=update)
+    await global_leaderboard(update, context)
 
 application.add_handler(CommandHandler('top', top_command, block=False))
 application.add_handler(CallbackQueryHandler(button_handler))
