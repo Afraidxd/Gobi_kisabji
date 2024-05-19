@@ -6,22 +6,25 @@ import asyncio
 from html import escape
 
 from typing import Optional
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageHandler, filters, CallbackContext
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update
+from telegram.ext import Updater, CallbackQueryHandler
+from telegram.ext import CommandHandler, MessageHandler, filters
 
-from shivu import collection, user_collection, user_totals_collection, shivuu, application, LOGGER
+from telegram.ext import CommandHandler, CallbackContext, MessageHandler, CallbackQueryHandler, filters
+
+from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu 
+from shivu import application, LOGGER
 from shivu.modules import ALL_MODULES
-from shivu.spwan import button_click, last_characters  # Import the necessary functions and variables
 
-# Initialize necessary dictionaries
 locks = {}
 message_counters = {}
 spam_counters = {}
+last_characters = {}
 sent_characters = {}
 first_correct_guesses = {}
 message_counts = {}
 
-# Import all modules dynamically
 for module_name in ALL_MODULES:
     imported_module = importlib.import_module("shivu.modules." + module_name)
 
@@ -42,7 +45,10 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 
     async with lock:
         chat_frequency = await user_totals_collection.find_one({'chat_id': chat_id})
-        message_frequency = chat_frequency.get('message_frequency', 100) if chat_frequency else 100
+        if chat_frequency:
+            message_frequency = chat_frequency.get('message_frequency', 100)
+        else:
+            message_frequency = 100
 
         if chat_id in last_user and last_user[chat_id]['user_id'] == user_id:
             last_user[chat_id]['count'] += 1
@@ -51,14 +57,16 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
                     return
                 else:
                     await update.message.reply_text(
-                        f"⚠️ Don't Spam {update.effective_user.first_name}...\nYour Messages Will be Ignored for 10 Minutes..."
-                    )
+                        f"⚠️ Don't Spam {update.effective_user.first_name}...\nYour Messages Will be Ignored for 10 Minutes...")
                     warned_users[user_id] = time.time()
                     return
         else:
             last_user[chat_id] = {'user_id': user_id, 'count': 1}
 
-        message_counts[chat_id] = message_counts.get(chat_id, 0) + 1
+        if chat_id in message_counts:
+            message_counts[chat_id] += 1
+        else:
+            message_counts[chat_id] = 1
 
         if message_counts[chat_id] % message_frequency == 0:
             await send_image(update, context)
@@ -67,7 +75,7 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
-    all_characters = await collection.find({}).to_list(length=None)
+    all_characters = list(await collection.find({}).to_list(length=None))
 
     if chat_id not in sent_characters:
         sent_characters[chat_id] = []
@@ -76,6 +84,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         sent_characters[chat_id] = []
 
     character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
+
     sent_characters[chat_id].append(character['id'])
     last_characters[chat_id] = character
 
@@ -96,32 +105,31 @@ async def send_image(update: Update, context: CallbackContext) -> None:
 
 
 
-# Define the central callback query handler function
-async def cbq(update: Update, context: CallbackContext):
+async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
-    data = query.data
+    user_id = query.from_user.id
+    chat_id = query.message.chat_id
 
-    if data == 'name':  # Handle 'name' button click
-        await button_click(update, context)
-    elif data.startswith('saleslist') or data.startswith('saleslist:close'):
-        await sales_list_callback(update, context)
-    elif data.startswith(('buy', 'pg', 'charcnf/', 'charback/')):
-        await store_callback_handler(update, context)
-    elif data.startswith('terminate'):
-        await terminate(update, context)
-    elif data.startswith('startwordle'):
-        await start_ag(update, context)
-    elif data.startswith('harem'):
-        await harem_callback(update, context)
-    elif data.startswith('lb_'):
-        await button_handler(update, context)
-    elif data in ('rock', 'paper', 'scissors', 'play_again'):
-        await rps_button(update, context)
-    elif data.startswith(('help', 'credits', 'back', 'user_help', 'game_help')): 
-        await button(update, context)
+    # Get user balance
+    user_balance = await get_user_balance(user_id)
 
-application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
+    if user_balance is not None:
+        if user_balance >= 10000:
+            await user_collection.update_one({"id": user_id}, {"$inc": {"balance": -10000}})
+            name = last_characters.get(chat_id, {}).get('name', 'Unknown car')
+            await query.answer(text=f"ᴛʜᴇ ᴄᴀʀ ɴᴀᴍᴇ ɪs: {name}", show_alert=True)
+        else:
+            await query.answer(text="ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ sᴜғғɪᴄɪᴇɴᴛ ʙᴀʟᴀɴᴄᴇ.", show_alert=True)
+    else:
+        await user_collection.insert_one({"id": user_id, "balance": 50000})
+        name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
+        await query.answer(text=f"ᴡᴇʟᴄᴏᴍᴇ, ᴜsᴇʀ ! ʏᴏᴜ'ᴠᴇ ʙᴇᴇɴ ᴀᴅᴅᴇᴅ ᴛᴏ ᴏᴜʀ sʏsᴛᴇᴍ ᴡɪᴛʜ ᴀɴ ɪɴɪᴛɪᴀʟ ʙᴀʟᴀɴᴄᴇ ᴏғ 50ᴋ", show_alert=True)
 
+async def get_user_balance(user_id: int) -> int:
+    user = await user_collection.find_one({"id": user_id})
+    return user.get("balance") if user else None
+
+application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
 
 
 
@@ -209,7 +217,7 @@ async def guess(update: Update, context: CallbackContext) -> None:
                 'count': 1,
             })
 
-        keyboard = [[InlineKeyboardButton(f"Cars 🔥", switch_inline_query_current_chat=f"collection.{user_id}")]]
+        keyboard = [[InlineKeyboardButton(f"Slaves 🔥", switch_inline_query_current_chat=f"collection.{user_id}")]]
         await update.message.reply_text(f'<b><a href="https://justpaste.it/redirect/cia8f/https%3A%2F%2Ftguser%3Fid%3D%7Buser_id%7D">{escape(update.effective_user.first_name)}</a></b> 𝙔𝙤𝙪 𝙂𝙤𝙩 𝙉𝙚𝙬 Slave🫧 \n🌸𝗡𝗔𝗠𝗘: <b>{last_characters[chat_id]["name"]}</b> \n🧩𝘾𝙤𝙢𝙥𝙖𝙣𝙮: <b>{last_characters[chat_id]["anime"]}</b> \n𝗥𝗔𝗜𝗥𝗧𝗬: <b>{last_characters[chat_id]["rarity"]}</b>\n\n⛩ 𝘾𝙝𝙚𝙘𝙠 𝙮𝙤𝙪𝙧 /slaves 𝙉𝙤𝙬', parse_mode='HTML', reply_markup=InlineKeyboardMarkup(keyboard))
 
     else:
