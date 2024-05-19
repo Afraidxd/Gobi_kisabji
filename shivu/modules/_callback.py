@@ -8,7 +8,7 @@ from .start import button
 from .saleslist import sales_list_callback
 from .owner import button_handler
 from .rps import rps_button
-from .spawn import button_click
+from .spwan import button_click
 
 async def cbq(update: Update, context):
     query = update.callback_query
