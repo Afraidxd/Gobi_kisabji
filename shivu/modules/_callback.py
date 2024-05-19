@@ -13,10 +13,8 @@ async def cbq(update: Update, context):
     query = update.callback_query
     data = query.data
 
-
     if data.startswith('saleslist') or data.startswith('saleslist:close'):
         await sales_list_callback(update, context)
-
     elif data.startswith(('buy', 'pg', 'charcnf/', 'charback/')):
         await store_callback_handler(update, context)
     elif data.startswith('terminate'):
@@ -28,9 +26,9 @@ async def cbq(update: Update, context):
     elif data.startswith('lb_'):
         await button_handler(update, context)
     elif data in ('rock', 'paper', 'scissors', 'play_again'):
+        await rps_button(update, context)
     elif data == 'name': 
         await button_click(update, context)
-        await rps_button(update, context)
     elif data.startswith(('help', 'credits', 'back', 'user_help', 'game_help')): 
         await button(update, context)   
 
