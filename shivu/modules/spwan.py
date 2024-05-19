@@ -130,7 +130,6 @@ async def get_user_balance(user_id: int) -> int:
     user = await user_collection.find_one({"id": user_id})
     return user.get("balance") if user else None
 
-application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
 
 
 
