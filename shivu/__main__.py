@@ -11,10 +11,9 @@ from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageH
 
 from shivu import collection, user_collection, user_totals_collection, shivuu, application, LOGGER
 from shivu.modules import ALL_MODULES
+from shivu.button_callbacks import button_click, last_characters  # Import the necessary functions and variables
 
-# Import the button click handler and last_characters from button_callbacks.py
-from button_callbacks import button_click, last_characters
-
+# Initialize necessary dictionaries
 locks = {}
 message_counters = {}
 spam_counters = {}
@@ -22,6 +21,7 @@ sent_characters = {}
 first_correct_guesses = {}
 message_counts = {}
 
+# Import all modules dynamically
 for module_name in ALL_MODULES:
     imported_module = importlib.import_module("shivu.modules." + module_name)
 
@@ -91,6 +91,42 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
+
+
+
+
+
+# Define the central callback query handler function
+async def cbq(update: Update, context: CallbackContext):
+    query = update.callback_query
+    data = query.data
+
+    if data == 'name':  # Handle 'name' button click
+        await button_click(update, context)
+    elif data.startswith('saleslist') or data.startswith('saleslist:close'):
+        await sales_list_callback(update, context)
+    elif data.startswith(('buy', 'pg', 'charcnf/', 'charback/')):
+        await store_callback_handler(update, context)
+    elif data.startswith('terminate'):
+        await terminate(update, context)
+    elif data.startswith('startwordle'):
+        await start_ag(update, context)
+    elif data.startswith('harem'):
+        await harem_callback(update, context)
+    elif data.startswith('lb_'):
+        await button_handler(update, context)
+    elif data in ('rock', 'paper', 'scissors', 'play_again'):
+        await rps_button(update, context)
+    elif data.startswith(('help', 'credits', 'back', 'user_help', 'game_help')): 
+        await button(update, context)
+
+application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
+
+
+
+
+
+
 
 
 async def guess(update: Update, context: CallbackContext) -> None:
