@@ -9,10 +9,10 @@ from shivu import application, user_collection, top_global_groups_collection, gr
 async def send_leaderboard(context: CallbackContext, chat_id: int, leaderboard_message: str, photo_url: str, message_id: int = None):
     keyboard = [
         [
-            InlineKeyboardButton("Top Users", callback_data='top_users'),
-            InlineKeyboardButton("Top Groups", callback_data='topgc')
+            InlineKeyboardButton("Top Users", callback_data='lb_top_users'),
+            InlineKeyboardButton("Top Groups", callback_data='lb_top_groups')
         ],
-        [InlineKeyboardButton("Close", callback_data='close')]
+        [InlineKeyboardButton("Close", callback_data='lb_close')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -113,17 +113,17 @@ async def button_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     await query.answer()
 
-    if query.data == 'top_users':
+    if query.data == 'lb_top_users':
         await leaderboard(update, context, query=query)
-    elif query.data == 'topgc':
+    elif query.data == 'lb_top_groups':
         await global_leaderboard(update, context, query=query)
-    elif query.data == 'ctop':
+    elif query.data == 'lb_ctop':
         await ctop(update, context, query=query)
-    elif query.data == 'close':
+    elif query.data == 'lb_close':
         await query.message.delete()
 
 async def top_command(update: Update, context: CallbackContext) -> None:
     await leaderboard(update, context)
 
 application.add_handler(CommandHandler('top', top_command, block=False))
-application.add_handler(CommandHandler('top', top_command, block=False))
+application.add_handler(CallbackQueryHandler(button_handler, pattern=r'^lb_'))
