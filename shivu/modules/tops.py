@@ -66,5 +66,5 @@ async def button_handler(update: Update, context: CallbackContext) -> None:
     if query.data == 'lb_close':
         await query.message.delete()
 
-application.add_handler(CommandHandler("mtop", tops))
+application.add_handler(CommandHandler("tops", mtop))
 application.add_handler(CallbackQueryHandler(button_handler))
