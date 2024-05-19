@@ -125,5 +125,5 @@ async def button_handler(update: Update, context: CallbackContext) -> None:
 async def top_command(update: Update, context: CallbackContext) -> None:
     await leaderboard(update, context)
 
-application.add_handler(CommandHandler('top', top_command, run_async=True))
-application.add_handler(CommandHandler('top', top_command), run_async=True)
+application.add_handler(CommandHandler('top', top_command, block=False))
+application.add_handler(CommandHandler('top', top_command, block=False))
