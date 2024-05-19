@@ -7,6 +7,7 @@ from .harem import harem_callback
 
 from .saleslist import sales_list_callback
 from .owner import button_handler
+from .rps import rps_button
 
 async def cbq(update: Update, context):
     query = update.callback_query
@@ -26,6 +27,8 @@ async def cbq(update: Update, context):
         await harem_callback(update, context)
     elif data.startswith('lb_'):
         await button_handler(update, context)
+    elif data in ('rock', 'paper', 'scissors', 'play_again'):
+        await rps_button(update, context)
     
 
 application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
