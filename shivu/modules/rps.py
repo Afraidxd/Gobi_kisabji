@@ -1,5 +1,5 @@
 from telegram.ext import CommandHandler, CallbackQueryHandler
-from Grabber import application, user_collection
+from shivu import application, user_collection
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import random
 
