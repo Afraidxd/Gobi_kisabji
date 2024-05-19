@@ -4,7 +4,7 @@ from telegram import Update
 
 from .ptb_store import store_callback_handler, terminate, start_ag
 from .harem import harem_callback
-
+from .start import button
 from .saleslist import sales_list_callback
 from .owner import button_handler
 from .rps import rps_button
@@ -29,6 +29,6 @@ async def cbq(update: Update, context):
         await button_handler(update, context)
     elif data in ('rock', 'paper', 'scissors', 'play_again'):
         await rps_button(update, context)
-    
+    elif data.startswith(('help', 'credits', 'back', 'user_help', 'game_help')):    
 
 application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
