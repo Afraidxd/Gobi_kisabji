@@ -35,7 +35,10 @@ async def global_leaderboard(update: Update, context: CallbackContext, query=Non
     ])
     leaderboard_data = await cursor.to_list(length=10)
 
-    leaderboard_message = "<b>TOP 10 GROUPS WHO GUESSED MOST CHARACTERS</b>\n\n"
+    leaderboard_message = (
+        "┌─────═━┈┈━═─────┐\n"
+        "<b>TOP 10 GROUPS WHO GUESSED MOST CHARACTERS</b>\n\n"
+    )
 
     for i, group in enumerate(leaderboard_data, start=1):
         group_name = html.escape(group.get('group_name', 'Unknown'))
@@ -44,6 +47,8 @@ async def global_leaderboard(update: Update, context: CallbackContext, query=Non
             group_name = group_name[:15] + '...'
         count = group['count']
         leaderboard_message += f'{i}. <b>{group_name}</b> ➾ <b>{count}</b>\n'
+    
+    leaderboard_message += "└─────═━┈┈━═─────┘"
 
     photo_url = random.choice(PHOTO_URL)
 
@@ -63,7 +68,10 @@ async def ctop(update: Update, context: CallbackContext, query=None) -> None:
     ])
     leaderboard_data = await cursor.to_list(length=10)
 
-    leaderboard_message = "<b>TOP 10 USERS WHO GUESSED CHARACTERS MOST TIME IN THIS GROUP</b>\n\n"
+    leaderboard_message = (
+        "┌─────═━┈┈━═─────┐\n"
+        "<b>TOP 10 USERS WHO GUESSED CHARACTERS MOST TIME IN THIS GROUP</b>\n\n"
+    )
 
     for i, user in enumerate(leaderboard_data, start=1):
         username = user.get('username', 'Unknown')
@@ -73,6 +81,8 @@ async def ctop(update: Update, context: CallbackContext, query=None) -> None:
             first_name = first_name[:15] + '...'
         character_count = user['character_count']
         leaderboard_message += f'{i}. <a href="https://t.me/{username}"><b>{first_name}</b></a> ➾ <b>{character_count}</b>\n'
+    
+    leaderboard_message += "└─────═━┈┈━═─────┘"
 
     photo_url = random.choice(PHOTO_URL)
 
@@ -91,7 +101,10 @@ async def leaderboard(update: Update, context: CallbackContext, query=None) -> N
 
     leaderboard_data = await cursor.to_list(length=10)
 
-    leaderboard_message = "<b>TOP 10 USERS WITH MOST CHARACTERS</b>\n\n"
+    leaderboard_message = (
+        "┌─────═━┈┈━═─────┐\n"
+        "<b>TOP 10 USERS WITH MOST CHARACTERS</b>\n\n"
+    )
 
     for i, user in enumerate(leaderboard_data, start=1):
         username = user.get('username', 'Unknown')
@@ -101,6 +114,8 @@ async def leaderboard(update: Update, context: CallbackContext, query=None) -> N
             first_name = first_name[:15] + '...'
         character_count = user['character_count']
         leaderboard_message += f'{i}. <a href="https://t.me/{username}"><b>{first_name}</b></a> ➾ <b>{character_count}</b>\n'
+    
+    leaderboard_message += "└─────═━┈┈━═─────┘"
 
     photo_url = random.choice(PHOTO_URL)
 
