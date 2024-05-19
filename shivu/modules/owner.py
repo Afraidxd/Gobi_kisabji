@@ -1,23 +1,17 @@
-import importlib
-import time
 import random
-import re
-import asyncio
-import io
-import requests
-from html import escape
+import html
 
-from typing import Optional
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageHandler, filters, CallbackContext
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import CommandHandler, CallbackQueryHandler, CallbackContext
 
-from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu 
-from shivu import application, LOGGER
-from shivu.modules import ALL_MODULES
+from shivu import application, user_collection, top_global_groups_collection, group_user_totals_collection, PHOTO_URL
 
-# Define the send_leaderboard_message function
-async def send_leaderboard_message(context: CallbackContext, chat_id: int, message: str, photo_url: str, message_id: int = None):
+async def send_leaderboard(context: CallbackContext, chat_id: int, leaderboard_message: str, photo_url: str, message_id: int = None):
     keyboard = [
+        [
+            InlineKeyboardButton("Top Group Users", callback_data='lb_ctop'),
+            InlineKeyboardButton("Top Groups", callback_data='lb_top_groups')
+        ],
         [InlineKeyboardButton("Close", callback_data='lb_close')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -26,66 +20,122 @@ async def send_leaderboard_message(context: CallbackContext, chat_id: int, messa
         await context.bot.edit_message_caption(
             chat_id=chat_id,
             message_id=message_id,
-            caption=message,
-            reply_markup=reply_markup,
-            parse_mode='HTML'
+            caption=leaderboard_message,
+            parse_mode='HTML',
+            reply_markup=reply_markup
         )
     else:
-        await context.bot.send_photo(
-            chat_id=chat_id,
-            photo=photo_url,
-            caption=message,
-            reply_markup=reply_markup,
-            parse_mode='HTML'
-        )
+        await context.bot.send_photo(chat_id=chat_id, photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
 
-# Define the mtop function
-async def mtop(update: Update, context: CallbackContext):
-    # Fetch top users sorted by 'vers' balance
-    top_users = await user_collection.find({}, {'id': 1, 'username': 1, 'first_name': 1, 'last_name': 1, 'vers': 1}).sort('vers', -1).limit(10).to_list(10)
+async def global_leaderboard(update: Update, context: CallbackContext, query=None) -> None:
+    cursor = top_global_groups_collection.aggregate([
+        {"$project": {"group_name": 1, "count": 1}},
+        {"$sort": {"count": -1}},
+        {"$limit": 10}
+    ])
+    leaderboard_data = await cursor.to_list(length=10)
 
-    top_users_message = (
+    leaderboard_message = (
         "┌─────═━┈┈━═─────┐\n"
-        "Top 10 Vers Users:\n"
-        "───────────────────\n"
+        "<b>TOP 10 GROUPS WHO GUESSED MOST CHARACTERS</b>\n\n"
     )
 
-    for i, user in enumerate(top_users, start=1):
-        first_name = user.get('first_name', 'Unknown')
-        last_name = user.get('last_name', '')
-        username = user.get('username', None)
-        user_id = user.get('id', 'Unknown')
-        full_name = f"{first_name} {last_name}".strip()
+    for i, group in enumerate(leaderboard_data, start=1):
+        group_name = html.escape(group.get('group_name', 'Unknown'))
 
-        if username:
-            user_link = f'<a href="https://t.me/{username}">{escape(full_name)}</a>'
-        else:
-            user_link = escape(full_name)
+        if len(group_name) > 15:
+            group_name = group_name[:15] + '...'
+        count = group['count']
+        leaderboard_message += f'{i}. <b>{group_name}</b> ➾ <b>{count}</b>\n'
+    
+    leaderboard_message += "└─────═━┈┈━═─────┘"
 
-        top_users_message += f"{i}. {user_link} - Ŧ{user.get('user_balance', 0):,}\n"
+    photo_url = random.choice(PHOTO_URL)
 
-    top_users_message += (
-        "───────────────────\n"
-        "└─────═━┈┈━═─────┘"
-    )
-
-    photo_url = "https://telegra.ph/file/3474a548e37ab8f0604e8.jpg"
-    photo_response = requests.get(photo_url)
-
-    if photo_response.status_code == 200:
-        photo_data = io.BytesIO(photo_response.content)
-        await send_leaderboard_message(context, update.effective_chat.id, top_users_message, photo_url)
+    if query:
+        await send_leaderboard(context, query.message.chat_id, leaderboard_message, photo_url, query.message.message_id)
     else:
-        await update.message.reply_text("Failed to download photo")
+        await send_leaderboard(context, update.effective_chat.id, leaderboard_message, photo_url)
 
-# Define the button handler function
+async def ctop(update: Update, context: CallbackContext, query=None) -> None:
+    chat_id = update.effective_chat.id if update else query.message.chat_id
+
+    cursor = group_user_totals_collection.aggregate([
+        {"$match": {"group_id": chat_id}},
+        {"$project": {"username": 1, "first_name": 1, "character_count": "$count"}},
+        {"$sort": {"character_count": -1}},
+        {"$limit": 10}
+    ])
+    leaderboard_data = await cursor.to_list(length=10)
+
+    leaderboard_message = (
+        "┌─────═━┈┈━═─────┐\n"
+        "<b>TOP 10 USERS WHO GUESSED CHARACTERS MOST TIME IN THIS GROUP</b>\n\n"
+    )
+
+    for i, user in enumerate(leaderboard_data, start=1):
+        username = user.get('username', 'Unknown')
+        first_name = html.escape(user.get('first_name', 'Unknown'))
+
+        if len(first_name) > 15:
+            first_name = first_name[:15] + '...'
+        character_count = user['character_count']
+        leaderboard_message += f'{i}. <a href="https://t.me/{username}"><b>{first_name}</b></a> ➾ <b>{character_count}</b>\n'
+    
+    leaderboard_message += "└─────═━┈┈━═─────┘"
+
+    photo_url = random.choice(PHOTO_URL)
+
+    if query:
+        await send_leaderboard(context, query.message.chat_id, leaderboard_message, photo_url, query.message.message_id)
+    else:
+        await send_leaderboard(context, update.effective_chat.id, leaderboard_message, photo_url)
+
+async def leaderboard(update: Update, context: CallbackContext, query=None) -> None:
+    cursor = user_collection.aggregate([
+        {"$match": {"characters": {"$exists": True, "$type": "array"}}},
+        {"$project": {"username": 1, "first_name": 1, "character_count": {"$size": "$characters"}}},
+        {"$sort": {"character_count": -1}},
+        {"$limit": 10}
+    ])
+
+    leaderboard_data = await cursor.to_list(length=10)
+
+    leaderboard_message = (
+        "┌─────═━┈┈━═─────┐\n"
+        "<b>TOP 10 USERS WITH MOST CHARACTERS</b>\n\n"
+    )
+
+    for i, user in enumerate(leaderboard_data, start=1):
+        username = user.get('username', 'Unknown')
+        first_name = html.escape(user.get('first_name', 'Unknown'))
+
+        if len(first_name) > 15:
+            first_name = first_name[:15] + '...'
+        character_count = user['character_count']
+        leaderboard_message += f'{i}. <a href="https://t.me/{username}"><b>{first_name}</b></a> ➾ <b>{character_count}</b>\n'
+    
+    leaderboard_message += "└─────═━┈┈━═─────┘"
+
+    photo_url = random.choice(PHOTO_URL)
+
+    if query:
+        await send_leaderboard(context, query.message.chat_id, leaderboard_message, photo_url, query.message.message_id)
+    else:
+        await send_leaderboard(context, update.effective_chat.id, leaderboard_message, photo_url)
+
 async def button_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     await query.answer()
 
-    if query.data == 'lb_close':
+    if query.data == 'lb_ctop':
+        await ctop(update, context, query=query)
+    elif query.data == 'lb_top_groups':
+        await global_leaderboard(update, context, query=query)
+    elif query.data == 'lb_close':
         await query.message.delete()
 
-# Add the command and callback handlers
-application.add_handler(CommandHandler("tops", mtop))
-application.add_handler(CallbackQueryHandler(button_handler))
+async def top_command(update: Update, context: CallbackContext) -> None:
+    await leaderboard(update, context)
+
+application.add_handler(CommandHandler('top', top_command, block=False))
