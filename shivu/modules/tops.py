@@ -5,7 +5,7 @@ import html
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackContext
-
+from telegram.ext import CallbackQueryHandler, CommandHandler
 from shivu import application, user_collection, PHOTO_URL
 
 async def send_leaderboard_message(context: CallbackContext, chat_id: int, message: str, photo_url: str, message_id: int = None):
