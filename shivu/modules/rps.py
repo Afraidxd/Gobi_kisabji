@@ -1,10 +1,12 @@
-from telegram.ext import CommandHandler, CallbackQueryHandler
-from shivu import application, user_collection
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import random
+import html
 
-# Command handler for starting the RPS game
-async def rps(update, context):
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import CommandHandler, CallbackQueryHandler, CallbackContext
+
+from shivu import application, user_collection
+
+async def rps(update: Update, context: CallbackContext):
     try:
         amount = int(context.args[0])
         if amount < 1:
@@ -31,8 +33,7 @@ async def rps(update, context):
     context.user_data['amount'] = amount
     context.user_data['message_id'] = message.message_id
 
-# Callback query handler for processing the RPS game result
-async def rps_button(update, context):
+async def rps_button(update: Update, context: CallbackContext):
     query = update.callback_query
     choice = query.data
 
@@ -66,7 +67,6 @@ async def rps_button(update, context):
         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("ᴘʟᴀʏ ᴀɢᴀɪɴ🔄", callback_data='play_again')]])
     )
 
-# Function to determine the winner of the RPS game
 def determine_winner(user_choice, computer_choice, bet_amount):
     if user_choice == computer_choice:
         return "It's a tie!", 0
@@ -75,9 +75,8 @@ def determine_winner(user_choice, computer_choice, bet_amount):
          (user_choice == 'scissors' and computer_choice == 'paper'):
         return "🎉 ʏᴏᴜ ᴡᴏɴ!", bet_amount
     else:
-        return "😔You lost!", -bet_amount
+        return "😔 You lost!", -bet_amount
 
-# Function to handle the 'play again' action
 async def play_again(query, context):
     keyboard = [
         [InlineKeyboardButton("ʀᴏᴄᴋ 🪨", callback_data='rock'),
@@ -87,6 +86,5 @@ async def play_again(query, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
     await query.message.edit_text("Choose your move:", reply_markup=reply_markup)
 
-# Adding the handlers to the application
 application.add_handler(CommandHandler("rps", rps))
 application.add_handler(CallbackQueryHandler(rps_button))
