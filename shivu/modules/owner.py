@@ -27,10 +27,17 @@ async def send_leaderboard_message(context: CallbackContext, chat_id: int, messa
             chat_id=chat_id,
             message_id=message_id,
             caption=message,
-            reply_markup=reply_markup
+            reply_markup=reply_markup,
+            parse_mode='HTML'
         )
     else:
-        await context.bot.send_photo(chat_id=chat_id, photo=photo_url, caption=message, reply_markup=reply_markup)
+        await context.bot.send_photo(
+            chat_id=chat_id,
+            photo=photo_url,
+            caption=message,
+            reply_markup=reply_markup,
+            parse_mode='HTML'
+        )
 
 # Define the mtop function
 async def mtop(update: Update, context: CallbackContext):
