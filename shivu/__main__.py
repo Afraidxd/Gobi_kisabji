@@ -11,7 +11,7 @@ from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageH
 
 from shivu import collection, user_collection, user_totals_collection, shivuu, application, LOGGER
 from shivu.modules import ALL_MODULES
-from shivu.spawn import button_click, last_characters  # Import the necessary functions and variables
+from shivu.spwan import button_click, last_characters  # Import the necessary functions and variables
 
 # Initialize necessary dictionaries
 locks = {}
