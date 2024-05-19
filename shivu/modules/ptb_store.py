@@ -1,5 +1,5 @@
 from telegram import Update, InlineKeyboardButton as IKB, InlineKeyboardMarkup as IKM, InputMediaPhoto as IMP
-from telegram.ext import CommandHandler, CallbackContext,CallbackQueryHandler
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, filters
 from datetime import datetime as dt
 import random
 import time
@@ -188,18 +188,23 @@ async def handle_char_back(query, char, user_id):
     await query.answer()
     y = await get_today_characters(user_id)
     ch_ids = y[1]
-    ind = ch_ids.index(char) + 1
-    nav_buttons = {1: [3, 2], 2: [1, 3], 3: [2, 1]}
-    buy_buttons = {1: "a", 2: "b", 3: "c"}
+    ind = ch_ids.index(int(char))
+    nav_buttons = ["pg3", "pg1", "pg2"]
+    buy_buttons = ["buy_c", "buy_a", "buy_b"]
+    page = ind + 1
 
-    photo, caption = await get_image_and_caption(char)
-    await query.edit_message_caption(
-        f"__PAGE {ind}__\n\n{caption}",
+    photo, caption = await get_image_and_caption(ch_ids[ind])
+    await query.edit_message_media(
+        media=IMP(photo, caption=f"__PAGE {page}__\n\n{caption}"),
         reply_markup=IKM([
-            [IKB("⬅️", callback_data=f"store_pg{nav_buttons[ind][0]}_{user_id}"), IKB("Buy 🔖", callback_data=f"store_buy_{buy_buttons[ind]}_{user_id}"), IKB("➡️", callback_data=f"store_pg{nav_buttons[ind][1]}_{user_id}")],
+            [IKB("⬅️", callback_data=f"store_{nav_buttons[page-1]}_{user_id}"), IKB("Buy 🔖", callback_data=f"store_{buy_buttons[page-1]}_{user_id}"), IKB("➡️", callback_data=f"store_{nav_buttons[page]}_{user_id}")],
             [IKB("Close 🗑️", callback_data=f"store_close_{user_id}")]
         ])
     )
 
+# Register handlers
 application.add_handler(CommandHandler("store", shop))
-application.add_handler(CallbackQueryHandler(store_callback_handler))
+application.add_handler(CallbackQueryHandler(store_callback_handler, pattern=r'^store_'))
+
+# Uncomment the following line to register the start_ag function
+# application.add_handler(CallbackQueryHandler(start_ag, pattern=r'^startwordle_'))
