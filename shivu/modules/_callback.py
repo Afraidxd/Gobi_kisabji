@@ -29,6 +29,7 @@ async def cbq(update: Update, context):
         await button_handler(update, context)
     elif data in ('rock', 'paper', 'scissors', 'play_again'):
         await rps_button(update, context)
-    elif data.startswith(('help', 'credits', 'back', 'user_help', 'game_help')):    
+    elif data.startswith(('help', 'credits', 'back', 'user_help', 'game_help')): 
+        await button(update, context)   
 
 application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
