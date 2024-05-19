@@ -8,6 +8,7 @@ from .start import button
 from .saleslist import sales_list_callback
 from .owner import button_handler
 from .rps import rps_button
+from .spawn import button_click
 
 # Ensure the button_click function is defined or imported
 async def button_click(update: Update, context):
