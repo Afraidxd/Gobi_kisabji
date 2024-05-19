@@ -1,4 +1,4 @@
-from telegram.ext import CommandHandler, CallbackQueryHandler
+***from telegram.ext import CommandHandler, CallbackQueryHandler
 from shivu import application, user_collection
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import random
@@ -89,4 +89,4 @@ async def play_again(query, context):
 
 # Adding the handlers to the application
 application.add_handler(CommandHandler("rps", rps))
-application.add_handler(CallbackQueryHandler(rps_button))
+application.add_handler(CallbackQueryHandler(rps_button))***
