@@ -1,4 +1,3 @@
-import os
 import random
 import html
 
@@ -6,12 +5,9 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackQueryHandler, CallbackContext
 
 from shivu import (
-    application, PHOTO_URL, OWNER_ID,
+    application, PHOTO_URL,
     user_collection, top_global_groups_collection, group_user_totals_collection,
-    sudo_users as SUDO_USERS
 )
-
-photo = random.choice(PHOTO_URL)
 
 async def send_leaderboard(context: CallbackContext, chat_id: int, leaderboard_message: str, photo_url: str, message_id: int = None):
     keyboard = [
@@ -47,7 +43,7 @@ async def global_leaderboard(update: Update, context: CallbackContext, query=Non
     for i, group in enumerate(leaderboard_data, start=1):
         group_name = html.escape(group.get('group_name', 'Unknown'))
 
-        if len(group_name) > 10:
+        if len(group_name) > 15:
             group_name = group_name[:15] + '...'
         count = group['count']
         leaderboard_message += f'{i}. <b>{group_name}</b> ➾ <b>{count}</b>\n'
@@ -76,7 +72,7 @@ async def ctop(update: Update, context: CallbackContext, query=None) -> None:
         username = user.get('username', 'Unknown')
         first_name = html.escape(user.get('first_name', 'Unknown'))
 
-        if len(first_name) > 10:
+        if len(first_name) > 15:
             first_name = first_name[:15] + '...'
         character_count = user['character_count']
         leaderboard_message += f'{i}. <a href="https://t.me/{username}"><b>{first_name}</b></a> ➾ <b>{character_count}</b>\n'
@@ -104,7 +100,7 @@ async def leaderboard(update: Update, context: CallbackContext, query=None) -> N
         username = user.get('username', 'Unknown')
         first_name = html.escape(user.get('first_name', 'Unknown'))
 
-        if len(first_name) > 10:
+        if len(first_name) > 15:
             first_name = first_name[:15] + '...'
         character_count = user['character_count']
         leaderboard_message += f'{i}. <a href="https://t.me/{username}"><b>{first_name}</b></a> ➾ <b>{character_count}</b>\n'
