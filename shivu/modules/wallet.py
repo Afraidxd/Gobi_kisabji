@@ -50,24 +50,18 @@ async def balance(update, context):
         
         total_database_characters = await get_collection_length()
 
-        gender_icon = '👦🏻' if gender == 'male' else '👧🏻' if gender == 'female' else '🏳️‍🌈'
+        
 
         balance_message = (
-            f"\t\t 𝐃𝐫𝐢𝐯𝐞𝐫 𝐋𝐢𝐜𝐞𝐧𝐜𝐞\n\n"
-            f"ɴᴀᴍᴇ: {profile.full_name} [{gender_icon}]\n"
+            f"\t\t 𝙳𝚛𝚒𝚟𝚎𝚛 𝙻𝚒𝚌𝚎𝚗𝚜𝚎\n\n"
+            f"ɴᴀᴍᴇ: {profile.full_name}\n"
             f"ɪᴅ: <code>{profile.id}</code>\n\n"
             f"ᴄᴏɪɴꜱ: Ŧ<code>{format_number(user_balance)}</code> coins\n"
-            f"ʙᴀɴᴋ: Ŧ<code>{format_number(bank_balance)}</code> coins\n"
+            
             f"ᴄᴏɪɴꜱ ʀᴀɴᴋ: <code>{coins_rank}</code>\n"
             f"ᴄʜᴀʀᴀᴄᴛᴇʀꜱ: <code>{total_user_characters}</code>/<code>{total_database_characters}</code>\n"
         )
 
-        photo_file = profile_media or (await context.bot.get_user_profile_photos(user_id)).photos[0][-1].file_id if (await context.bot.get_user_profile_photos(user_id)).photos else None
-
-        if photo_file:
-            await update.message.reply_photo(photo=photo_file, caption=balance_message, parse_mode='HTML')
-        else:
-            await update.message.reply_photo("https://graph.org/file/7ff03ebae9abc95c94a16.jpg", caption=balance_message, parse_mode='HTML')
     else:
         await update.message.reply_text("Claim bonus first using /bonus and /wbonus")
 
@@ -223,10 +217,8 @@ async def delete_profile_media(update, context):
     await user_collection.update_one({'id': user_id}, {'$unset': {'profile_media': 1}})
     await update.message.reply_text("Profile media deleted successfully!")
 
-application.add_handler(CommandHandler("setprofilemedia", set_profile_media))
-application.add_handler(CommandHandler("deleteprofilemedia", delete_profile_media))
 application.add_handler(CommandHandler("bonus", daily_reward, block=False))
 application.add_handler(CommandHandler("wbonus", weekly, block=False))
-application.add_handler(CommandHandler("sprofile", balance, block=False))
+application.add_handler(CommandHandler("bal", balance, block=False))
 application.add_handler(CommandHandler("spay", pay, block=False))
 application.add_handler(CommandHandler("tops", mtop, block=False))
