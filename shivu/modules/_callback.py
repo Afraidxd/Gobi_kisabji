@@ -4,6 +4,8 @@ from telegram import Update
 
 from .ptb_store import store_callback_handler, terminate, start_ag
 
+from saleslist import sales_list_callback
+
 
 async def cbq(update: Update, context):
     query = update.callback_query
