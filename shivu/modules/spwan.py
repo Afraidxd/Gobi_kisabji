@@ -224,3 +224,8 @@ async def guess(update: Update, context: CallbackContext) -> None:
     else:
         await update.message.reply_text('𝙋𝙡𝙚𝙖𝙨𝙚 𝙒𝙧𝙞𝙩𝙚 𝘾𝙤𝙧𝙧𝙚𝙘𝙩 𝙉𝙖𝙢𝙚... ❌️')
 
+
+application.add_handler(CommandHandler(["guess"], guess, block=False))
+
+application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
+
