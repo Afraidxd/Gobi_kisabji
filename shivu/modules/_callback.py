@@ -28,7 +28,8 @@ async def cbq(update: Update, context):
     elif data.startswith('lb_'):
         await button_handler(update, context)
     elif data in ('rock', 'paper', 'scissors', 'play_again'):
-    elif data == 'name': await button_click(update, context)
+    elif data == 'name': 
+        await button_click(update, context)
         await rps_button(update, context)
     elif data.startswith(('help', 'credits', 'back', 'user_help', 'game_help')): 
         await button(update, context)   
