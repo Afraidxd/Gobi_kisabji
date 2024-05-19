@@ -13,20 +13,27 @@ from shivu import (
 
 photo = random.choice(PHOTO_URL)
 
-async def send_leaderboard(update: Update, context: CallbackContext, leaderboard_message: str, photo_url: str):
+async def send_leaderboard(context: CallbackContext, chat_id: int, leaderboard_message: str, photo_url: str, message_id: int = None):
     keyboard = [
         [
-            InlineKeyboardButton("Top Users", callback_data='top_users'),
-            InlineKeyboardButton("Top Groups", callback_data='top_groups')
+            InlineKeyboardButton("Top Group Users", callback_data='ctop'),
+            InlineKeyboardButton("Top Groups", callback_data='topgc')
         ],
-        [InlineKeyboardButton("Top Group Users", callback_data='ctop')],
         [InlineKeyboardButton("Close", callback_data='close')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
+    if message_id:
+        await context.bot.edit_message_media(
+            media={'type': 'photo', 'media': photo_url, 'caption': leaderboard_message, 'parse_mode': 'HTML'},
+            chat_id=chat_id,
+            message_id=message_id,
+            reply_markup=reply_markup
+        )
+    else:
+        await context.bot.send_photo(chat_id=chat_id, photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
 
-async def global_leaderboard(update: Update, context: CallbackContext) -> None:
+async def global_leaderboard(update: Update, context: CallbackContext, query=None) -> None:
     cursor = top_global_groups_collection.aggregate([
         {"$project": {"group_name": 1, "count": 1}},
         {"$sort": {"count": -1}},
@@ -46,10 +53,13 @@ async def global_leaderboard(update: Update, context: CallbackContext) -> None:
 
     photo_url = random.choice(PHOTO_URL)
 
-    await send_leaderboard(update, context, leaderboard_message, photo_url)
+    if query:
+        await send_leaderboard(context, query.message.chat_id, leaderboard_message, photo_url, query.message.message_id)
+    else:
+        await send_leaderboard(context, update.effective_chat.id, leaderboard_message, photo_url)
 
-async def ctop(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id
+async def ctop(update: Update, context: CallbackContext, query=None) -> None:
+    chat_id = update.effective_chat.id if update else query.message.chat_id
 
     cursor = group_user_totals_collection.aggregate([
         {"$match": {"group_id": chat_id}},
@@ -72,9 +82,12 @@ async def ctop(update: Update, context: CallbackContext) -> None:
 
     photo_url = random.choice(PHOTO_URL)
 
-    await send_leaderboard(update, context, leaderboard_message, photo_url)
+    if query:
+        await send_leaderboard(context, query.message.chat_id, leaderboard_message, photo_url, query.message.message_id)
+    else:
+        await send_leaderboard(context, update.effective_chat.id, leaderboard_message, photo_url)
 
-async def leaderboard(update: Update, context: CallbackContext) -> None:
+async def leaderboard(update: Update, context: CallbackContext, query=None) -> None:
     cursor = user_collection.aggregate([
         {"$match": {"characters": {"$exists": True, "$type": "array"}}},
         {"$project": {"username": 1, "first_name": 1, "character_count": {"$size": "$characters"}}},
@@ -97,23 +110,26 @@ async def leaderboard(update: Update, context: CallbackContext) -> None:
 
     photo_url = random.choice(PHOTO_URL)
 
-    await send_leaderboard(update, context, leaderboard_message, photo_url)
+    if query:
+        await send_leaderboard(context, query.message.chat_id, leaderboard_message, photo_url, query.message.message_id)
+    else:
+        await send_leaderboard(context, update.effective_chat.id, leaderboard_message, photo_url)
 
 async def button_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     await query.answer()
 
     if query.data == 'top_users':
-        await leaderboard(update, context)
-    elif query.data == 'top_groups':
-        await global_leaderboard(update, context)
+        await leaderboard(update, context, query=query)
+    elif query.data == 'topgc':
+        await global_leaderboard(update, context, query=query)
     elif query.data == 'ctop':
-        await ctop(update, context)
+        await ctop(update, context, query=query)
     elif query.data == 'close':
         await query.message.delete()
 
 async def top_command(update: Update, context: CallbackContext) -> None:
-    await global_leaderboard(update, context)
+    await leaderboard(update, context)
 
 application.add_handler(CommandHandler('top', top_command, block=False))
 application.add_handler(CallbackQueryHandler(button_handler))
