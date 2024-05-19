@@ -9,14 +9,37 @@ from .saleslist import sales_list_callback
 from .owner import button_handler
 from .rps import rps_button
 
+# Ensure the button_click function is defined or imported
+async def button_click(update: Update, context):
+    query = update.callback_query
+    user_id = query.from_user.id
+    chat_id = query.message.chat_id
+
+    # Get user balance
+    user_balance = await get_user_balance(user_id)
+
+    if user_balance is not None:
+        if user_balance >= 10000:
+            await user_collection.update_one({"id": user_id}, {"$inc": {"balance": -10000}})
+            name = last_characters.get(chat_id, {}).get('name', 'Unknown car')
+            await query.answer(text=f"ᴛʜᴇ ᴄᴀʀ ɴᴀᴍᴇ ɪs: {name}", show_alert=True)
+        else:
+            await query.answer(text="ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ sᴜғғɪᴄɪᴇɴᴛ ʙᴀʟᴀɴᴄᴇ.", show_alert=True)
+    else:
+        await user_collection.insert_one({"id": user_id, "balance": 50000})
+        name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
+        await query.answer(text=f"ᴡᴇʟᴄᴏᴍᴇ, ᴜsᴇʀ ! ʏᴏᴜ'ᴠᴇ ʙᴇᴇɴ ᴀᴅᴅᴇᴅ ᴛᴏ ᴏᴜʀ sʏsᴛᴇᴍ ᴡɪᴛʜ ᴀɴ ɪɴɪᴛɪᴀʟ ʙᴀʟᴀɴᴄᴇ ᴏғ 50ᴋ", show_alert=True)
+
+async def get_user_balance(user_id: int) -> int:
+    user = await user_collection.find_one({"id": user_id})
+    return user.get("balance") if user else None
+
 async def cbq(update: Update, context):
     query = update.callback_query
     data = query.data
 
-    
     if data.startswith('saleslist') or data.startswith('saleslist:close'):
         await sales_list_callback(update, context)
-    
     elif data.startswith(('buy', 'pg', 'charcnf/', 'charback/')):
         await store_callback_handler(update, context)
     elif data.startswith('terminate'):
@@ -31,9 +54,7 @@ async def cbq(update: Update, context):
         await rps_button(update, context)
     elif data.startswith(('help', 'credits', 'back', 'user_help', 'game_help')): 
         await button(update, context)
-   pass
-    elif data == 'name':  # Add condition to handle 'name' pattern
-        await button_click(update, context)
-
+    elif data == 'name':  # Add condition to handle 'name' pattern
+        await button_click(update, context)
 
 application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
