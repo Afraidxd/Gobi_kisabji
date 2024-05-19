@@ -32,8 +32,7 @@ async def cbq(update: Update, context):
         from .spwan import button_click
         await button_click(update, context),
     elif data =='lb_close' :  
-        from .tops import button_handler 
-        await button_handler(update, context),
+                await query.message.delete(),
     elif data.startswith(('help', 'credits', 'back', 'user_help', 'game_help')): 
         await button(update, context)   
 
