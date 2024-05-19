@@ -4,7 +4,7 @@ import random
 import re
 import asyncio
 import io
-import requests  # Ensure this line is present
+import requests
 from html import escape
 
 from typing import Optional
