@@ -13,7 +13,7 @@ from shivu import (
 
 photo = random.choice(PHOTO_URL)
 
-async def global_leaderboard(context: CallbackContext, query=None) -> None:
+async def global_leaderboard(context: CallbackContext, update: Update = None, query=None) -> None:
     cursor = top_global_groups_collection.aggregate([
         {"$project": {"group_name": 1, "count": 1}},
         {"$sort": {"count": -1}},
@@ -48,11 +48,11 @@ async def global_leaderboard(context: CallbackContext, query=None) -> None:
             media={'type': 'photo', 'media': photo_url, 'caption': leaderboard_message, 'parse_mode': 'HTML'},
             reply_markup=reply_markup
         )
-    else:
-        await context.bot.send_photo(chat_id=context.job.chat_id, photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
+    elif update:
+        await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
 
-async def ctop(context: CallbackContext, query=None) -> None:
-    chat_id = context.job.chat_id
+async def ctop(context: CallbackContext, update: Update = None, query=None) -> None:
+    chat_id = update.effective_chat.id if update else context.job.chat_id
 
     cursor = group_user_totals_collection.aggregate([
         {"$match": {"group_id": chat_id}},
@@ -90,10 +90,10 @@ async def ctop(context: CallbackContext, query=None) -> None:
             media={'type': 'photo', 'media': photo_url, 'caption': leaderboard_message, 'parse_mode': 'HTML'},
             reply_markup=reply_markup
         )
-    else:
-        await context.bot.send_photo(chat_id=context.job.chat_id, photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
+    elif update:
+        await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
 
-async def leaderboard(context: CallbackContext, query=None) -> None:
+async def leaderboard(context: CallbackContext, update: Update = None, query=None) -> None:
     cursor = user_collection.aggregate([
         {"$match": {"characters": {"$exists": True, "$type": "array"}}},
         {"$project": {"username": 1, "first_name": 1, "character_count": {"$size": "$characters"}}},
@@ -131,8 +131,8 @@ async def leaderboard(context: CallbackContext, query=None) -> None:
             media={'type': 'photo', 'media': photo_url, 'caption': leaderboard_message, 'parse_mode': 'HTML'},
             reply_markup=reply_markup
         )
-    else:
-        await context.bot.send_photo(chat_id=context.job.chat_id, photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
+    elif update:
+        await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
 
 async def button_handler(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
@@ -148,7 +148,7 @@ async def button_handler(update: Update, context: CallbackContext) -> None:
         await query.message.delete()
 
 async def top_command(update: Update, context: CallbackContext) -> None:
-    await global_leaderboard(context, query=None)
+    await global_leaderboard(context, update=update)
 
 application.add_handler(CommandHandler('top', top_command, block=False))
 application.add_handler(CallbackQueryHandler(button_handler))
