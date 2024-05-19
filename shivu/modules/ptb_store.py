@@ -1,5 +1,5 @@
 from telegram import Update, InlineKeyboardButton as IKB, InlineKeyboardMarkup as IKM, InputMediaPhoto as IMP
-from telegram.ext import CommandHandler, CallbackContext
+from telegram.ext import CommandHandler, CallbackContext,CallbackQueryHandler
 from datetime import datetime as dt
 import random
 import time
