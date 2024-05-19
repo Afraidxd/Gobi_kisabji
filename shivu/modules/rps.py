@@ -91,5 +91,8 @@ async def play_again(query, context):
     reply_markup = InlineKeyboardMarkup(keyboard)
     await query.message.edit_text("Choose your move:", reply_markup=reply_markup)
 
+# Make sure to uniquely prefix callback data for each handler
 application.add_handler(CommandHandler("rps", rps))
-application.add_handler(CallbackQueryHandler(rps_button))
+application.add_handler(CallbackQueryHandler(rps_button, pattern=r'^rps_'))  # Use pattern to match rps_ callbacks
+
+# Ensure other handlers have unique patterns or no conflicting callback data
