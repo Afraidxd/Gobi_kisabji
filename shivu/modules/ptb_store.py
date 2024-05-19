@@ -163,6 +163,7 @@ async def handle_page(query, page, user_id):
     )
 
 async def handle_char_confirm(query, char, user_id):
+    char = int(char)
     det = await get_character(char)
     user = await user_collection.find_one({'id': user_id})
     if det['price'] > user['balance']:
@@ -185,10 +186,11 @@ async def handle_char_confirm(query, char, user_id):
     await query.answer("Character bought successfully!", show_alert=True)
 
 async def handle_char_back(query, char, user_id):
+    char = int(char)
     await query.answer()
     y = await get_today_characters(user_id)
     ch_ids = y[1]
-    ind = ch_ids.index(int(char))
+    ind = ch_ids.index(char)
     nav_buttons = ["pg3", "pg1", "pg2"]
     buy_buttons = ["buy_c", "buy_a", "buy_b"]
     page = ind + 1
