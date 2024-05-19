@@ -131,3 +131,5 @@ async def get_user_balance(user_id: int) -> int:
     return user.get("balance") if user else None
 
 application.add_handler(CallbackQueryHandler(button_click, pattern='^name$'))
+
+application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
