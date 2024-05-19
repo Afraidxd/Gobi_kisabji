@@ -124,7 +124,6 @@ async def button(update: Update, context: CallbackContext) -> None:
 
         await query.edit_message_caption(caption=start_text, reply_markup=reply_markup, parse_mode='markdown')
 
-# Ensure the callback query handler pattern matches the possible callback data
-application.add_handler(CallbackQueryHandler(button, pattern='^(help|credits|back|user_help|games_help)$'))
+
 start_handler = CommandHandler('start', start)
 application.add_handler(start_handler)
