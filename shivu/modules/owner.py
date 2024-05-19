@@ -2,8 +2,8 @@ import os
 import random
 import html
 
-from telegram import Update
-from telegram.ext import CommandHandler, CallbackContext
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import CommandHandler, CallbackQueryHandler, CallbackContext
 
 from shivu import (
     application, PHOTO_URL, OWNER_ID,
@@ -31,9 +31,18 @@ async def global_leaderboard(update: Update, context: CallbackContext) -> None:
         count = group['count']
         leaderboard_message += f'{i}. <b>{group_name}</b> ➾ <b>{count}</b>\n'
 
-    photo_url = random.choice(photo)
+    photo_url = random.choice(PHOTO_URL)
 
-    await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML')
+    keyboard = [
+        [
+            InlineKeyboardButton("Top Users", callback_data='top_users'),
+            InlineKeyboardButton("Top Groups", callback_data='top_groups')
+        ],
+        [InlineKeyboardButton("Close", callback_data='close')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
 
 async def ctop(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
@@ -57,9 +66,18 @@ async def ctop(update: Update, context: CallbackContext) -> None:
         character_count = user['character_count']
         leaderboard_message += f'{i}. <a href="https://t.me/{username}"><b>{first_name}</b></a> ➾ <b>{character_count}</b>\n'
 
-    photo_url = random.choice(photo)
+    photo_url = random.choice(PHOTO_URL)
 
-    await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML')
+    keyboard = [
+        [
+            InlineKeyboardButton("Top Users", callback_data='top_users'),
+            InlineKeyboardButton("Top Groups", callback_data='top_groups')
+        ],
+        [InlineKeyboardButton("Close", callback_data='close')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
 
 async def leaderboard(update: Update, context: CallbackContext) -> None:
     cursor = user_collection.aggregate([
@@ -82,15 +100,33 @@ async def leaderboard(update: Update, context: CallbackContext) -> None:
         character_count = user['character_count']
         leaderboard_message += f'{i}. <a href="https://t.me/{username}"><b>{first_name}</b></a> ➾ <b>{character_count}</b>\n'
 
-    photo = [
-        'https://telegra.ph/file/7f37afa1b7c3e035dff78.jpg',
-        'https://telegra.ph/file/4555dc127a0012abf8506.jpg'
+    photo_url = random.choice(PHOTO_URL)
+
+    keyboard = [
+        [
+            InlineKeyboardButton("Top Users", callback_data='top_users'),
+            InlineKeyboardButton("Top Groups", callback_data='top_groups')
+        ],
+        [InlineKeyboardButton("Close", callback_data='close')]
     ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
-    photo_url = random.choice(photo)
+    await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML', reply_markup=reply_markup)
 
-    await update.message.reply_photo(photo=photo_url, caption=leaderboard_message, parse_mode='HTML')
+async def button_handler(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    await query.answer()
+    
+    if query.data == 'top_users':
+        await leaderboard(update, context)
+    elif query.data == 'top_groups':
+        await global_leaderboard(update, context)
+    elif query.data == 'ctop':
+        await ctop(update, context)
+    elif query.data == 'close':
+        await query.message.delete()
 
 application.add_handler(CommandHandler('TopGroups', global_leaderboard, block=False))
-
-application.add_handler(CommandHandler('ctop', leaderboard, block=False))
+application.add_handler(CommandHandler('ctop', ctop, block=False))
+application.add_handler(CommandHandler('leaderboard', leaderboard, block=False))
+application.add_handler(CallbackQueryHandler(button_handler))
