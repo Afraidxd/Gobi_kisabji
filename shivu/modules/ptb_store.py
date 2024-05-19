@@ -2,53 +2,43 @@ from telegram import Update, InlineKeyboardButton as IKB, InlineKeyboardMarkup a
 from telegram.ext import CommandHandler, CallbackContext
 from datetime import datetime as dt
 import random
+import time
 from shivu import application, db, collection, user_collection
-
 
 # Database setup
 sdb = db.new_store
 user_db = db.bought
 
-async def terminate(u: Update, c):
-  global dic
-  user_id = u.effective_user.id
-  q = u.callback_query
-  if not user_id in dic:
-    return await q.answer(("you are not in a game !"), show_alert=True)
-  await q.answer(('terminating...'))
-  dic.pop(user_id)
-  markup = IKM(
-      [
-        [
-          IKB(('start again'), callback_data=f'startwordle_{user_id}')
-        ]
-      ]
-    )
-  await q.edit_message_text(("game terminated !"), reply_markup=markup)
+# Initialize the global dictionary
+dic = {}
 
-# @Grabberu.on_callback_query(filters.regex('startwordle'))   
+async def terminate(u: Update, c: CallbackContext):
+    user_id = u.effective_user.id
+    q = u.callback_query
+    if user_id not in dic:
+        return await q.answer("You are not in a game!", show_alert=True)
+    await q.answer('Terminating...')
+    dic.pop(user_id)
+    markup = IKM([
+        [IKB('Start again', callback_data=f'startwordle_{user_id}')]
+    ])
+    await q.edit_message_text("Game terminated!", reply_markup=markup)
+
 async def start_ag(u: Update, c: CallbackContext):
-  global dic
-  user_id = u.effective_user.id
-  q = u.callback_query
-  markup = IKM(
-    [
-      [
-        IKB(('cancel'), callback_data=f'terminate_{user_id}')
-      ]
-    ]
-  )
-  if user_id in dic:
-    return await q.answer(("you are already in a game !"), show_alert=True)
-  await q.answer(('starting...'))
-  word = random.choice(words)
-  dic[user_id] = [word, [], [], time.time()]
-  mention = f'[{q.from_user.first_name}](tg://user?id={user_id})'
-  txt = mention + ', ' + ('wordle has been started, guess the 5 lettered word within 6 chances !')
-  txt += '\n\n'
-  txt += ('enter your first word !')
-  return await c.bot.send_message(u.effective_chat.id, txt, reply_markup=markup)
-
+    global dic
+    user_id = u.effective_user.id
+    q = u.callback_query
+    markup = IKM([
+        [IKB('Cancel', callback_data=f'terminate_{user_id}')]
+    ])
+    if user_id in dic:
+        return await q.answer("You are already in a game!", show_alert=True)
+    await q.answer('Starting...')
+    word = random.choice(words)
+    dic[user_id] = [word, [], [], time.time()]
+    mention = f'[{q.from_user.first_name}](tg://user?id={user_id})'
+    txt = f"{mention}, Wordle has been started, guess the 5-letter word within 6 chances!\n\nEnter your first word!"
+    return await c.bot.send_message(u.effective_chat.id, txt, reply_markup=markup)
 
 # Helper functions
 async def set_today_characters(user_id: int, data):
@@ -63,7 +53,7 @@ async def clear_today(user_id):
 
 async def get_image_and_caption(id: int):
     char = await get_character(id)
-    form = '𝙉𝘼𝙈𝙀 : {}\n\n𝘼𝙉𝙄𝙈𝙀 : {}\n\n🆔: {}\n\n𝙋𝙍𝙄𝘾𝙀 : {} coins\n'
+    form = '𝙉𝘼𝙈𝙀: {}\n\n𝘼𝙉𝙄𝙈𝙀: {}\n\n🆔: {}\n\n𝙋𝙍𝙄𝘾𝙀: {} coins\n'
     return char['img_url'], form.format(char['name'], char['anime'], char['id'], char['price'])
 
 def today():
@@ -99,12 +89,11 @@ async def shop(update: Update, context: CallbackContext):
     else:
         ch_ids = x[1]
 
-    ch_info = [await get_character(cid) for cid in ch_ids]
     photo, caption = await get_image_and_caption(ch_ids[0])
 
     markup = IKM([
-        [IKB("⬅️", callback_data=f"pg3_{user_id}"), IKB("buy 🔖", callback_data=f"buya_{user_id}"), IKB("➡️", callback_data=f"pg2_{user_id}")],
-        [IKB("close 🗑️", callback_data=f"saleslist:close_{user_id}")]
+        [IKB("⬅️", callback_data=f"store_pg3_{user_id}"), IKB("Buy 🔖", callback_data=f"store_buy_a_{user_id}"), IKB("➡️", callback_data=f"store_pg2_{user_id}")],
+        [IKB("Close 🗑️", callback_data=f"store_close_{user_id}")]
     ])
 
     await update.message.reply_photo(photo, caption=f"__PAGE 1__\n\n{caption}", reply_markup=markup)
@@ -114,29 +103,31 @@ async def store_callback_handler(update: Update, context: CallbackContext):
     query = update.callback_query
     query_data = query.data
     spl = query_data.split('_')
-    origin = int(spl[1])
+    action = spl[1]
     user_id = query.from_user.id
 
     user = await user_collection.find_one({'id': user_id})
-    if not user or origin != user_id:
-        return await query.answer("This is not for you baka.", show_alert=True)
+    if not user or int(spl[-1]) != user_id:
+        return await query.answer("This is not for you, baka.", show_alert=True)
 
-    if query_data.startswith("buy"):
-        await handle_buy(query, spl[0], origin, user_id)
-    elif query_data.startswith("pg"):
-        await handle_page(query, int(query_data[2]), origin, user_id)
-    elif query_data.startswith("charcnf/"):
-        await handle_char_confirm(query, spl[0].split("/")[1], user_id)
-    elif query_data.startswith("charback/"):
-        await handle_char_back(query, spl[0].split("/")[1], user_id)
-    elif query_data == 'terminate':
+    if action == "buy":
+        await handle_buy(query, spl[2], user_id)
+    elif action.startswith("pg"):
+        await handle_page(query, int(action[2]), user_id)
+    elif action == "charcnf":
+        await handle_char_confirm(query, spl[2], user_id)
+    elif action == "charback":
+        await handle_char_back(query, spl[2], user_id)
+    elif action == 'terminate':
         await terminate(update, context)
-    elif query_data == 'startwordle':
+    elif action == 'startwordle':
         await start_ag(update, context)
+    elif action == 'close':
+        await query.message.delete()
 
-async def handle_buy(query, buy_type, origin, user_id):
-    char_index = "abc".index(buy_type[-1])
-    y = await get_today_characters(origin)
+async def handle_buy(query, buy_type, user_id):
+    char_index = "abc".index(buy_type)
+    y = await get_today_characters(user_id)
     char = y[1][char_index]
     bought = await get_user_bought(user_id)
 
@@ -145,29 +136,29 @@ async def handle_buy(query, buy_type, origin, user_id):
 
     await query.answer()
     await query.edit_message_caption(
-        f"{query.message.caption}\n\n__Click on button below to purchase!__",
+        f"{query.message.caption}\n\n__Click on the button below to purchase!__",
         reply_markup=IKM([
-            [IKB("purchase 💵", callback_data=f"charcnf/{char}_{user_id}")],
-            [IKB("back 🔙", callback_data=f"charback/{char}_{user_id}")]
+            [IKB("Purchase 💵", callback_data=f"store_charcnf_{char}_{user_id}")],
+            [IKB("Back 🔙", callback_data=f"store_charback_{char}_{user_id}")]
         ])
     )
 
-async def handle_page(query, page, origin, user_id):
+async def handle_page(query, page, user_id):
     if str(query.message.date).split()[0] != today():
         return await query.answer("Query expired, use /store to continue!", show_alert=True)
 
     await query.answer()
-    y = await get_today_characters(origin)
+    y = await get_today_characters(user_id)
     char = y[1][page - 1]
     photo, caption = await get_image_and_caption(char)
     nav_buttons = ["pg1", "pg2", "pg3", 'pg1']
-    buy_buttons = ["buya", "buyb", "buyc", 'buya']
+    buy_buttons = ["buy_a", "buy_b", "buy_c", 'buy_a']
 
     await query.edit_message_media(
         media=IMP(photo, caption=f"__PAGE {page}__\n\n{caption}"),
         reply_markup=IKM([
-            [IKB("⬅️", callback_data=f"{nav_buttons[page-2]}_{user_id}"), IKB("buy 🔖", callback_data=f"{buy_buttons[page-1]}_{user_id}"), IKB("➡️", callback_data=f"{nav_buttons[page]}_{user_id}")],
-            [IKB("close 🗑️", callback_data=f"saleslist:close_{user_id}")]
+            [IKB("⬅️", callback_data=f"store_{nav_buttons[page-2]}_{user_id}"), IKB("Buy 🔖", callback_data=f"store_{buy_buttons[page-1]}_{user_id}"), IKB("➡️", callback_data=f"store_{nav_buttons[page]}_{user_id}")],
+            [IKB("Close 🗑️", callback_data=f"store_close_{user_id}")]
         ])
     )
 
@@ -182,8 +173,8 @@ async def handle_char_confirm(query, char, user_id):
         return await query.answer("You've already bought it!", show_alert=True)
 
     await query.edit_message_caption(
-        f"__You've successfully purchased {det['name']} for {det['price']} 🔖.__",
-        reply_markup=IKM([[IKB("back 🔙", callback_data=f"charback/{char}_{user_id}")]])
+        f"__You've successfully purchased {det['name']} for {det['price']} coins.__",
+        reply_markup=IKM([[IKB("Back 🔙", callback_data=f"store_charback_{char}_{user_id}")]])
     )
 
     new_bought = bought[1] if bought and bought[0] == today() else []
@@ -205,9 +196,10 @@ async def handle_char_back(query, char, user_id):
     await query.edit_message_caption(
         f"__PAGE {ind}__\n\n{caption}",
         reply_markup=IKM([
-            [IKB("⬅️", callback_data=f"pg{nav_buttons[ind][0]}_{user_id}"), IKB("buy 🔖", callback_data=f"buy{buy_buttons[ind]}_{user_id}"), IKB("➡️", callback_data=f"pg{nav_buttons[ind][1]}_{user_id}")],
-            [IKB("close 🗑️", callback_data=f"saleslist:close_{user_id}")]
+            [IKB("⬅️", callback_data=f"store_pg{nav_buttons[ind][0]}_{user_id}"), IKB("Buy 🔖", callback_data=f"store_buy_{buy_buttons[ind]}_{user_id}"), IKB("➡️", callback_data=f"store_pg{nav_buttons[ind][1]}_{user_id}")],
+            [IKB("Close 🗑️", callback_data=f"store_close_{user_id}")]
         ])
     )
 
 application.add_handler(CommandHandler("store", shop))
+application.add_handler(CallbackQueryHandler(store_callback_handler))
