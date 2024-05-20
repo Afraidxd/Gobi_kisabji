@@ -36,9 +36,9 @@ async def details(update: Update, context: CallbackContext) -> None:
         anime_characters = await collection.count_documents({'anime': character['anime']})
 
         caption = (
-            f"<b>Look At This Character !!</b>\n\n"
-            f"🌸:<b> {character['name']}</b>\n"
-            f"🏖️: <b>{character['anime']}</b>\n"
+            f"<b>Look At This Car !!</b>\n\n"
+            f"Name:<b> {character['name']}</b>\n"
+            f"company: <b>{character['anime']}</b>\n"
             f"{character['rarity']}\n"
             f"🆔️: <b>{character['id']}</b>\n\n"
             f"<b>Globally Guessed {global_count} Times...</b>"
@@ -53,4 +53,4 @@ async def details(update: Update, context: CallbackContext) -> None:
     else:
         await update.message.reply_text("Character not found.")
 
-application.add_handler(CommandHandler('details', details))
+application.add_handler(CommandHandler('details', detail))
