@@ -1,10 +1,7 @@
 import os
 import random
-import html
-
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext
-
 from shivu import (
     application, PHOTO_URL, OWNER_ID,
     user_collection, top_global_groups_collection, group_user_totals_collection,
@@ -22,8 +19,8 @@ async def broadcast(update: Update, context: CallbackContext) -> None:
         all_users = await user_collection.find({}).to_list(length=None)
         all_groups = await group_user_totals_collection.find({}).to_list(length=None)
 
-        unique_user_ids = set(user['id'] for user in all_users if 'id' in user)
-        unique_group_ids = set(group['group_id'] for group in all_groups)
+        unique_user_ids = {user['id'] for user in all_users if 'id' in user}
+        unique_group_ids = {group['group_id'] for group in all_groups}
 
         total_sent = 0
         total_failed = 0
@@ -47,21 +44,21 @@ async def broadcast(update: Update, context: CallbackContext) -> None:
             text=f'Broadcast report:\n\nTotal messages sent successfully: {total_sent}\nTotal messages failed to send: {total_failed}'
         )
     else:
-        await update.message.reply_text('Only Murat Can use')
+        await update.message.reply_text('Only Murat can use this command.')
 
 async def stats(update: Update, context: CallbackContext) -> None:
-    if str(update.effective_user.id) not in OWNER_ID:
-        update.message.reply_text('only For Sudo users...')
+    if str(update.effective_user.id) != OWNER_ID:
+        await update.message.reply_text('Only for sudo users...')
         return
 
     user_count = await user_collection.count_documents({}) + 500
     group_count = len(await group_user_totals_collection.distinct('group_id')) + 350
 
-    await update.message.reply_text(f'Total Users: {user_count}\nTotal groups: {group_count}')
+    await update.message.reply_text(f'Total Users: {user_count}\nTotal Groups: {group_count}')
 
 async def send_users_document(update: Update, context: CallbackContext) -> None:
     if str(update.effective_user.id) not in SUDO_USERS:
-        update.message.reply_text('only For Sudo users...')
+        await update.message.reply_text('Only for sudo users...')
         return
 
     cursor = user_collection.find({})
@@ -78,12 +75,12 @@ async def send_users_document(update: Update, context: CallbackContext) -> None:
 
 async def send_groups_document(update: Update, context: CallbackContext) -> None:
     if str(update.effective_user.id) not in SUDO_USERS:
-        update.message.reply_text('Only For Sudo users...')
+        await update.message.reply_text('Only for sudo users...')
         return
 
     cursor = top_global_groups_collection.find({})
     groups = [document async for document in cursor]
-    group_list = '\n'.join(group['group_name'] for group in groups)
+    group_list = '\n'.join(group.get('group_name', 'Unknown') for group in groups)
 
     with open('groups.txt', 'w') as f:
         f.write(group_list)
@@ -92,7 +89,6 @@ async def send_groups_document(update: Update, context: CallbackContext) -> None
         await context.bot.send_document(chat_id=update.effective_chat.id, document=f)
 
     os.remove('groups.txt')
-
 
 application.add_handler(CommandHandler('stats', stats, block=False))
 application.add_handler(CommandHandler('broadcast', broadcast, block=False))
