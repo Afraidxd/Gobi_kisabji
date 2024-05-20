@@ -105,7 +105,7 @@ async def shop(update: Update, context: CallbackContext):
         [IKB("close 🗑️", callback_data=f"saleslist:close_{user_id}")]
     ])
 
-    await update.message.reply_photo(photo, caption=f"__PAGE 1__\n\n{caption}", reply_markup=markup)
+    await update.message.reply_photo(photo, caption=f"𝗣𝗮𝗴𝗲 1\n\n{caption}", reply_markup=markup)
 
 # Callback query handler
 async def store_callback_handler(update: Update, context: CallbackContext):
@@ -162,7 +162,7 @@ async def handle_page(query, page, origin, user_id):
     buy_buttons = ["buya", "buyb", "buyc", 'buya']
 
     await query.edit_message_media(
-        media=IMP(photo, caption=f"__PAGE {page}__\n\n{caption}"),
+        media=IMP(photo, caption=f"𝗣𝗮𝗴𝗲 {page}\n\n{caption}"),
         reply_markup=IKM([
             [IKB("⬅️", callback_data=f"{nav_buttons[page-2]}_{user_id}"), IKB("buy 🔖", callback_data=f"{buy_buttons[page-1]}_{user_id}"), IKB("➡️", callback_data=f"{nav_buttons[page]}_{user_id}")],
             [IKB("close 🗑️", callback_data=f"saleslist:close_{user_id}")]
