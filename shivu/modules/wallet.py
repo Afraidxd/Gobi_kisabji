@@ -12,7 +12,7 @@ import random
 from shivu import shivuu as app
 
 # URL for default profile image
-default_profile_image = "https://graph.org/file/7ff03ebae9abc95c94a16.jpg"
+default_profile_image = "https://telegra.ph/file/342e5da6524b7ed1524c3.jpg"
 
 # Formatting function for large numbers
 def format_number(num):
