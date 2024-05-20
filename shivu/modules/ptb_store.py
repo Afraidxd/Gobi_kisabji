@@ -61,7 +61,7 @@ async def clear_today(user_id):
 
 async def get_image_and_caption(id: int):
     char = await get_character(id)
-    form = '𝙉𝘼𝙈𝙀 : {}\n\n𝘼𝙉𝙄𝙈𝙀 : {}\n\n🆔: {}\n\n𝙋𝙍𝙄𝘾𝙀 : {} coins\n'
+    form = '𝙉𝘼𝙈𝙀 : {}\n\n𝘾𝙊𝙈𝙋𝘼𝙉𝙔 : {}\n\n🆔: {}\n\n𝙋𝙍𝙄𝘾𝙀 : {} coins\n'
     return char['img_url'], form.format(char['name'], char['anime'], char['id'], char['price'])
 
 def today():
@@ -117,7 +117,7 @@ async def store_callback_handler(update: Update, context: CallbackContext):
 
     user = await user_collection.find_one({'id': user_id})
     if not user or origin != user_id:
-        return await query.answer("This is not for you baka.", show_alert=True)
+        return await query.answer("ᴛʜɪs ɪs ɴᴏᴛ ғᴏʀ ʏᴏᴜ ʙᴀᴋᴀ.", show_alert=True)
 
     if query_data.startswith("buy"):
         await handle_buy(query, spl[0], origin, user_id)
@@ -139,14 +139,14 @@ async def handle_buy(query, buy_type, origin, user_id):
     bought = await get_user_bought(user_id)
 
     if bought and bought[0] == today() and char in bought[1]:
-        return await query.answer("You've already bought this character!", show_alert=True)
+        return await query.answer("ʏᴏᴜ'ᴠᴇ ᴀʟʀᴇᴀᴅʏ ʙᴏᴜɢʜᴛ ᴛʜɪs ᴄᴀʀ!", show_alert=True)
 
     await query.answer()
     await query.edit_message_caption(
         f"{query.message.caption}\n\n__Click on button below to purchase!__",
         reply_markup=IKM([
-            [IKB("purchase 💵", callback_data=f"charcnf/{char}_{user_id}")],
-            [IKB("back 🔙", callback_data=f"charback/{char}_{user_id}")]
+            [IKB("ᴘᴜʀᴄʜᴀsᴇ 💵", callback_data=f"charcnf/{char}_{user_id}")],
+            [IKB("ʙᴀᴄᴋ 🔙", callback_data=f"charback/{char}_{user_id}")]
         ])
     )
 
