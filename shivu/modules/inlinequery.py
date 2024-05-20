@@ -57,8 +57,11 @@ async def inlinequery(update: Update, context: CallbackContext) -> None:
                 if user:
                     all_characters = list({v['id']:v for v in user['characters']}.values())
                     if search_terms:
-                        regex = re.compile(' '.join(search_terms), re.IGNORECASE)
-                        all_characters = [character for character in all_characters if regex.search(character['name']) or regex.search(character['anime'])]
+                        if search_terms[0].isdigit():  # Check if the search term is a digit (character ID)
+                            all_characters = [character for character in all_characters if str(character['id']) == search_terms[0]]
+                        else:
+                            regex = re.compile(' '.join(search_terms), re.IGNORECASE)
+                            all_characters = [character for character in all_characters if regex.search(character['name']) or regex.search(character['anime'])]
                 else:
                     all_characters = []
             else:
@@ -88,12 +91,31 @@ async def inlinequery(update: Update, context: CallbackContext) -> None:
             global_count = await user_collection.count_documents({'characters.id': character['id']})
             anime_characters = await collection.count_documents({'anime': character['anime']})
 
+            price = character.get('price', 'N/A')  # Get the price or set as 'N/A' if not available
             if query.startswith('collection.'):
                 user_character_count = sum(c['id'] == character['id'] for c in user['characters'])
                 user_anime_characters = sum(c['anime'] == character['anime'] for c in user['characters'])
-                caption = f"<b> ʟᴏᴏᴋ ᴀᴛ <a href='tg://user?id={user['id']}'>{(escape(user.get('first_name', user['id'])))}</a>'s ᴄᴀʀ</b>\n\n ɴᴀᴍᴇ: <b>{character['name']} (x{user_character_count})</b>\n ᴄᴏᴍᴘᴀɴʏ: <b>{character['anime']} ({user_anime_characters}/{anime_characters})</b>\n<b>{character['rarity']}</b>\n\n<b>ɪᴅ:</b> {character['id']}"
+                caption = (
+                    f"<b> Look At <a href='tg://user?id={user['id']}'>{escape(user.get('first_name', user['id']))}</a>'s Character</b>\n\n"
+                    f"🍃 𝙉𝘼𝙈𝙀 : <b>{character['name']} (x{user_character_count})</b>\n\n"
+                    f"🍃 𝘾𝙊𝙈𝙋𝘼𝙉𝙔 : <b>{character['anime']} ({user_anime_characters}/{anime_characters})</b>\n\n"
+                    f"🍃 𝙍𝘼𝙍𝙄𝙏𝙔 :<b>{character['rarity']}</b>\n\n<b>🍃 𝙋𝙍𝙄𝘾𝙀 : {price}🔖</b>\n\n"
+                    f"<b>🆔️:</b> {character['id']} | "
+                )
             else:
-                caption = f"<b>ʟᴏᴏᴋ ᴀᴛ ᴛʜɪs ᴄᴀʀ 🏎</b>\n\nɴᴀᴍᴇ:<b> {character['name']}</b>\nᴄᴏᴍᴘᴀɴʏ: <b>{character['anime']}</b>\n<b>{character['rarity']}</b>\nɪᴅ: <b>{character['id']}</b>\n\n<b>ᴛᴏᴛᴀʟ ᴜsᴇʀs ᴏᴡɴ ᴛʜɪs ᴄᴀʀ {global_count} ...</b>"
+                caption = (
+                    f"<b>ʟᴏᴏᴋ ᴀᴛ ᴛʜɪs ᴄᴀʀ !!</b>\n\n"
+                    f"🍃 𝙉𝘼𝙈𝙀:<b> {character['name']}</b>\n\n"
+                    f"🍃 𝘾𝙊𝙈𝙋𝘼𝙉𝙔 : <b>{character['anime']}</b>\n\n"
+                    f"🍃 𝙍𝘼𝙍𝙄𝙏𝙔 :<b>{character['rarity']}</b>\n"
+                    f"🆔️: <b>{character['id']}</b>\n\n"
+                    f"<b>🍃 𝙋𝙍𝙄𝘾𝙀 : {price}🔖</b>\n\n"
+
+                )
+
+            keyboard = [[InlineKeyboardButton("ʜᴏᴡ ᴍᴀɴʏ ɪ ʜᴀᴠᴇ ❓", callback_data=f"check_{character['id']}")]]
+            reply_markup = InlineKeyboardMarkup(keyboard)
+
             results.append(
                 InlineQueryResultPhoto(
                     thumbnail_url=character['img_url'],
@@ -102,10 +124,24 @@ async def inlinequery(update: Update, context: CallbackContext) -> None:
                     caption=caption,
                     parse_mode='HTML',
                     photo_width=300,  # Adjust the width as needed
-                    photo_height=300  # Adjust the height as needed
+                    photo_height=300,  # Adjust the height as needed
+                    reply_markup=reply_markup 
                 )
             )
 
         await update.inline_query.answer(results, next_offset=next_offset, cache_time=5)
 
 application.add_handler(InlineQueryHandler(inlinequery, block=False))
+
+
+async def check(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    user_id = query.from_user.id
+    data = query.data.split('_')
+    character_id = data[1]
+
+    user_data = await user_collection.find_one({'id': user_id})
+    characters = user_data.get('characters', [])
+    quantity = sum(1 for char in characters if char['id'] == character_id)
+
+    await query.answer(f"ʏᴏᴜ ʜᴀᴠᴇ {quantity} ᴏғ ᴛʜɪs ᴄᴀʀ.", show_alert=True)
