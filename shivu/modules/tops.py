@@ -41,7 +41,7 @@ async def mtop(update: Update, context: CallbackContext):
 
     top_users_message = """
 ┌─────═━┈┈━═─────┐
-Top 10 Token Users:
+𝚃𝚘𝚙 10 𝚞𝚜𝚎𝚛𝚜 𝚠𝚒𝚝𝚑 𝚑𝚒𝚐𝚑𝚎𝚜𝚝 𝚝𝚘𝚔𝚎𝚗𝚜:
 ───────────────────
 """
 
@@ -64,7 +64,7 @@ Top 10 Token Users:
 └─────═━┈┈━═─────┘
 """
 
-    photo_url = "https://telegra.ph/file/3474a548e37ab8f0604e8.jpg"
+    photo_url = "https://telegra.ph/file/044cf17e444fcb931ec97.jpg"
     photo_response = requests.get(photo_url)
 
     if photo_response.status_code == 200:
