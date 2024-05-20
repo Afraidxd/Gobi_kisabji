@@ -17,10 +17,7 @@ from shivu.modules import ALL_MODULES
 
 # Define the send_leaderboard_message function
 async def send_leaderboard_message(context: CallbackContext, chat_id: int, message: str, photo_url: str, message_id: int = None):
-    keyboard = [
-        [InlineKeyboardButton("Close", callback_data='saleslist:close')]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    
 
     if message_id:
         await context.bot.edit_message_caption(
@@ -86,4 +83,4 @@ async def button_handler(update: Update, context: CallbackContext) -> None:
         await query.message.delete()
 
 # Add the command and callback handlers
-application.add_handler(CommandHandler("mtop", mtop))
+application.add_handler(CommandHandler("tops", mtop))
