@@ -9,10 +9,10 @@ from shivu import application, user_collection, top_global_groups_collection, gr
 async def send_leaderboard(context: CallbackContext, chat_id: int, leaderboard_message: str, photo_url: str, message_id: int = None):
     keyboard = [
         [
-            InlineKeyboardButton("Top Group Users", callback_data='lb_ctop'),
-            InlineKeyboardButton("Top Groups", callback_data='lb_top_groups')
+            InlineKeyboardButton("ᴛᴏᴘ ɢʀᴏᴜᴘ ᴜsᴇʀs", callback_data='lb_ctop'),
+            InlineKeyboardButton("ᴛᴏᴘ ɢʀᴏᴜᴘs", callback_data='lb_top_groups')
         ],
-        [InlineKeyboardButton("Close", callback_data='lb_close')]
+        [InlineKeyboardButton("ᴄʟᴏsᴇ", callback_data='lb_close')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -36,8 +36,8 @@ async def global_leaderboard(update: Update, context: CallbackContext, query=Non
     leaderboard_data = await cursor.to_list(length=10)
 
     leaderboard_message = (
-        "┌─────═━┈┈━═─────┐\n"
-        "<b>TOP 10 GROUPS WHO GUESSED MOST CHARACTERS</b>\n\n"
+        "┌─────═━🏎━═─────┐\n"
+        "<b>ᴛᴏᴘ 10 ɢʀᴏᴜᴘs ᴡʜᴏ ɢᴜᴇssᴇᴅ ᴍᴏsᴛ ᴄᴀʀs</b>\n\n"
     )
 
     for i, group in enumerate(leaderboard_data, start=1):
@@ -48,7 +48,7 @@ async def global_leaderboard(update: Update, context: CallbackContext, query=Non
         count = group['count']
         leaderboard_message += f'{i}. <b>{group_name}</b> ➾ <b>{count}</b>\n'
     
-    leaderboard_message += "└─────═━┈┈━═─────┘"
+    leaderboard_message += "└─────═━🏎━═─────┘"
 
     photo_url = random.choice(PHOTO_URL)
 
@@ -69,8 +69,8 @@ async def ctop(update: Update, context: CallbackContext, query=None) -> None:
     leaderboard_data = await cursor.to_list(length=10)
 
     leaderboard_message = (
-        "┌─────═━┈┈━═─────┐\n"
-        "<b>TOP 10 USERS WHO GUESSED CHARACTERS MOST TIME IN THIS GROUP</b>\n\n"
+        "┌─────═━🏎━═─────┐\n"
+        "<b>ᴛᴏᴘ 10 ᴜsᴇʀs ᴡʜᴏ ɢᴜᴇssᴇᴅ ᴄᴀʀs ᴍᴏsᴛ ᴛɪᴍᴇ ɪɴ ᴛʜɪs ɢʀᴏᴜᴘ</b>\n\n"
     )
 
     for i, user in enumerate(leaderboard_data, start=1):
@@ -82,7 +82,7 @@ async def ctop(update: Update, context: CallbackContext, query=None) -> None:
         character_count = user['character_count']
         leaderboard_message += f'{i}. <a href="https://t.me/{username}"><b>{first_name}</b></a> ➾ <b>{character_count}</b>\n'
     
-    leaderboard_message += "└─────═━┈┈━═─────┘"
+    leaderboard_message += "└─────═━🏎━═─────┘"
 
     photo_url = random.choice(PHOTO_URL)
 
@@ -102,8 +102,8 @@ async def leaderboard(update: Update, context: CallbackContext, query=None) -> N
     leaderboard_data = await cursor.to_list(length=10)
 
     leaderboard_message = (
-        "┌─────═━┈┈━═─────┐\n"
-        "<b>TOP 10 USERS WITH MOST CHARACTERS</b>\n\n"
+        "┌─────═━🏎━═─────┐\n"
+        "<b>ᴛᴏᴘ 10 ᴜsᴇʀs ᴡɪᴛʜ ᴍᴏsᴛ ᴄᴀʀ</b>\n\n"
     )
 
     for i, user in enumerate(leaderboard_data, start=1):
@@ -115,7 +115,7 @@ async def leaderboard(update: Update, context: CallbackContext, query=None) -> N
         character_count = user['character_count']
         leaderboard_message += f'{i}. <a href="https://t.me/{username}"><b>{first_name}</b></a> ➾ <b>{character_count}</b>\n'
     
-    leaderboard_message += "└─────═━┈┈━═─────┘"
+    leaderboard_message += "└─────═━🏎━═─────┘"
 
     photo_url = random.choice(PHOTO_URL)
 
