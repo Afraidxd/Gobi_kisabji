@@ -40,7 +40,7 @@ async def mtop(update: Update, context: CallbackContext):
     top_users = await user_collection.find({}, {'id': 1, 'username': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}).sort('balance', -1).limit(10).to_list(10)
 
     top_users_message = """
-┌─────═━┈┈━═─────┐
+┌─────═━🏎━═─────┐
 𝚃𝚘𝚙 10 𝚞𝚜𝚎𝚛𝚜 𝚠𝚒𝚝𝚑 𝚑𝚒𝚐𝚑𝚎𝚜𝚝 𝚝𝚘𝚔𝚎𝚗𝚜:
 ───────────────────
 """
@@ -61,7 +61,7 @@ async def mtop(update: Update, context: CallbackContext):
 
     top_users_message += """
 ───────────────────
-└─────═━┈┈━═─────┘
+└─────═━🏎━═─────┘
 """
 
     photo_url = "https://telegra.ph/file/044cf17e444fcb931ec97.jpg"
