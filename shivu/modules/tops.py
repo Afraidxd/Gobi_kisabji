@@ -32,7 +32,6 @@ async def send_leaderboard_message(context: CallbackContext, chat_id: int, messa
             chat_id=chat_id,
             photo=photo_url,
             caption=message,
-            reply_markup=reply_markup,
             parse_mode='HTML'
         )
 
