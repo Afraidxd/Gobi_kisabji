@@ -30,7 +30,7 @@ async def cbq(update: Update, context):
     elif data == 'name': 
         from .spwan import button_click
         await button_click(update, context)
-    elif data.startswith(('help', 'credits', 'back', 'user_help', 'game_help')): 
+    elif data.startswith(('help', 'credits', 'back', 'user_help', 'games_help')): 
         await button(update, context)   
 
 application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
