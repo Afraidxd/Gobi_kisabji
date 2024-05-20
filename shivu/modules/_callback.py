@@ -8,7 +8,7 @@ from .start import button
 from .saleslist import sales_list_callback
 from .owner import button_handler
 from .rps import rps_button
-from .wordle import check
+from .inlinequary import check
 
 async def cbq(update: Update, context):
     query = update.callback_query
