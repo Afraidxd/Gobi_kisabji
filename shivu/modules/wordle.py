@@ -53,4 +53,4 @@ async def details(update: Update, context: CallbackContext) -> None:
     else:
         await update.message.reply_text("Character not found.")
 
-application.add_handler(CommandHandler('details', detail))
+application.add_handler(CommandHandler('detail', details))
