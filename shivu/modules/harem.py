@@ -14,7 +14,7 @@ async def harem(update: Update, context: CallbackContext, page=0) -> None:
         if update.message:
             await update.message.reply_text('ᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴀɴʏ ᴄᴀʀꜱ ɴɪɢɢᴀ...')
         else:
-            await update.callback_query.edit_message_text('ᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ ᴀɴʏ ᴄᴀʀꜱ ɴɪɢɢᴀ...')
+            await update.callback_query.edit_message_text('ᴜ ᴅᴏɴ"ᴛ ʜᴀᴠᴇ ᴀɴʏ ᴄᴀʀꜱ ɴɪɢɢᴀ...')
         return
 
     characters = sorted(user['characters'], key=lambda x: (x['anime'], x['id']))
