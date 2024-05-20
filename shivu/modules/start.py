@@ -66,6 +66,7 @@ async def button(update: Update, context: CallbackContext) -> None:
 ***/tops: ᴛᴏ sᴇᴇ ᴛᴏᴘ ᴄᴏɪɴ ʜᴏʟᴅᴇʀs***
 ***/top: ᴛᴏ sᴇᴇ ᴛᴏᴘ ᴄᴀʀ ʜᴏʟᴅᴇʀs ***
 ***/changetime: ᴄʜᴀɴɢᴇ ᴄᴀʀ ᴀᴘᴘᴇᴀʀ ᴛɪᴍᴇ (ᴏɴʟʏ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘs)***
+***/detail: ᴛᴏ ɢᴇᴛ ᴄᴀʀs ᴅᴇᴛᴀɪʟs***
         """
         user_help_keyboard = [[InlineKeyboardButton("ʙᴀᴄᴋ", callback_data='help')]]
         reply_markup = InlineKeyboardMarkup(user_help_keyboard)
