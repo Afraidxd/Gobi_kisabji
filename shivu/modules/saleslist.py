@@ -121,4 +121,4 @@ async def sales_list_callback(update: Update, context: CallbackContext):
         await query.answer()  # Ensure that the callback query is answered first
         await query.message.edit_text(error_message)
 
-application.add_handler(CommandHandler('saleslist', sales_list))
+application.add_handler(CommandHandler('66tgy6t', sales_list))
