@@ -9,7 +9,7 @@ last_payment_times = {}
 from shivu import collection, user_collection, application
 from telegram.ext import CallbackContext
 import random 
-from Grabber import Grabberu as app
+from shivu import shivuu as app
 
 # URL for default profile image
 default_profile_image = "https://graph.org/file/7ff03ebae9abc95c94a16.jpg"
