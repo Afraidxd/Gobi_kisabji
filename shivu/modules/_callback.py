@@ -8,6 +8,7 @@ from .start import button
 from .saleslist import sales_list_callback
 from .owner import button_handler
 from .rps import rps_button
+from .details import check
 
 async def cbq(update: Update, context):
     query = update.callback_query
@@ -30,6 +31,8 @@ async def cbq(update: Update, context):
     elif data == 'name': 
         from .spwan import button_click
         await button_click(update, context)
+    elif data.startswith('check_'):
+        await check(update, context),
     elif data.startswith(('help', 'credits', 'back', 'user_help', 'games_help')): 
         await button(update, context)   
 
