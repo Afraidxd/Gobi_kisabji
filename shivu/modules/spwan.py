@@ -35,7 +35,6 @@ def escape_markdown(text):
     escape_chars = r'\*_`\\~>#+-=|{}.!'
     return re.sub(r'([%s])' % re.escape(escape_chars), r'\\\1', text)
 
-
 async def message_counter(update: Update, context: CallbackContext) -> None:
     chat_id = str(update.effective_chat.id)
     user_id = update.effective_user.id
@@ -86,9 +85,14 @@ async def send_image(update: Update, context: CallbackContext) -> None:
 
     character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
 
+    # Reset old character data
+    if chat_id in last_characters:
+        del last_characters[chat_id]
+
     sent_characters[chat_id].append(character['id'])
     last_characters[chat_id] = character
 
+    # Remove first correct guess if any
     if chat_id in first_correct_guesses:
         del first_correct_guesses[chat_id]
 
@@ -101,10 +105,6 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
-
-
-
-
 
 async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
@@ -129,13 +129,6 @@ async def button_click(update: Update, context: CallbackContext) -> None:
 async def get_user_balance(user_id: int) -> int:
     user = await user_collection.find_one({"id": user_id})
     return user.get("balance") if user else None
-
-
-
-
-
-
-
 
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
@@ -223,8 +216,5 @@ async def guess(update: Update, context: CallbackContext) -> None:
     else:
         await update.message.reply_text('𝙋𝙡𝙚𝙖𝙨𝙚 𝙒𝙧𝙞𝙩𝙚 𝘾𝙤𝙧𝙧𝙚𝙘𝙩 𝙉𝙖𝙢𝙚... ❌️')
 
-
 application.add_handler(CommandHandler(["guess"], guess, block=False))
-
 application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
-
