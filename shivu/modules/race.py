@@ -11,7 +11,10 @@ challenges = {}
 async def start_race_challenge(update: Update, context: CallbackContext):
     # Check if the message is a reply and contains a mention
     if not update.message.reply_to_message or not update.message.entities:
+        await update.message.reply_text("Please mention another user to challenge them to a race.")
         return
+
+    # ... rest of the function remains the same
 
     mentioned_user_id = None
     for entity in update.message.entities:
