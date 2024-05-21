@@ -10,24 +10,15 @@ challenges = {}
 race_cooldowns = {}
 
 async def start_race_challenge(update: Update, context: CallbackContext):
-    # Check if the message is a reply and contains a mention
-    if not update.message.reply_to_message or not update.message.entities:
-        await update.message.reply_text("Please mention another user to challenge them to a race.")
+    # Check if the message is a reply
+    if not update.message.reply_to_message:
+        await update.message.reply_text("Please reply to a user's message to challenge them to a race.")
         return
 
-    mentioned_user_id = None
-    for entity in update.message.entities:
-        if entity.type == MessageEntity.MENTION:
-            username = update.message.text[entity.offset + 1:entity.offset + entity.length]
-            user = await context.bot.get_chat(username)
-            mentioned_user_id = user.id if user else None
-            break
-        elif entity.type == MessageEntity.TEXT_MENTION:
-            mentioned_user_id = entity.user.id
-            break
+    mentioned_user_id = update.message.reply_to_message.from_user.id
 
     if not mentioned_user_id:
-        await update.message.reply_text("Please mention another user to challenge them to a race.")
+        await update.message.reply_text("Please reply to a user's message to challenge them to a race.")
         return
 
     challenger_id = update.effective_user.id
