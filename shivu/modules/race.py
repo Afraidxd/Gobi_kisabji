@@ -125,6 +125,4 @@ async def race_decline(update: Update, context: CallbackContext):
         await query.edit_message_text("Challenge not found or already expired.")
 
 # Add handlers
-application.add_handler(MessageHandler(Filters.text & ~Filters.command, start_race_challenge))
-application.add_handler(CallbackQueryHandler(race_accept, pattern=r'^race_accept_\d+$'))
-application.add_handler(CallbackQueryHandler(race_decline, pattern=r'^race_decline_\d+$'))
+application.add_handler(CommandHandler("race", start_race_challenge, block=False))
