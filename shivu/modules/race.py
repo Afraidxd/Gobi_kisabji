@@ -1,9 +1,10 @@
-from shivu import application, user_collection
+from shivu import user_collection
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import CallbackContext
 import random
 from datetime import datetime
-from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageHandler, filters, CallbackContext
+import asyncio
 
 # Dictionary to store last propose times and challenges
 challenges = {}
@@ -21,6 +22,7 @@ async def start_race_challenge(update: Update, context: CallbackContext):
             break
 
     if not mentioned_user_id:
+        await update.message.reply_text("Please mention another user to challenge them to a race.")
         return
 
     challenger_id = update.effective_user.id
@@ -93,7 +95,7 @@ async def start_race(update: Update, context: CallbackContext, challenger_id: in
     else:
         winner_id = challenged_id
         loser_id = challenger_id
-        winner_name = update.effective_user.first_name
+        winner_name = (await user_collection.find_one({'id': challenged_id})).get('first_name', 'User')
 
     reward = 2 * amount
     await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': reward}})
@@ -109,14 +111,12 @@ async def start_race(update: Update, context: CallbackContext, challenger_id: in
 
 async def race_decline(update: Update, context: CallbackContext):
     query = update.callback_query
-    challenger_id = int(query.data.split('_')[2])
     challenged_id = query.from_user.id
 
-    if challenged_id in challenges and challenges[challenged_id]['challenger'] == challenger_id:
+    if challenged_id in challenges:
         await query.edit_message_text("Challenge declined.")
         del challenges[challenged_id]
     else:
         await query.edit_message_text("Challenge not found or already expired.")
 
-# Add handlers
-application.add_handler(CommandHandler("race", start_race_challenge, block=False))
+application.add_handler(CommandHandler("race", start_race_challenge))
