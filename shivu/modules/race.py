@@ -1,5 +1,6 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackQueryHandler, CallbackContext, Application
+from shivu import application, user_collection
 import asyncio
 import random
 from datetime import datetime
@@ -134,8 +135,6 @@ async def race_decline(update: Update, context: CallbackContext):
         await query.edit_message_text("Challenge not found or already expired.")
 
 
-# Initialize the bot
-application = Application.builder().token("YOUR_BOT_TOKEN").build()
 
 # Add handlers
 application.add_handler(CommandHandler("race", start_race_challenge))
@@ -143,4 +142,4 @@ application.add_handler(CallbackQueryHandler(race_accept, pattern=r"race_accept_
 application.add_handler(CallbackQueryHandler(race_decline, pattern=r"race_decline_\d+"))
 
 # Start the bot
-application.run_polling()
+
