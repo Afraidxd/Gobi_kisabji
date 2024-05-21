@@ -12,7 +12,7 @@ from .rps import rps_button
 from .inlinequery import check
 
 # Race challenge imports
-from .race import start_race_challenge, race_accept, race_decline
+from .race import race_accept, race_decline
 
 async def cbq(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -44,9 +44,6 @@ async def cbq(update: Update, context: CallbackContext):
         await race_accept(update, context)
     elif data.startswith('race_decline_'):
         await race_decline(update, context)
-
-# Add race command handler
-
 
 # Add callback query handler for buttons
 application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
