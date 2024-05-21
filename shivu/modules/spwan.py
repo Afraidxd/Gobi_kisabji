@@ -24,6 +24,17 @@ last_characters = {}
 sent_characters = {}
 first_correct_guesses = {}
 message_counts = {}
+limited_edition_sent = {}
+
+rarity_emojis = {
+    "Common": "⚪",
+    "Rare": "🟣",
+    "Legendary": "🟡",
+    "Medium": "🟢",
+    "Mythic": "💮",
+    "Limited edition": "🔮",
+    "Special": "🫧"
+}
 
 for module_name in ALL_MODULES:
     imported_module = importlib.import_module("shivu.modules." + module_name)
@@ -83,14 +94,24 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     if len(sent_characters[chat_id]) == len(all_characters):
         sent_characters[chat_id] = []
 
-    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
+    # Filter out Limited edition if already sent today
+    if chat_id in limited_edition_sent and time.time() - limited_edition_sent[chat_id] < 86400:
+        available_characters = [c for c in all_characters if c['rarity'] != 'Limited edition' and c['id'] not in sent_characters[chat_id]]
+    else:
+        available_characters = [c for c in all_characters if c['id'] not in sent_characters[chat_id]]
 
-    # Reset old character data
-    if chat_id in last_characters:
-        del last_characters[chat_id]
+    if not available_characters:
+        return  # No available characters to send
 
+    character = random.choice(available_characters)
+
+    # Update sent characters and last character data
     sent_characters[chat_id].append(character['id'])
     last_characters[chat_id] = character
+
+    # Track Limited edition character sending time
+    if character['rarity'] == 'Limited edition':
+        limited_edition_sent[chat_id] = time.time()
 
     # Remove first correct guess if any
     if chat_id in first_correct_guesses:
@@ -101,7 +122,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=character['img_url'],
-        caption=f"ᴀ ɴᴇᴡ ᴄᴀʀ ᴀᴘᴘᴇᴀʀ {character['rarity']} ᴜsᴇ /guess (ɴᴀᴍᴇ) ᴀɴᴅ ᴍᴀᴋᴇ ɪᴛ ʏᴏᴜʀs \n\n⚠️ ɴᴏᴛᴇ ᴡʜᴇɴ ʏᴏᴜ ᴄʟɪᴄᴋ ᴏɴ ɴᴀᴍᴇ ʙᴜᴛᴛᴏɴ ʙᴏᴛ ᴡɪʟʟ ᴅᴇᴅᴜᴄᴛ 10ᴋ ᴄᴏɪɴ ᴇᴠᴇʀʏᴛɪᴍᴇ",
+        caption=f"ᴀ ɴᴇᴡ ᴄᴀʀ ᴀᴘᴘᴇᴀʀ {rarity_emojis.get(character['rarity'], '')} ᴜsᴇ /guess (ɴᴀᴍᴇ) ᴀɴᴅ ᴍᴀᴋᴇ ɪᴛ ʏᴏᴜʀs \n\n⚠️ ɴᴏᴛᴇ ᴡʜᴇɴ ʏᴏᴜ ᴄʟɪᴄᴋ ᴏɴ ɴᴀᴍᴇ ʙᴜᴛᴛᴏɴ ʙᴏᴛ ᴡɪʟʟ ᴅᴇᴅᴜᴄᴛ 10ᴋ ᴄᴏɪɴ ᴇᴠᴇʀʏᴛɪᴍᴇ",
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
@@ -123,13 +144,20 @@ async def button_click(update: Update, context: CallbackContext) -> None:
             await query.answer(text="ʏᴏᴜ ᴅᴏɴ'ᴛ ʜᴀᴠᴇ sᴜғғɪᴄɪᴇɴᴛ ʙᴀʟᴀɴᴄᴇ.", show_alert=True)
     else:
         await user_collection.insert_one({"id": user_id, "balance": 50000})
-        name = last_characters.get(chat_id, {}).get('name', 'Unknown slave')
+        name = last_characters.get(chat_id, {}).get('name', 'Unknown car')
         await query.answer(text=f"ᴡᴇʟᴄᴏᴍᴇ, ᴜsᴇʀ ! ʏᴏᴜ'ᴠᴇ ʙᴇᴇɴ ᴀᴅᴅᴇᴅ ᴛᴏ ᴏᴜʀ sʏsᴛᴇᴍ ᴡɪᴛʜ ᴀɴ ɪɴɪᴛɪᴀʟ ʙᴀʟᴀɴᴄᴇ ᴏғ 50ᴋ", show_alert=True)
 
 async def get_user_balance(user_id: int) -> int:
     user = await user_collection.find_one({"id": user_id})
     return user.get("balance") if user else None
 
+# Add the following handler to your application
+application.add_handler(CommandHandler("start", message_counter))
+application.add_handler(CallbackQueryHandler(button_click))
+
+# Start the bot
+if __name__ == "__main__":
+    application.run_polling()
 async def guess(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
     user_id = update.effective_user.id
