@@ -46,7 +46,7 @@ async def cbq(update: Update, context: CallbackContext):
         await race_decline(update, context)
 
 # Add race command handler
-application.add_handler(CommandHandler("race", start_race_challenge))
+
 
 # Add callback query handler for buttons
 application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
