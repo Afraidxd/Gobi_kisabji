@@ -19,7 +19,7 @@ async def propose(update, context):
         return
 
     if proposing_users.get(user_id):
-        await update.message.reply_text("You are already proposing. Please wait for the current proposal to finish.")
+        await update.message.reply_text("You are already proposing. Please wait for the current challenge to finish.")
         proposing_users[user_id] = False  # Setting to False if user is already proposing
         return
     else:
@@ -36,7 +36,7 @@ async def propose(update, context):
             proposing_users[user_id] = False  # Setting to False if cooldown is active
             return
 
-    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -30000}})
+    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -20000}})
 
     proposal_message = "Challenge accepted"
     photo_path = 'https://telegra.ph/file/6abcb8278a66a11778841.jpg'
@@ -48,7 +48,7 @@ async def propose(update, context):
 
     await asyncio.sleep(2)
 
-    if random.random() < 0.3:
+    if random.random() < 0.7:
         rejection_message = "You lost"
         rejection_photo_path = 'https://telegra.ph/file/b94d4950840f4360b7b1d.jpg'
         await update.message.reply_photo(photo=rejection_photo_path, caption=rejection_message)
