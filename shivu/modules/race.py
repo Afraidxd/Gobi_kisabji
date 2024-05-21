@@ -1,24 +1,28 @@
-from shivu import user_collection, application 
-from telegram import Update, InlineKeyboardButton as IKB, InlineKeyboardMarkup as IKM, MessageEntity
+from shivu import user_collection, application
+
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext, CommandHandler, CallbackQueryHandler
 import random
-from datetime import datetime, timedelta
+from datetime import datetime
 import asyncio
 
 # Dictionary to store last propose times and challenges
 challenges = {}
-race_cooldowns = {}
 
 async def start_race_challenge(update: Update, context: CallbackContext):
-    # Check if the message is a reply
-    if not update.message.reply_to_message:
-        await update.message.reply_text("Please reply to a user's message to challenge them to a race.")
+    # Check if the message is a reply and contains a mention
+    if not update.message.reply_to_message or not update.message.entities:
+        await update.message.reply_text("Please mention another user to challenge them to a race.")
         return
 
-    mentioned_user_id = update.message.reply_to_message.from_user.id
+    mentioned_user_id = None
+    for entity in update.message.entities:
+        if entity.type == "mention":
+            mentioned_user_id = int(entity.user.id)
+            break
 
     if not mentioned_user_id:
-        await update.message.reply_text("Please reply to a user's message to challenge them to a race.")
+        await update.message.reply_text("Please mention another user to challenge them to a race.")
         return
 
     challenger_id = update.effective_user.id
@@ -26,12 +30,7 @@ async def start_race_challenge(update: Update, context: CallbackContext):
     challenger_name = update.effective_user.first_name
     amount = 10  # Default amount, you can change it as per your preference
 
-    # Check if the user is trying to race themselves
-    if challenger_id == challenged_id:
-        await update.message.reply_text("You cannot challenge yourself to a race!")
-        return
-
-    # Check balances
+    # Check balance of both users
     challenger_balance = await user_collection.find_one({'id': challenger_id}, projection={'balance': 1})
     challenged_balance = await user_collection.find_one({'id': challenged_id}, projection={'balance': 1})
 
@@ -41,14 +40,6 @@ async def start_race_challenge(update: Update, context: CallbackContext):
 
     if not challenged_balance or challenged_balance.get('balance', 0) < amount:
         await update.message.reply_text("The challenged user does not have enough tokens.")
-        return
-
-    now = datetime.now()
-    if challenger_id in race_cooldowns and (now - race_cooldowns[challenger_id]) < timedelta(minutes=1):
-        await update.message.reply_text("Please wait 1 minute before using /race again.")
-        return
-    if challenged_id in race_cooldowns and (now - race_cooldowns[challenged_id]) < timedelta(minutes=1):
-        await update.message.reply_text("The opponent needs to wait 1 minute before racing again.")
         return
 
     # Store the challenge
@@ -62,11 +53,11 @@ async def start_race_challenge(update: Update, context: CallbackContext):
     # Notify the challenged user
     keyboard = [
         [
-            IKB("Accept", callback_data=f"race_accept_{challenger_id}"),
-            IKB("Decline", callback_data=f"race_decline_{challenger_id}")
+            InlineKeyboardButton("Accept", callback_data=f"race_accept_{challenger_id}_{challenged_id}"),
+            InlineKeyboardButton("Decline", callback_data=f"race_decline_{challenger_id}_{challenged_id}")
         ]
     ]
-    reply_markup = IKM(keyboard)
+    reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
         f"You have been challenged by {challenger_name} to a race for Ŧ{amount} tokens! Do you accept?",
         reply_markup=reply_markup
@@ -76,23 +67,28 @@ async def race_accept(update: Update, context: CallbackContext):
     query = update.callback_query
     challenged_id = update.effective_user.id
 
+    callback_data = query.data.split('_')
+    challenger_id = int(callback_data[2])
+
     if challenged_id not in challenges:
         await query.answer("Challenge not found!", show_alert=True)
         return
 
+    if challenges[challenged_id]['challenger'] != challenger_id:
+        await query.answer("This challenge is not for you!", show_alert=True)
+        return
+
     challenge_data = challenges[challenged_id]
-    challenger_id = challenge_data['challenger']
+    await start_race(query, context, challenger_id, challenged_id, challenge_data['amount'], challenge_data['challenger_name'])
 
-    # Start the race
-    await start_race(query, challenger_id, challenged_id, challenge_data['amount'], challenge_data['challenger_name'])
-
-async def start_race(query, challenger_id: int, challenged_id: int, amount: int, challenger_name: str):
+async def start_race(query, context: CallbackContext, challenger_id: int, challenged_id: int, amount: int, challenger_name: str):
     # Deduct tokens from both users
     await user_collection.update_one({'id': challenger_id}, {'$inc': {'balance': -amount}})
     await user_collection.update_one({'id': challenged_id}, {'$inc': {'balance': -amount}})
 
     # Race simulation
-    await query.edit_message_text(text="🏁 The race has started! 🏁")
+    await asyncio.sleep(2)  # 2-second delay
+    await context.bot.send_message(chat_id=challenged_id, text="🏁 The race has started! 🏁")
     await asyncio.sleep(2)  # 2-second delay
 
     # Determine the winner
@@ -111,26 +107,25 @@ async def start_race(query, challenger_id: int, challenged_id: int, amount: int,
     winner_message = f"🎉 Congratulations, {winner_name}! 🎉\nYou won the race and earned Ŧ{reward} tokens."
     loser_message = "Better luck next time, you lost the race."
 
-    await query.bot.send_message(chat_id=winner_id, text=winner_message)
-    await query.bot.send_message(chat_id=loser_id, text=loser_message)
+    await context.bot.send_message(chat_id=winner_id, text=winner_message)
+    await context.bot.send_message(chat_id=loser_id, text=loser_message)
 
-    # Clean up the challenge and set cooldowns
+    # Clean up the challenge
     del challenges[challenged_id]
-    now = datetime.now()
-    race_cooldowns[challenger_id] = now
-    race_cooldowns[challenged_id] = now
 
 async def race_decline(update: Update, context: CallbackContext):
     query = update.callback_query
     challenged_id = query.from_user.id
 
-    if challenged_id in challenges:
+    callback_data = query.data.split('_')
+    challenger_id = int(callback_data[2])
+
+    if challenged_id in challenges and challenges[challenged_id]['challenger'] == challenger_id:
         await query.edit_message_text("Challenge declined.")
         del challenges[challenged_id]
     else:
         await query.edit_message_text("Challenge not found or already expired.")
 
-# Add the command handler and callback query handlers to the application
 application.add_handler(CommandHandler("race", start_race_challenge))
-application.add_handler(CallbackQueryHandler(race_accept, pattern=r'^race_accept_\d+$'))
-application.add_handler(CallbackQueryHandler(race_decline, pattern=r'^race_decline_\d+$'))
+application.add_handler(CallbackQueryHandler(race_accept, pattern="^race_accept_"))
+application.add_handler(CallbackQueryHandler(race_decline, pattern="^race_decline_"))
