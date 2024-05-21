@@ -18,7 +18,7 @@ async def sbet(update, context):
     if not user_balance or user_balance.get('balance', 0) < amount:
         await update.message.reply_text("Insufficient balance to make the bet.")
         return
-    if random.random() < 0.4:
+    if random.random() < 0.5:
         won_amount = 2 * amount
         await user_collection.update_one({'id': user_id}, {'$inc': {'balance': won_amount + amount}})
         updated_balance = user_balance.get('balance', 0) + won_amount
