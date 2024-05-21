@@ -1,6 +1,6 @@
 from shivu import user_collection, application 
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, MessageEntity
 from telegram.ext import CallbackContext, CommandHandler 
 import random
 from datetime import datetime
@@ -17,8 +17,13 @@ async def start_race_challenge(update: Update, context: CallbackContext):
 
     mentioned_user_id = None
     for entity in update.message.entities:
-        if entity.type == "mention":
-            mentioned_user_id = int(update.message.text[entity.offset + 1:entity.offset + entity.length])
+        if entity.type == MessageEntity.MENTION:
+            username = update.message.text[entity.offset + 1:entity.offset + entity.length]
+            user = await context.bot.get_chat(username)
+            mentioned_user_id = user.id if user else None
+            break
+        elif entity.type == MessageEntity.TEXT_MENTION:
+            mentioned_user_id = entity.user.id
             break
 
     if not mentioned_user_id:
@@ -119,4 +124,5 @@ async def race_decline(update: Update, context: CallbackContext):
     else:
         await query.edit_message_text("Challenge not found or already expired.")
 
+# Add the command handler to the application
 application.add_handler(CommandHandler("race", start_race_challenge))
