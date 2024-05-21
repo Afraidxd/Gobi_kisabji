@@ -1,26 +1,23 @@
 from shivu import application, user_collection
-from telegram.ext import CommandHandler
+from telegram.ext import CommandHandler, Updater, CallbackQueryHandler
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import CallbackContext
-import asyncio
 import random
 from datetime import datetime
 
 # Dictionary to store last propose times and challenges
-last_propose_times = {}
 challenges = {}
 
 async def start_race_challenge(update: Update, context: CallbackContext):
     # Check if the message is a reply and contains a mention
     if not update.message.reply_to_message or not update.message.entities:
         return
-    
+
     mentioned_user_id = None
     for entity in update.message.entities:
         if entity.type == "mention":
             mentioned_user_id = int(update.message.text[entity.offset + 1:entity.offset + entity.length])
             break
-    
+
     if not mentioned_user_id:
         return
 
@@ -73,11 +70,6 @@ async def race_accept(update: Update, context: CallbackContext):
     challenge_data = challenges[challenged_id]
     challenger_id = challenge_data['challenger']
 
-    # Check if the challenger is still available
-    if not await user_collection.find_one({'id': challenger_id}):
-        await query.answer("The challenger is no longer available.", show_alert=True)
-        return
-
     # Start the race
     await start_race(update, context, challenger_id, challenged_id, challenge_data['amount'], challenge_data['challenger_name'])
 
@@ -103,7 +95,7 @@ async def start_race(update: Update, context: CallbackContext, challenger_id: in
 
     reward = 2 * amount
     await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': reward}})
-    
+
     winner_message = f"🎉 Congratulations, {winner_name}! 🎉\nYou won the race and earned Ŧ{reward} tokens."
     loser_message = "Better luck next time, you lost the race."
 
