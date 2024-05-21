@@ -3,6 +3,7 @@ from telegram.ext import CommandHandler, Updater, CallbackQueryHandler
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 import random
 from datetime import datetime
+from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageHandler, filters, CallbackContext
 
 # Dictionary to store last propose times and challenges
 challenges = {}
