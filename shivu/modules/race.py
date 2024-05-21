@@ -1,28 +1,33 @@
-from shivu import application, user_collection
-from telegram.ext import CommandHandler, CallbackQueryHandler, MessageHandler
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import CallbackContext
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from telegram.ext import CommandHandler, CallbackQueryHandler, MessageHandler, Filters, CallbackContext
+from telegram.ext import Application, Updater
 import asyncio
 import random
 from datetime import datetime
-
 
 # Dictionary to store last propose times and challenges
 last_propose_times = {}
 challenges = {}
 
+# Async function to start a race challenge
 async def start_race_challenge(update: Update, context: CallbackContext):
     # Check if the message is a reply and contains a mention
     if not update.message.reply_to_message or not update.message.entities:
+        await update.message.reply_text("You must reply to a user's message to challenge them.")
         return
 
+    # Extract the mentioned user ID
     mentioned_user_id = None
     for entity in update.message.entities:
         if entity.type == "mention":
-            mentioned_user_id = int(update.message.text[entity.offset + 1:entity.offset + entity.length])
+            username = update.message.text[entity.offset + 1:entity.offset + entity.length]
+            mentioned_user = await user_collection.find_one({'username': username})
+            if mentioned_user:
+                mentioned_user_id = mentioned_user['id']
             break
 
     if not mentioned_user_id:
+        await update.message.reply_text("Mentioned user not found.")
         return
 
     challenger_id = update.effective_user.id
@@ -63,8 +68,10 @@ async def start_race_challenge(update: Update, context: CallbackContext):
         reply_markup=reply_markup
     )
 
+# Async function to handle race acceptance
 async def race_accept(update: Update, context: CallbackContext):
     query = update.callback_query
+    await query.answer()
     challenged_id = update.effective_user.id
 
     if challenged_id not in challenges:
@@ -82,6 +89,7 @@ async def race_accept(update: Update, context: CallbackContext):
     # Start the race
     await start_race(update, context, challenger_id, challenged_id, challenge_data['amount'], challenge_data['challenger_name'])
 
+# Async function to start the race
 async def start_race(update: Update, context: CallbackContext, challenger_id: int, challenged_id: int, amount: int, challenger_name: str):
     # Deduct tokens from both users
     await user_collection.update_one({'id': challenger_id}, {'$inc': {'balance': -amount}})
@@ -89,6 +97,7 @@ async def start_race(update: Update, context: CallbackContext, challenger_id: in
 
     # Race simulation
     await asyncio.sleep(2)  # 2-second delay
+    await context.bot.send_message(chat_id=challenger_id, text="🏁 The race has started! 🏁")
     await context.bot.send_message(chat_id=challenged_id, text="🏁 The race has started! 🏁")
     await asyncio.sleep(2)  # 2-second delay
 
@@ -114,8 +123,10 @@ async def start_race(update: Update, context: CallbackContext, challenger_id: in
     # Clean up the challenge
     del challenges[challenged_id]
 
+# Async function to handle race decline
 async def race_decline(update: Update, context: CallbackContext):
     query = update.callback_query
+    await query.answer()
     challenger_id = int(query.data.split('_')[2])
     challenged_id = query.from_user.id
 
@@ -127,3 +138,5 @@ async def race_decline(update: Update, context: CallbackContext):
 
 # Add handlers
 application.add_handler(CommandHandler("race", start_race_challenge, block=False))
+application.add_handler(CallbackQueryHandler(race_accept, pattern=r"race_accept_\d+"))
+application.add_handler(CallbackQueryHandler(race_decline, pattern=r"race_decline_\d+"))
