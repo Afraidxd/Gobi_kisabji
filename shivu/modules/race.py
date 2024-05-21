@@ -1,6 +1,5 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
-from telegram.ext import CommandHandler, CallbackQueryHandler, MessageHandler, Filters, CallbackContext
-from telegram.ext import Application, Updater
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import CommandHandler, CallbackQueryHandler, CallbackContext, Application
 import asyncio
 import random
 from datetime import datetime
@@ -9,14 +8,12 @@ from datetime import datetime
 last_propose_times = {}
 challenges = {}
 
-# Async function to start a race challenge
 async def start_race_challenge(update: Update, context: CallbackContext):
     # Check if the message is a reply and contains a mention
     if not update.message.reply_to_message or not update.message.entities:
         await update.message.reply_text("You must reply to a user's message to challenge them.")
         return
 
-    # Extract the mentioned user ID
     mentioned_user_id = None
     for entity in update.message.entities:
         if entity.type == "mention":
@@ -68,7 +65,6 @@ async def start_race_challenge(update: Update, context: CallbackContext):
         reply_markup=reply_markup
     )
 
-# Async function to handle race acceptance
 async def race_accept(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
@@ -89,7 +85,6 @@ async def race_accept(update: Update, context: CallbackContext):
     # Start the race
     await start_race(update, context, challenger_id, challenged_id, challenge_data['amount'], challenge_data['challenger_name'])
 
-# Async function to start the race
 async def start_race(update: Update, context: CallbackContext, challenger_id: int, challenged_id: int, amount: int, challenger_name: str):
     # Deduct tokens from both users
     await user_collection.update_one({'id': challenger_id}, {'$inc': {'balance': -amount}})
@@ -123,7 +118,6 @@ async def start_race(update: Update, context: CallbackContext, challenger_id: in
     # Clean up the challenge
     del challenges[challenged_id]
 
-# Async function to handle race decline
 async def race_decline(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
@@ -136,7 +130,11 @@ async def race_decline(update: Update, context: CallbackContext):
     else:
         await query.edit_message_text("Challenge not found or already expired.")
 
+# Initialize the bot
+application = Application.builder().token("YOUR_BOT_TOKEN").build()
+
 # Add handlers
-application.add_handler(CommandHandler("race", start_race_challenge, block=False))
+application.add_handler(CommandHandler("race", start_race_challenge))
 application.add_handler(CallbackQueryHandler(race_accept, pattern=r"race_accept_\d+"))
 application.add_handler(CallbackQueryHandler(race_decline, pattern=r"race_decline_\d+"))
+
