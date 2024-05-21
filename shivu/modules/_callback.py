@@ -1,6 +1,7 @@
 from shivu import application
 from telegram.ext import CallbackQueryHandler, CommandHandler
 from telegram import Update
+from telegram.ext import CallbackContext
 
 from .ptb_store import store_callback_handler, terminate, start_ag
 from .harem import harem_callback
@@ -10,10 +11,10 @@ from .owner import button_handler
 from .rps import rps_button
 from .inlinequery import check
 
-# Import race functions
-from .race import race_accept, race_decline
+# Race challenge imports
+from .race import start_race_challenge, race_accept, race_decline
 
-async def cbq(update: Update, context):
+async def cbq(update: Update, context: CallbackContext):
     query = update.callback_query
     data = query.data
 
@@ -38,11 +39,14 @@ async def cbq(update: Update, context):
         await check(update, context)
     elif data.startswith(('help', 'credits', 'back', 'user_help', 'games_help')): 
         await button(update, context)
-    elif data.startswith(('race_accept', 'race_decline')):
-        # Handle racing button queries
-        if data.startswith('race_accept'):
-            await race_accept(update, context)
-        elif data.startswith('race_decline'):
-            await race_decline(update, context)
+    # Race challenge handlers
+    elif data.startswith('race_accept_'):
+        await race_accept(update, context)
+    elif data.startswith('race_decline_'):
+        await race_decline(update, context)
 
+# Add race command handler
+application.add_handler(CommandHandler("race", start_race_challenge))
+
+# Add callback query handler for buttons
 application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
