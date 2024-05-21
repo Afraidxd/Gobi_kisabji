@@ -3,29 +3,29 @@ from telegram.ext import CommandHandler, CallbackQueryHandler, CallbackContext, 
 import asyncio
 import random
 from datetime import datetime
+import logging
+
+# Configure logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Dictionary to store last propose times and challenges
 last_propose_times = {}
 challenges = {}
 
+# Placeholder for user collection
+user_collection = None  # Replace with actual database connection
+
+
 async def start_race_challenge(update: Update, context: CallbackContext):
-    # Check if the message is a reply and contains a mention
-    if not update.message.reply_to_message or not update.message.entities:
+    # Check if the message is a reply
+    if not update.message.reply_to_message:
         await update.message.reply_text("You must reply to a user's message to challenge them.")
         return
 
-    mentioned_user_id = None
-    for entity in update.message.entities:
-        if entity.type == "mention":
-            username = update.message.text[entity.offset + 1:entity.offset + entity.length]
-            mentioned_user = await user_collection.find_one({'username': username})
-            if mentioned_user:
-                mentioned_user_id = mentioned_user['id']
-            break
-
-    if not mentioned_user_id:
-        await update.message.reply_text("Mentioned user not found.")
-        return
+    # Get the mentioned user from the replied message
+    mentioned_user = update.message.reply_to_message.from_user
+    mentioned_user_id = mentioned_user.id
 
     challenger_id = update.effective_user.id
     challenged_id = mentioned_user_id
@@ -65,6 +65,7 @@ async def start_race_challenge(update: Update, context: CallbackContext):
         reply_markup=reply_markup
     )
 
+
 async def race_accept(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
@@ -84,6 +85,7 @@ async def race_accept(update: Update, context: CallbackContext):
 
     # Start the race
     await start_race(update, context, challenger_id, challenged_id, challenge_data['amount'], challenge_data['challenger_name'])
+
 
 async def start_race(update: Update, context: CallbackContext, challenger_id: int, challenged_id: int, amount: int, challenger_name: str):
     # Deduct tokens from both users
@@ -118,6 +120,7 @@ async def start_race(update: Update, context: CallbackContext, challenger_id: in
     # Clean up the challenge
     del challenges[challenged_id]
 
+
 async def race_decline(update: Update, context: CallbackContext):
     query = update.callback_query
     await query.answer()
@@ -130,6 +133,7 @@ async def race_decline(update: Update, context: CallbackContext):
     else:
         await query.edit_message_text("Challenge not found or already expired.")
 
+
 # Initialize the bot
 application = Application.builder().token("YOUR_BOT_TOKEN").build()
 
@@ -138,3 +142,5 @@ application.add_handler(CommandHandler("race", start_race_challenge))
 application.add_handler(CallbackQueryHandler(race_accept, pattern=r"race_accept_\d+"))
 application.add_handler(CallbackQueryHandler(race_decline, pattern=r"race_decline_\d+"))
 
+# Start the bot
+application.run_polling()
