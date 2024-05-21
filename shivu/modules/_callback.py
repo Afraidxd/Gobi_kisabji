@@ -10,6 +10,9 @@ from .owner import button_handler
 from .rps import rps_button
 from .inlinequery import check
 
+# Import race functions
+from .race import race_accept, race_decline
+
 async def cbq(update: Update, context):
     query = update.callback_query
     data = query.data
@@ -32,8 +35,14 @@ async def cbq(update: Update, context):
         from .spwan import button_click
         await button_click(update, context)
     elif data.startswith('check_'):
-        await check(update, context),
+        await check(update, context)
     elif data.startswith(('help', 'credits', 'back', 'user_help', 'games_help')): 
-        await button(update, context)   
+        await button(update, context)
+    elif data.startswith(('race_accept', 'race_decline')):
+        # Handle racing button queries
+        if data.startswith('race_accept'):
+            await race_accept(update, context)
+        elif data.startswith('race_decline'):
+            await race_decline(update, context)
 
 application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
