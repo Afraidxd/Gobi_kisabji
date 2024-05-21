@@ -27,13 +27,13 @@ message_counts = {}
 limited_edition_sent = {}
 
 rarity_emojis = {
-    "Common": "⚪",
-    "Rare": "🟣",
-    "Legendary": "🟡",
-    "Medium": "🟢",
-    "Mythic": "💮",
-    "Limited edition": "🔮",
-    "Special": "🫧"
+    "⚪ Common": "⚪",
+    "🟣 Rare": "🟣",
+    "🟡 Legendary": "🟡",
+    "🟢 Medium": "🟢",
+    "💮 Mythic": "💮",
+    "🔮 Limited edition": "🔮",
+    "🫧 Special": "🫧"
 }
 
 for module_name in ALL_MODULES:
