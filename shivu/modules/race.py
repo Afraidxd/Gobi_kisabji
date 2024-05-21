@@ -1,65 +1,130 @@
+from shivu import application, user_collection
+from telegram.ext import MessageHandler, Filters
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import CallbackContext
 import asyncio
-from telegram.ext import CommandHandler
-from shivu import application, user_collection, collection
-from telegram import Update
 import random
-import math
-from datetime import datetime, timedelta
+from datetime import datetime
 
-# Dictionary to store last propose times
+# Dictionary to store last propose times and challenges
 last_propose_times = {}
-last_command_time = {}
+challenges = {}
 
-async def propose(update, context):
-    # Check if the user has 10000 tokens
-    user_id = update.effective_user.id
-    user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
-
-    if not user_balance or user_balance.get('balance', 0) < 10000:
-        await update.message.reply_text("You need at least 10000 tokens to race.")
+async def start_race_challenge(update: Update, context: CallbackContext):
+    # Check if the message is a reply and contains a mention
+    if not update.message.reply_to_message or not update.message.entities:
+        return
+    
+    mentioned_user_id = None
+    for entity in update.message.entities:
+        if entity.type == "mention":
+            mentioned_user_id = int(update.message.text[entity.offset + 1:entity.offset + entity.length])
+            break
+    
+    if not mentioned_user_id:
         return
 
-    # Check last propose time and cooldown
-    last_propose_time = last_propose_times.get(user_id)
-    if last_propose_time:
-        time_since_last_propose = datetime.now() - last_propose_time
-        if time_since_last_propose < timedelta(minutes=5):
-            remaining_cooldown = timedelta(minutes=5) - time_since_last_propose
-            remaining_cooldown_minutes = remaining_cooldown.total_seconds() // 60
-            remaining_cooldown_seconds = remaining_cooldown.total_seconds() % 60
-            await update.message.reply_text(f"Cooldown! Please wait {int(remaining_cooldown_minutes)}m {int(remaining_cooldown_seconds)}s before racing again.")
-            return
+    challenger_id = update.effective_user.id
+    challenged_id = mentioned_user_id
+    challenger_name = update.effective_user.first_name
+    amount = 10  # Default amount, you can change it as per your preference
 
-    # Deduct the propose fee of 10000 tokens
-    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -10000}})
-    # Send the proposal message with a photo path
-    proposal_message = "Race is going to be started"
-    photo_path = 'https://telegra.ph/file/4834a7d4e963b85626bd5.jpg'  # Replace with your photo path
-    await update.message.reply_photo(photo=photo_path, caption=proposal_message)
+    # Check balance of both users
+    challenger_balance = await user_collection.find_one({'id': challenger_id}, projection={'balance': 1})
+    challenged_balance = await user_collection.find_one({'id': challenged_id}, projection={'balance': 1})
 
+    if not challenger_balance or challenger_balance.get('balance', 0) < amount:
+        await update.message.reply_text("You do not have enough tokens to challenge.")
+        return
+
+    if not challenged_balance or challenged_balance.get('balance', 0) < amount:
+        await update.message.reply_text("The challenged user does not have enough tokens.")
+        return
+
+    # Store the challenge
+    challenges[challenged_id] = {
+        'challenger': challenger_id,
+        'challenger_name': challenger_name,
+        'amount': amount,
+        'timestamp': datetime.now()
+    }
+
+    # Notify the challenged user
+    keyboard = [
+        [
+            InlineKeyboardButton("Accept", callback_data=f"race_accept_{challenger_id}"),
+            InlineKeyboardButton("Decline", callback_data=f"race_decline_{challenger_id}")
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(
+        f"You have been challenged by {challenger_name} to a race for Ŧ{amount} tokens! Do you accept?",
+        reply_markup=reply_markup
+    )
+
+async def race_accept(update: Update, context: CallbackContext):
+    query = update.callback_query
+    challenged_id = update.effective_user.id
+
+    if challenged_id not in challenges:
+        await query.answer("Challenge not found!", show_alert=True)
+        return
+
+    challenge_data = challenges[challenged_id]
+    challenger_id = challenge_data['challenger']
+
+    # Check if the challenger is still available
+    if not await user_collection.find_one({'id': challenger_id}):
+        await query.answer("The challenger is no longer available.", show_alert=True)
+        return
+
+    # Start the race
+    await start_race(update, context, challenger_id, challenged_id, challenge_data['amount'], challenge_data['challenger_name'])
+
+async def start_race(update: Update, context: CallbackContext, challenger_id: int, challenged_id: int, amount: int, challenger_name: str):
+    # Deduct tokens from both users
+    await user_collection.update_one({'id': challenger_id}, {'$inc': {'balance': -amount}})
+    await user_collection.update_one({'id': challenged_id}, {'$inc': {'balance': -amount}})
+
+    # Race simulation
+    await asyncio.sleep(2)  # 2-second delay
+    await context.bot.send_message(chat_id=challenged_id, text="🏁 The race has started! 🏁")
     await asyncio.sleep(2)  # 2-second delay
 
-    # Send the proposal text
-    await update.message.reply_text("Race has started")
-
-    await asyncio.sleep(2)  # 2-second delay
-
-    # Generate a random result (60% chance of rejection, 40% chance of acceptance)
-    if random.random() < 0.3:
-        random_reward = random.randint(10000, 50000)
-        monster_image = 'https://telegra.ph/file/f95f2d9755b89e16c7123.jpg'
-        await user_collection.update_one(
-            {'id': user_id},
-            {'$inc': {'balance': random_reward}}
-        )
-        last_command_time[user_id] = datetime.utcnow()
-        await update.message.reply_photo(photo=monster_image, caption=f"Congratulations! You won the race. Here is your reward: Ŧ{random_reward} tokens.")
+    # Determine the winner
+    if random.random() < 0.5:
+        winner_id = challenger_id
+        loser_id = challenged_id
+        winner_name = challenger_name
     else:
-        rejection_message = "Better luck next time, You lost the race"
-        rejection_photo_path = 'https://telegra.ph/file/561d51ab44101c27bc893.jpg'  # Replace with rejection photo path
-        await update.message.reply_photo(photo=rejection_photo_path, caption=rejection_message)
+        winner_id = challenged_id
+        loser_id = challenger_id
+        winner_name = update.effective_user.first_name
 
-    # Update last propose time
-    last_propose_times[user_id] = datetime.now()
+    reward = 2 * amount
+    await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': reward}})
+    
+    winner_message = f"🎉 Congratulations, {winner_name}! 🎉\nYou won the race and earned Ŧ{reward} tokens."
+    loser_message = "Better luck next time, you lost the race."
 
-application.add_handler(CommandHandler("race", propose,block=False))
+    await context.bot.send_message(chat_id=winner_id, text=winner_message)
+    await context.bot.send_message(chat_id=loser_id, text=loser_message)
+
+    # Clean up the challenge
+    del challenges[challenged_id]
+
+async def race_decline(update: Update, context: CallbackContext):
+    query = update.callback_query
+    challenger_id = int(query.data.split('_')[2])
+    challenged_id = query.from_user.id
+
+    if challenged_id in challenges and challenges[challenged_id]['challenger'] == challenger_id:
+        await query.edit_message_text("Challenge declined.")
+        del challenges[challenged_id]
+    else:
+        await query.edit_message_text("Challenge not found or already expired.")
+
+# Add handlers
+application.add_handler(MessageHandler(Filters.text & ~Filters.command, start_race_challenge))
+application.add_handler(CallbackQueryHandler(race_accept, pattern=r'^race_accept_\d+$'))
+application.add_handler(CallbackQueryHandler(race_decline, pattern=r'^race_decline_\d+$'))
