@@ -14,8 +14,6 @@ async def start_race_challenge(update: Update, context: CallbackContext):
         await update.message.reply_text("Please mention another user to challenge them to a race.")
         return
 
-    # ... rest of the function remains the same
-
     mentioned_user_id = None
     for entity in update.message.entities:
         if entity.type == "mention":
