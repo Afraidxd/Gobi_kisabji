@@ -10,29 +10,25 @@ import asyncio
 challenges = {}
 
 async def start_race_challenge(update: Update, context: CallbackContext):
-    # Check if the message is a reply and contains a mention
-    if not update.message.reply_to_message or not update.message.entities:
-        await update.message.reply_text("Please mention another user to challenge them to a race.")
+    # Check if the message is a reply
+    if not update.message.reply_to_message:
+        await update.message.reply_text("Please reply to a user's message to challenge them to a race.")
         return
 
-    mentioned_user_id = None
-    for entity in update.message.entities:
-        if entity.type == "mention":
-            mentioned_user_id = int(entity.user.id)
-            break
-
-    if not mentioned_user_id:
-        await update.message.reply_text("Please mention another user to challenge them to a race.")
-        return
-
+    challenged_user_id = update.message.reply_to_message.from_user.id
     challenger_id = update.effective_user.id
-    challenged_id = mentioned_user_id
+
+    # Check if the user is trying to challenge themselves
+    if challenged_user_id == challenger_id:
+        await update.message.reply_text("You cannot challenge yourself!")
+        return
+
     challenger_name = update.effective_user.first_name
     amount = 10  # Default amount, you can change it as per your preference
 
     # Check balance of both users
     challenger_balance = await user_collection.find_one({'id': challenger_id}, projection={'balance': 1})
-    challenged_balance = await user_collection.find_one({'id': challenged_id}, projection={'balance': 1})
+    challenged_balance = await user_collection.find_one({'id': challenged_user_id}, projection={'balance': 1})
 
     if not challenger_balance or challenger_balance.get('balance', 0) < amount:
         await update.message.reply_text("You do not have enough tokens to challenge.")
@@ -43,7 +39,7 @@ async def start_race_challenge(update: Update, context: CallbackContext):
         return
 
     # Store the challenge
-    challenges[challenged_id] = {
+    challenges[challenged_user_id] = {
         'challenger': challenger_id,
         'challenger_name': challenger_name,
         'amount': amount,
@@ -53,8 +49,8 @@ async def start_race_challenge(update: Update, context: CallbackContext):
     # Notify the challenged user
     keyboard = [
         [
-            InlineKeyboardButton("Accept", callback_data=f"race_accept_{challenger_id}_{challenged_id}"),
-            InlineKeyboardButton("Decline", callback_data=f"race_decline_{challenger_id}_{challenged_id}")
+            InlineKeyboardButton("Accept", callback_data=f"race_accept_{challenger_id}_{challenged_user_id}"),
+            InlineKeyboardButton("Decline", callback_data=f"race_decline_{challenger_id}_{challenged_user_id}")
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -65,41 +61,41 @@ async def start_race_challenge(update: Update, context: CallbackContext):
 
 async def race_accept(update: Update, context: CallbackContext):
     query = update.callback_query
-    challenged_id = update.effective_user.id
+    challenged_user_id = update.effective_user.id
 
     callback_data = query.data.split('_')
     challenger_id = int(callback_data[2])
 
-    if challenged_id not in challenges:
+    if challenged_user_id not in challenges:
         await query.answer("Challenge not found!", show_alert=True)
         return
 
-    if challenges[challenged_id]['challenger'] != challenger_id:
+    if challenges[challenged_user_id]['challenger'] != challenger_id:
         await query.answer("This challenge is not for you!", show_alert=True)
         return
 
-    challenge_data = challenges[challenged_id]
-    await start_race(query, context, challenger_id, challenged_id, challenge_data['amount'], challenge_data['challenger_name'])
+    challenge_data = challenges[challenged_user_id]
+    await start_race(query, context, challenger_id, challenged_user_id, challenge_data['amount'], challenge_data['challenger_name'])
 
-async def start_race(query, context: CallbackContext, challenger_id: int, challenged_id: int, amount: int, challenger_name: str):
+async def start_race(query, context: CallbackContext, challenger_id: int, challenged_user_id: int, amount: int, challenger_name: str):
     # Deduct tokens from both users
     await user_collection.update_one({'id': challenger_id}, {'$inc': {'balance': -amount}})
-    await user_collection.update_one({'id': challenged_id}, {'$inc': {'balance': -amount}})
+    await user_collection.update_one({'id': challenged_user_id}, {'$inc': {'balance': -amount}})
 
     # Race simulation
     await asyncio.sleep(2)  # 2-second delay
-    await context.bot.send_message(chat_id=challenged_id, text="🏁 The race has started! 🏁")
+    await context.bot.send_message(chat_id=challenged_user_id, text="🏁 The race has started! 🏁")
     await asyncio.sleep(2)  # 2-second delay
 
     # Determine the winner
     if random.random() < 0.5:
         winner_id = challenger_id
-        loser_id = challenged_id
+        loser_id = challenged_user_id
         winner_name = challenger_name
     else:
-        winner_id = challenged_id
+        winner_id = challenged_user_id
         loser_id = challenger_id
-        winner_name = (await user_collection.find_one({'id': challenged_id})).get('first_name', 'User')
+        winner_name = (await user_collection.find_one({'id': challenged_user_id})).get('first_name', 'User')
 
     reward = 2 * amount
     await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': reward}})
@@ -111,18 +107,18 @@ async def start_race(query, context: CallbackContext, challenger_id: int, challe
     await context.bot.send_message(chat_id=loser_id, text=loser_message)
 
     # Clean up the challenge
-    del challenges[challenged_id]
+    del challenges[challenged_user_id]
 
 async def race_decline(update: Update, context: CallbackContext):
     query = update.callback_query
-    challenged_id = query.from_user.id
+    challenged_user_id = query.from_user.id
 
     callback_data = query.data.split('_')
     challenger_id = int(callback_data[2])
 
-    if challenged_id in challenges and challenges[challenged_id]['challenger'] == challenger_id:
+    if challenged_user_id in challenges and challenges[challenged_user_id]['challenger'] == challenger_id:
         await query.edit_message_text("Challenge declined.")
-        del challenges[challenged_id]
+        del challenges[challenged_user_id]
     else:
         await query.edit_message_text("Challenge not found or already expired.")
 
