@@ -1,5 +1,5 @@
 from shivu import application, user_collection
-from telegram.ext import CommandHandler, Updater, CallbackQueryHandler
+
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 import random
 from datetime import datetime
