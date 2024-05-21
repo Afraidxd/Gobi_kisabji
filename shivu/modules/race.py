@@ -11,12 +11,12 @@ last_propose_times = {}
 last_command_time = {}
 
 async def propose(update, context):
-    # Check if the user has 20000 tokens
+    # Check if the user has 10000 tokens
     user_id = update.effective_user.id
     user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
 
-    if not user_balance or user_balance.get('balance', 0) < 20000:
-        await update.message.reply_text("You need at least 20000 tokens to race.")
+    if not user_balance or user_balance.get('balance', 0) < 10000:
+        await update.message.reply_text("You need at least 10000 tokens to race.")
         return
 
     # Check last propose time and cooldown
@@ -45,8 +45,8 @@ async def propose(update, context):
     await asyncio.sleep(2)  # 2-second delay
 
     # Generate a random result (60% chance of rejection, 40% chance of acceptance)
-    if random.random() < 0.4:
-        random_reward = random.randint(30000, 90000)
+    if random.random() < 0.3:
+        random_reward = random.randint(10000, 50000)
         monster_image = 'https://telegra.ph/file/f95f2d9755b89e16c7123.jpg'
         await user_collection.update_one(
             {'id': user_id},
