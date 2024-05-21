@@ -1,4 +1,4 @@
-from shivu import user_collection
+from shivu import user_collection, application 
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext
