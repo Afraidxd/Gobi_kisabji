@@ -83,8 +83,8 @@ async def start_race(query, context: CallbackContext, challenger_id: int, challe
         # Notify users about race start
         await context.bot.send_message(chat_id=challenged_user_id, text="🏁 The race has started! 🏁")
         await context.bot.send_message(chat_id=challenger_id, text="🏁 The race has started! 🏁")
-    except Forbidden:
-        await query.answer("Unable to start the race due to a messaging error.", show_alert=True)
+    except Forbidden as e:
+        await context.bot.send_message(chat_id=query.message.chat_id, text="Unable to start the race due to a messaging error. Ensure both users have interacted with the bot.")
         return
 
     # Deduct tokens from both users
@@ -114,8 +114,7 @@ async def start_race(query, context: CallbackContext, challenger_id: int, challe
         await context.bot.send_message(chat_id=winner_id, text=winner_message)
         await context.bot.send_message(chat_id=loser_id, text=loser_message)
     except Forbidden:
-        # In case the bot can't message one of the users
-        pass
+        pass  # Silently handle if the bot can't message one of the users
 
     # Clean up the challenge
     del challenges[challenged_user_id]
