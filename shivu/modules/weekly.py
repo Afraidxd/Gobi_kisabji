@@ -8,6 +8,10 @@ DAILY_MAX_EARNINGS = 1_000_000_000_000_000
 MAX_BETS = 50
 COOLDOWN_PERIOD = timedelta(seconds=30)
 
+def format_timedelta(td):
+    minutes, seconds = divmod(td.seconds, 60)
+    return f"{minutes} minute(s) and {seconds} second(s)"
+
 async def sbet(update, context):
     user_id = update.effective_user.id
     current_time = datetime.utcnow()
@@ -54,8 +58,9 @@ async def sbet(update, context):
     if user_data['module_bets'] >= MAX_BETS:
         remaining_cooldown = (user_data['module_last_bet_time'] + COOLDOWN_PERIOD) - current_time
         if remaining_cooldown > timedelta(0):
+            formatted_time = format_timedelta(remaining_cooldown)
             await update.message.reply_text(
-                f"You have reached your bet limit. Please wait {remaining_cooldown} before betting again.\n"
+                f"You have reached your bet limit. Please wait {formatted_time} before betting again.\n"
                 f"Remaining bets: 0"
             )
             return
