@@ -35,9 +35,9 @@ async def send_leaderboard_message(context: CallbackContext, chat_id: int, messa
 async def mtop(update: Update, context: CallbackContext):
     top_users = await user_collection.find({}, {'id': 1, 'username': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}).sort('balance', -1).limit(10).to_list(10)
 
-    top_users_message = """
+    tops_message = """
 ┌─────═━🏎━═─────┐
-𝚃𝚘𝚙 10 𝚞𝚜𝚎𝚛𝚜 𝚠𝚒𝚝𝚑 𝚑𝚒𝚐𝚑𝚎𝚜𝚝 𝚝𝚘𝚔𝚎𝚗𝚜:
+𝚃𝚘𝚙 10 𝚞𝚜𝚎𝚛𝚜 𝚠𝚒𝚝𝚑 𝚑𝚒𝚐𝚑𝚎𝚜𝚝 𝚋𝚊𝚕𝚊𝚗𝚌𝚎:
 ───────────────────
 """
 
@@ -48,18 +48,18 @@ async def mtop(update: Update, context: CallbackContext):
         balance = user.get('balance', 0)
 
         if username:
-            user_link = f'<a href="https://t.me/{username}">{escape(first_name)} {escape(last_name)}</a>'
+            user_link = f'<a href="https://t.me/{username}">{html.escape(first_name)} {html.escape(last_name)}</a>'
         else:
-            user_link = f'{escape(first_name)} {escape(last_name)}'
+            user_link = f'{html.escape(first_name)} {html.escape(last_name)}'
 
-        top_users_message += f"{i}. {user_link} - Ŧ{balance:,}\n"
+        tops_message += f"{i}. {user_link} - Ŧ{balance:,}\n"
 
-    top_users_message += """
+    tops_message += """
 ───────────────────
 └─────═━🏎━═─────┘
 """
 
-    await update.message.reply_text(top_users_message, parse_mode='HTML')
+    await send_leaderboard(context, update.effective_chat.id, tops_message, photo_url=None)
 
 # Add the command handler
 application.add_handler(CommandHandler("tops", mtop))
