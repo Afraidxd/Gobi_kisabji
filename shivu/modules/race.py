@@ -49,7 +49,8 @@ async def start_race_challenge(update: Update, context: CallbackContext):
         'challenger_name': challenger_name,
         'amount': amount,
         'timestamp': datetime.now(),
-        'chat_id': update.message.chat_id
+        'chat_id': update.message.chat_id,
+        'message_id': update.message.message_id
     }
 
     # Notify the challenged user
@@ -81,12 +82,12 @@ async def race_accept(update: Update, context: CallbackContext):
         return
 
     challenge_data = challenges[challenged_user_id]
-    await start_race(query, context, challenger_id, challenged_user_id, challenge_data['amount'], challenge_data['challenger_name'], challenge_data['chat_id'])
+    await start_race(query, context, challenger_id, challenged_user_id, challenge_data['amount'], challenge_data['challenger_name'], challenge_data['chat_id'], challenge_data['message_id'])
 
-async def start_race(query, context: CallbackContext, challenger_id: int, challenged_user_id: int, amount: int, challenger_name: str, chat_id: int):
+async def start_race(query, context: CallbackContext, challenger_id: int, challenged_user_id: int, amount: int, challenger_name: str, chat_id: int, message_id: int):
     try:
         # Notify users about race start
-        await context.bot.send_message(chat_id=chat_id, text="🏁 The race has started! 🏁")
+        await context.bot.send_message(chat_id=chat_id, text="🏁 The race has started! 🏁", reply_to_message_id=message_id)
     except Forbidden as e:
         await context.bot.send_message(chat_id=chat_id, text="Unable to start the race due to a messaging error. Ensure both users have interacted with the bot.")
         return
@@ -115,8 +116,9 @@ async def start_race(query, context: CallbackContext, challenger_id: int, challe
     loser_message = "Better luck next time, you lost the race."
 
     try:
-        await context.bot.send_message(chat_id=winner_id, text=winner_message)
-        await context.bot.send_message(chat_id=loser_id, text=loser_message)
+        # Send messages to the group chat as a reply to the original challenge message
+        await context.bot.send_message(chat_id=chat_id, text=winner_message, reply_to_message_id=message_id)
+        await context.bot.send_message(chat_id=chat_id, text=loser_message, reply_to_message_id=message_id)
     except Forbidden:
         pass  # Silently handle if the bot can't message one of the users
 
