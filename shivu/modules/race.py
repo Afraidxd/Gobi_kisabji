@@ -11,7 +11,7 @@ from telegram.error import Forbidden
 challenges = {}
 
 async def start_race_challenge(update: Update, context: CallbackContext):
-    if update.message.chat.type != 'group':
+    if update.message.chat.type not in ['group', 'supergroup']:
         await update.message.reply_text("This command can only be used in a group chat.")
         return
 
