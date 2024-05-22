@@ -54,7 +54,7 @@ async def start_race_challenge(update: Update, context: CallbackContext):
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(
+    await update.message.reply_to_message.reply_text(
         f"You have been challenged by {challenger_name} to a race for Ŧ{amount} tokens! Do you accept?",
         reply_markup=reply_markup
     )
@@ -123,3 +123,5 @@ async def race_decline(update: Update, context: CallbackContext):
         await query.edit_message_text("Challenge not found or already expired.")
 
 application.add_handler(CommandHandler("race", start_race_challenge))
+application.add_handler(CallbackQueryHandler(race_accept, pattern=r'^race_accept_'))
+application.add_handler(CallbackQueryHandler(race_decline, pattern=r'^race_decline_'))
