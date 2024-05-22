@@ -3,12 +3,13 @@ from shivu import user_collection, application
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext, CommandHandler, CallbackQueryHandler
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 import asyncio
 from telegram.error import Forbidden
 
-# Dictionary to store last propose times and challenges
+# Dictionary to store challenges and cooldown times
 challenges = {}
+last_race_time = {}
 
 async def start_race_challenge(update: Update, context: CallbackContext):
     if update.message.chat.type not in ['group', 'supergroup']:
@@ -20,6 +21,12 @@ async def start_race_challenge(update: Update, context: CallbackContext):
         await update.message.reply_text("Please reply to a user's message to challenge them to a race.")
         return
 
+    args = context.args
+    if not args or not args[0].isdigit() or int(args[0]) <= 0:
+        await update.message.reply_text("Please specify a valid amount of tokens for the race. Example: /race 10")
+        return
+
+    amount = int(args[0])
     challenged_user_id = update.message.reply_to_message.from_user.id
     challenger_id = update.effective_user.id
 
@@ -28,8 +35,20 @@ async def start_race_challenge(update: Update, context: CallbackContext):
         await update.message.reply_text("You cannot challenge yourself!")
         return
 
+    # Check cooldown period
+    current_time = datetime.now()
+    cooldown_period = timedelta(minutes=10)
+    if (challenger_id in last_race_time and current_time < last_race_time[challenger_id] + cooldown_period) or \
+       (challenged_user_id in last_race_time and current_time < last_race_time[challenged_user_id] + cooldown_period):
+        remaining_time_challenger = (last_race_time[challenger_id] + cooldown_period - current_time).seconds // 60
+        remaining_time_challenged = (last_race_time[challenged_user_id] + cooldown_period - current_time).seconds // 60
+        await update.message.reply_text(
+            f"One of the users is in cooldown period. Please wait {max(remaining_time_challenger, remaining_time_challenged)} minutes before racing again."
+        )
+        return
+
     challenger_name = update.effective_user.first_name
-    amount = 10  # Default amount, you can change it as per your preference
+    challenged_name = update.message.reply_to_message.from_user.first_name
 
     # Check balance of both users
     challenger_balance = await user_collection.find_one({'id': challenger_id}, projection={'balance': 1})
@@ -47,6 +66,7 @@ async def start_race_challenge(update: Update, context: CallbackContext):
     challenges[challenged_user_id] = {
         'challenger': challenger_id,
         'challenger_name': challenger_name,
+        'challenged_name': challenged_name,
         'amount': amount,
         'timestamp': datetime.now(),
         'chat_id': update.message.chat_id,
@@ -82,9 +102,9 @@ async def race_accept(update: Update, context: CallbackContext):
         return
 
     challenge_data = challenges[challenged_user_id]
-    await start_race(query, context, challenger_id, challenged_user_id, challenge_data['amount'], challenge_data['challenger_name'], challenge_data['chat_id'], challenge_data['message_id'])
+    await start_race(query, context, challenger_id, challenged_user_id, challenge_data['amount'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenge_data['chat_id'], challenge_data['message_id'])
 
-async def start_race(query, context: CallbackContext, challenger_id: int, challenged_user_id: int, amount: int, challenger_name: str, chat_id: int, message_id: int):
+async def start_race(query, context: CallbackContext, challenger_id: int, challenged_user_id: int, amount: int, challenger_name: str, challenged_name: str, chat_id: int, message_id: int):
     try:
         # Edit the original challenge message
         await query.edit_message_text(text="🏁 The race has started! 🏁")
@@ -100,32 +120,40 @@ async def start_race(query, context: CallbackContext, challenger_id: int, challe
     await asyncio.sleep(2)  # 2-second delay
 
     # Determine the winner
-    if random.random() < 0.5:
+    challenger_skill = (await user_collection.find_one({'id': challenger_id}, projection={'skill': 1})).get('skill', 0)
+    challenged_skill = (await user_collection.find_one({'id': challenged_user_id}, projection={'skill': 1})).get('skill', 0)
+    total_skill = challenger_skill + challenged_skill
+
+    if random.random() < challenger_skill / total_skill:
         winner_id = challenger_id
         loser_id = challenged_user_id
         winner_name = challenger_name
-        loser_name = (await user_collection.find_one({'id': challenged_user_id})).get('first_name', 'User')
+        loser_name = challenged_name
     else:
         winner_id = challenged_user_id
         loser_id = challenger_id
-        winner_name = (await user_collection.find_one({'id': challenged_user_id})).get('first_name', 'User')
+        winner_name = challenged_name
         loser_name = challenger_name
 
     reward = 2 * amount
     await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': reward}})
 
-    winner_message = f"🎉 Congratulations, {winner_name}! 🎉\nYou won the race and earned Ŧ{reward} tokens."
-    loser_message = f"😢 Better luck next time, {loser_name}. You lost the race and the Ŧ{amount} tokens."
+    result_message = (
+        f"🎉 Congratulations, [{winner_name}](tg://user?id={winner_id})! 🎉\n"
+        f"You won the race and earned Ŧ{reward} tokens.\n\n"
+        f"😢 Better luck next time, [{loser_name}](tg://user?id={loser_id}). You lost the race and the Ŧ{amount} tokens."
+    )
 
     try:
-        # Send messages to the group chat as replies to the original challenge message
-        await context.bot.send_message(chat_id=chat_id, text=winner_message, reply_to_message_id=message_id)
-        await context.bot.send_message(chat_id=chat_id, text=loser_message, reply_to_message_id=message_id)
+        # Send the result message to the group chat as a reply to the original challenge message
+        await context.bot.send_message(chat_id=chat_id, text=result_message, reply_to_message_id=message_id, parse_mode='Markdown')
     except Forbidden:
         pass  # Silently handle if the bot can't message one of the users
 
-    # Clean up the challenge
+    # Clean up the challenge and update last race time
     del challenges[challenged_user_id]
+    last_race_time[challenger_id] = datetime.now()
+    last_race_time[challenged_user_id] = datetime.now()
 
 async def race_decline(update: Update, context: CallbackContext):
     query = update.callback_query
