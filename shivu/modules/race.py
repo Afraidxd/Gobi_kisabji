@@ -18,12 +18,12 @@ async def start_race_challenge(update: Update, context: CallbackContext):
 
     # Check if the message is a reply
     if not update.message.reply_to_message:
-        await update.message.reply_text("Please reply to a user's message to challenge them to a race.")
+        await update.message.reply_text("ᴘʟᴇᴀsᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴜsᴇʀ's ᴍᴇssᴀɢᴇ ᴛᴏ ᴄʜᴀʟʟᴇɴɢᴇ ᴛʜᴇᴍ ᴛᴏ ᴀ ʀᴀᴄᴇ.")
         return
 
     args = context.args
     if not args or not args[0].isdigit() or int(args[0]) <= 0:
-        await update.message.reply_text("Please specify a valid amount of tokens for the race. Example: /race 10")
+        await update.message.reply_text("ᴜsᴀɢᴇ /ʀᴀᴄᴇ [ᴀᴍᴏᴜɴᴛ]")
         return
 
     amount = int(args[0])
@@ -32,7 +32,7 @@ async def start_race_challenge(update: Update, context: CallbackContext):
 
     # Check if the user is trying to challenge themselves
     if challenged_user_id == challenger_id:
-        await update.message.reply_text("You cannot challenge yourself!")
+        await update.message.reply_text("ʏᴏᴜ ᴄᴀɴɴᴏᴛ ᴄʜᴀʟʟᴇɴɢᴇ ʏᴏᴜʀsᴇʟғ!")
         return
 
     # Check cooldown period
@@ -55,11 +55,11 @@ async def start_race_challenge(update: Update, context: CallbackContext):
     challenged_balance = await user_collection.find_one({'id': challenged_user_id}, projection={'balance': 1})
 
     if not challenger_balance or challenger_balance.get('balance', 0) < amount:
-        await update.message.reply_text("You do not have enough tokens to challenge.")
+        await update.message.reply_text("ʏᴏᴜ ᴅᴏ ɴᴏᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴛᴏᴋᴇɴs ᴛᴏ ᴄʜᴀʟʟᴇɴɢᴇ.")
         return
 
     if not challenged_balance or challenged_balance.get('balance', 0) < amount:
-        await update.message.reply_text("The challenged user does not have enough tokens.")
+        await update.message.reply_text("ᴛʜᴇ ᴄʜᴀʟʟᴇɴɢᴇᴅ ᴜsᴇʀ ᴅᴏᴇs ɴᴏᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴛᴏᴋᴇɴs.")
         return
 
     # Store the challenge
@@ -76,13 +76,13 @@ async def start_race_challenge(update: Update, context: CallbackContext):
     # Notify the challenged user
     keyboard = [
         [
-            InlineKeyboardButton("Accept", callback_data=f"race_accept_{challenger_id}_{challenged_user_id}"),
-            InlineKeyboardButton("Decline", callback_data=f"race_decline_{challenger_id}_{challenged_user_id}")
+            InlineKeyboardButton("ᴀᴄᴄᴇᴘᴛ", callback_data=f"race_accept_{challenger_id}_{challenged_user_id}"),
+            InlineKeyboardButton("ᴅᴇᴄʟɪɴᴇ", callback_data=f"race_decline_{challenger_id}_{challenged_user_id}")
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_to_message.reply_text(
-        f"You have been challenged by {challenger_name} to a race for Ŧ{amount} tokens! Do you accept?",
+        f"ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴄʜᴀʟʟᴇɴɢᴇᴅ ʙʏ {challenger_name} ᴛᴏ ᴀ ʀᴀᴄᴇ ғᴏʀ {amount} ᴛᴏᴋᴇɴs! ᴅᴏ ʏᴏᴜ ᴀᴄᴄᴇᴘᴛ?",
         reply_markup=reply_markup
     )
 
@@ -94,11 +94,11 @@ async def race_accept(update: Update, context: CallbackContext):
     challenger_id = int(callback_data[2])
 
     if challenged_user_id not in challenges:
-        await query.answer("Challenge not found!", show_alert=True)
+        await query.answer("ʏᴏᴜ ᴄᴀɴ'ᴛ ᴀᴄᴄᴇᴘᴛ ɪᴛ ᴏʀ ᴄʜᴀʟʟᴇɴɢᴇ ɴᴏᴛ ғᴏᴜɴᴅ!", show_alert=True)
         return
 
     if challenges[challenged_user_id]['challenger'] != challenger_id:
-        await query.answer("This challenge is not for you!", show_alert=True)
+        await query.answer("ᴛʜɪs ᴄʜᴀʟʟᴇɴɢᴇ ɪs ɴᴏᴛ ғᴏʀ ʏᴏᴜ!", show_alert=True)
         return
 
     challenge_data = challenges[challenged_user_id]
@@ -107,7 +107,7 @@ async def race_accept(update: Update, context: CallbackContext):
 async def start_race(query, context: CallbackContext, challenger_id: int, challenged_user_id: int, amount: int, challenger_name: str, challenged_name: str, chat_id: int, message_id: int):
     try:
         # Edit the original challenge message
-        await query.edit_message_text(text="🏁 The race has started! 🏁")
+        await query.edit_message_text(text="🏁 ᴛʜᴇ ʀᴀᴄᴇ ʜᴀs sᴛᴀʀᴛᴇᴅ! 🏁")
     except Forbidden as e:
         await context.bot.send_message(chat_id=chat_id, text="Unable to start the race due to a messaging error. Ensure both users have interacted with the bot.")
         return
@@ -135,9 +135,9 @@ async def start_race(query, context: CallbackContext, challenger_id: int, challe
     await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': reward}})
 
     result_message = (
-        f"🎉 Congratulations, [{winner_name}](tg://user?id={winner_id})! 🎉\n"
-        f"You won the race and earned Ŧ{reward} tokens.\n\n"
-        f"😢 Better luck next time, [{loser_name}](tg://user?id={loser_id}). You lost the race and the Ŧ{amount} tokens."
+        f"🎉 ᴄᴏɴɢʀᴀᴛᴜʟᴀᴛɪᴏɴs, [{winner_name}](tg://user?id={winner_id})! 🎉\n"
+        f"ʏᴏᴜ ᴡᴏɴ ᴛʜᴇ ʀᴀᴄᴇ ᴀɴᴅ ᴇᴀʀɴᴇᴅ {reward} ᴛᴏᴋᴇɴs.\n\n"
+        f"😢 ʙᴇᴛᴛᴇʀ ʟᴜᴄᴋ ɴᴇxᴛ ᴛɪᴍᴇ, [{loser_name}](tg://user?id={loser_id}). ʏᴏᴜ ʟᴏsᴛ ᴛʜᴇ ʀᴀᴄᴇ ᴀɴᴅ ᴛʜᴇ {amount} ᴛᴏᴋᴇɴs."
     )
 
     try:
