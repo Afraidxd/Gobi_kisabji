@@ -6,7 +6,7 @@ import random
 
 DAILY_MAX_EARNINGS = 1_000_000_000_000_000
 MAX_BETS = 50
-COOLDOWN_PERIOD = timedelta(seconds=30)
+COOLDOWN_PERIOD = timedelta(minutes=30)
 
 def format_timedelta(td):
     minutes, seconds = divmod(td.seconds, 60)
