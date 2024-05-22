@@ -12,7 +12,7 @@ if env:
     if os.environ.get("PHOTO_URL") != None:
         PHOTO_URL = os.environ.get("PHOTO_URL") 
 else:
-    OWNER_ID = 6747352706
+    OWNER_ID = 7197403656
     sudo_users = ["7197403656", "6747352706", "5757833536", "5516379068", "7091293075", "7087814148"]
     GROUP_ID = -1002010613171
     TOKEN = "7132249963:AAFvp7-L2r6rs4DpcM6Zur3NgPbx_YfSXus"
