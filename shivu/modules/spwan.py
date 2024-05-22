@@ -21,9 +21,6 @@ sent_characters = {}
 first_correct_guesses = {}
 message_counts = {}
 
-
-
-
 rarity_emojis = {
     "⚪ Common": "⚪",
     "🟣 Rare": "🟣",
@@ -32,6 +29,16 @@ rarity_emojis = {
     "💮 Mythic": "💮",
     "🔮 Limited edition": "🔮",
     "🫧 Special": "🫧"
+}
+
+rarity_spawn_rates = {
+    "⚪ Common": 60,
+    "🟣 Rare": 40,
+    "🟡 Legendary": 20,
+    "🟢 Medium": 40,
+    "💮 Mythic": 15,
+    "🔮 Limited edition": 0,  # Remove limited edition from spawn rates
+    "🫧 Special": 5
 }
 
 for module_name in ALL_MODULES:
@@ -80,35 +87,28 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
         if message_counts[chat_id] % message_frequency == 0:
             await send_image(update, context)
             message_counts[chat_id] = 0
+
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
     all_characters = list(await collection.find({}).to_list(length=None))
+    available_characters = []
 
-    if chat_id not in sent_characters:
-        sent_characters[chat_id] = []
-
-    if len(sent_characters[chat_id]) == len(all_characters):
-        sent_characters[chat_id] = []
-
-    # Filter out Limited edition if already sent today
-    if chat_id in limited_edition_sent and time.time() - limited_edition_sent[chat_id] < 86400:
-        available_characters = [c for c in all_characters if c['rarity'] != 'Limited edition' and c['id'] not in sent_characters[chat_id]]
-    else:
-        available_characters = [c for c in all_characters if c['id'] not in sent_characters[chat_id]]
+    for character in all_characters:
+        rarity = character['rarity']
+        if rarity in rarity_spawn_rates:
+            spawn_rate = rarity_spawn_rates[rarity]
+            if spawn_rate > 0:
+                for _ in range(spawn_rate):
+                    available_characters.append(character)
 
     if not available_characters:
         return  # No available characters to send
 
     character = random.choice(available_characters)
 
-    # Update sent characters and last character data
-    sent_characters[chat_id].append(character['id'])
+    # Update last character data
     last_characters[chat_id] = character
-
-    # Track Limited edition character sending time
-    if character['rarity'] == 'Limited edition':
-        limited_edition_sent[chat_id] = time.time()
 
     # Remove first correct guess if any
     if chat_id in first_correct_guesses:
@@ -123,6 +123,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
         parse_mode='HTML',
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
+
 
 async def button_click(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
