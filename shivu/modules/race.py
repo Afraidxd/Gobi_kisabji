@@ -5,6 +5,7 @@ from telegram.ext import CallbackContext, CommandHandler, CallbackQueryHandler
 import random
 from datetime import datetime
 import asyncio
+from telegram.error import Forbidden
 
 # Dictionary to store last propose times and challenges
 challenges = {}
@@ -78,13 +79,19 @@ async def race_accept(update: Update, context: CallbackContext):
     await start_race(query, context, challenger_id, challenged_user_id, challenge_data['amount'], challenge_data['challenger_name'])
 
 async def start_race(query, context: CallbackContext, challenger_id: int, challenged_user_id: int, amount: int, challenger_name: str):
+    try:
+        # Notify users about race start
+        await context.bot.send_message(chat_id=challenged_user_id, text="🏁 The race has started! 🏁")
+        await context.bot.send_message(chat_id=challenger_id, text="🏁 The race has started! 🏁")
+    except Forbidden:
+        await query.answer("Unable to start the race due to a messaging error.", show_alert=True)
+        return
+
     # Deduct tokens from both users
     await user_collection.update_one({'id': challenger_id}, {'$inc': {'balance': -amount}})
     await user_collection.update_one({'id': challenged_user_id}, {'$inc': {'balance': -amount}})
 
     # Race simulation
-    await asyncio.sleep(2)  # 2-second delay
-    await context.bot.send_message(chat_id=challenged_user_id, text="🏁 The race has started! 🏁")
     await asyncio.sleep(2)  # 2-second delay
 
     # Determine the winner
@@ -103,8 +110,12 @@ async def start_race(query, context: CallbackContext, challenger_id: int, challe
     winner_message = f"🎉 Congratulations, {winner_name}! 🎉\nYou won the race and earned Ŧ{reward} tokens."
     loser_message = "Better luck next time, you lost the race."
 
-    await context.bot.send_message(chat_id=winner_id, text=winner_message)
-    await context.bot.send_message(chat_id=loser_id, text=loser_message)
+    try:
+        await context.bot.send_message(chat_id=winner_id, text=winner_message)
+        await context.bot.send_message(chat_id=loser_id, text=loser_message)
+    except Forbidden:
+        # In case the bot can't message one of the users
+        pass
 
     # Clean up the challenge
     del challenges[challenged_user_id]
@@ -120,7 +131,7 @@ async def race_decline(update: Update, context: CallbackContext):
         await query.edit_message_text("Challenge declined.")
         del challenges[challenged_user_id]
     else:
-        await query.edit_message_text("Challenge not found or already expired.")
+        await query.answer("Challenge not found or already expired.", show_alert=True)
 
 application.add_handler(CommandHandler("race", start_race_challenge))
 application.add_handler(CallbackQueryHandler(race_accept, pattern=r'^race_accept_'))
