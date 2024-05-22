@@ -1,5 +1,5 @@
 from telegram.ext import CommandHandler
-from Grabber import application, user_collection
+from shivu import application, user_collection
 
 DEV_LIST = [6747352706 , 6919722801, 6212919224 ] # Replace with the actual owner's user ID
 
