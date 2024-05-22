@@ -81,7 +81,7 @@ async def button(update: Update, context: CallbackContext) -> None:
 ***/bonus: ᴛᴏ ᴄʟᴀɪᴍ ᴅᴀɪʟʏ ʙᴏɴᴜs ***
 ***/wbonus: ᴛᴏ ᴄʟᴀɪᴍ ᴡᴇᴇᴋʟʏ ʙᴏɴᴜs***
 ***/store: To buy from daily store***
-***/race: ᴛᴏ ᴡɪɴ sᴏᴍᴇ ᴛᴏᴋᴇɴs ʙᴇᴛᴡᴇᴇɴ 10ᴋ - 50ᴋ (ᴘᴠᴘ) ***
+***/race: ᴛᴏ sᴛᴀʀᴛ ʀᴀᴄᴇ ᴡɪᴛʜ ᴏᴛʜᴇʀ ᴜsᴇʀ (ᴘᴠᴘ) ***
 ***/bet: ᴛᴏ ʙᴇᴛ sᴏᴍᴇ ᴛᴏᴋᴇɴs***
 ***/pay: ᴛᴏ ɢɪᴠᴇ ʏᴏᴜʀ ᴄᴏɪɴ ᴛᴏ ᴀɴᴏᴛʜᴇʀ ᴜsᴇʀ***
 ***/rps: ᴛᴏ ᴘʟᴀʏ ʀᴏᴄᴋ ᴘᴀᴘᴇʀ sᴄɪssᴏʀs ᴜsɪɴɢ ᴛᴏᴋᴇɴs***
