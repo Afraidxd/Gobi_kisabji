@@ -39,13 +39,14 @@ async def start_race_challenge(update: Update, context: CallbackContext):
     current_time = datetime.now()
     cooldown_period = timedelta(minutes=10)
     if (challenger_id in last_race_time and current_time < last_race_time[challenger_id] + cooldown_period) or \
-       (challenged_user_id in last_race_time and current_time < last_race_time[challenged_user_id] + cooldown_period):
-        remaining_time_challenger = (last_race_time[challenger_id] + cooldown_period - current_time).seconds // 60
-        remaining_time_challenged = (last_race_time[challenged_user_id] + cooldown_period - current_time).seconds // 60
-        await update.message.reply_text(
-            f"One of the users is in cooldown period. Please wait {max(remaining_time_challenger, remaining_time_challenged)} minutes before racing again."
-        )
-        return
+   (challenged_user_id in last_race_time and current_time < last_race_time[challenged_user_id] + cooldown_period):
+    remaining_time_challenger = (last_race_time.get(challenger_id, current_time) + cooldown_period - current_time).seconds // 60
+    remaining_time_challenged = (last_race_time.get(challenged_user_id, current_time) + cooldown_period - current_time).seconds // 60
+    await update.message.reply_text(
+        f"One of the users is in cooldown period. Please wait {max(remaining_time_challenger, remaining_time_challenged)} minutes before racing again."
+    )
+    return
+
 
     challenger_name = update.effective_user.first_name
     challenged_name = update.message.reply_to_message.from_user.first_name
