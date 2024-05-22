@@ -59,7 +59,6 @@ async def button(update: Update, context: CallbackContext) -> None:
         ***ᴜsᴇʀ ᴄᴏᴍᴍᴀɴᴅs:***
 
 ***/guess: ᴛᴏ ɢᴜᴇss ᴄᴀʀ (ᴏɴʟʏ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘ)***
-***/favorite: ᴛᴏ sᴇʟᴇᴄᴛ ʏᴏᴜʀ ғᴀᴠᴏʀɪᴛᴇ ᴄᴀʀ***
 ***/trade : ᴛᴏ ᴛʀᴀᴅᴇ ᴄᴀʀs ᴡɪᴛʜ ᴏᴛʜᴇʀ ᴜsᴇʀs***
 ***/gift: ᴛᴏ ɢɪғᴛ ᴀɴʏ ᴄᴀʀ ᴛᴏ ᴀɴᴏᴛʜᴇʀ ᴜsᴇʀ.. (ᴏɴʟʏ ᴡᴏʀᴋs ɪɴ ɢʀᴏᴜᴘs)***
 ***/collection: ᴛᴏ sᴇᴇ ʏᴏᴜʀ ᴄᴀʀs ᴄᴏʟʟᴇᴄᴛɪᴏɴ***
@@ -82,7 +81,7 @@ async def button(update: Update, context: CallbackContext) -> None:
 ***/bonus: ᴛᴏ ᴄʟᴀɪᴍ ᴅᴀɪʟʏ ʙᴏɴᴜs ***
 ***/wbonus: ᴛᴏ ᴄʟᴀɪᴍ ᴡᴇᴇᴋʟʏ ʙᴏɴᴜs***
 ***/store: To buy from daily store***
-***/race: ᴛᴏ ᴡɪɴ sᴏᴍᴇ ᴛᴏᴋᴇɴs ʙᴇᴛᴡᴇᴇɴ 10ᴋ - 50ᴋ ***
+***/race: ᴛᴏ ᴡɪɴ sᴏᴍᴇ ᴛᴏᴋᴇɴs ʙᴇᴛᴡᴇᴇɴ 10ᴋ - 50ᴋ (ᴘᴠᴘ) ***
 ***/bet: ᴛᴏ ʙᴇᴛ sᴏᴍᴇ ᴛᴏᴋᴇɴs***
 ***/pay: ᴛᴏ ɢɪᴠᴇ ʏᴏᴜʀ ᴄᴏɪɴ ᴛᴏ ᴀɴᴏᴛʜᴇʀ ᴜsᴇʀ***
 ***/rps: ᴛᴏ ᴘʟᴀʏ ʀᴏᴄᴋ ᴘᴀᴘᴇʀ sᴄɪssᴏʀs ᴜsɪɴɢ ᴛᴏᴋᴇɴs***
