@@ -11,9 +11,14 @@ from telegram import Update
 from telegram.ext import Updater, CallbackQueryHandler
 from telegram.ext import CommandHandler, MessageHandler, filters
 
-from telegram.ext import CommandHandler, CallbackContext, MessageHandler, CallbackQueryHandler, filters
-
-from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu 
+from shivu import (
+    collection, 
+    top_global_groups_collection, 
+    group_user_totals_collection, 
+    user_collection, 
+    user_totals_collection, 
+    shivuu
+)
 from shivu import application, LOGGER
 from shivu.modules import ALL_MODULES
 
@@ -82,7 +87,6 @@ async def message_counter(update: Update, context: CallbackContext) -> None:
         if message_counts[chat_id] % message_frequency == 0:
             await send_image(update, context)
             message_counts[chat_id] = 0
-
 async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
 
