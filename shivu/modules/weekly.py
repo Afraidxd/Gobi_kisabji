@@ -59,7 +59,7 @@ async def sbet(update, context):
         if remaining_cooldown > timedelta(0):
             formatted_time = format_timedelta(remaining_cooldown)
             await update.message.reply_text(
-                f"You have reached your bet limit. Please wait {formatted_time} before betting again.\n\n"
+                f"ʏᴏᴜ ʜᴀᴠᴇ ʀᴇᴀᴄʜᴇᴅ ʏᴏᴜʀ ʙᴇᴛ ʟɪᴍɪᴛ. ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ {formatted_time} ʙᴇғᴏʀᴇ ʙᴇᴛᴛɪɴɢ ᴀɢᴀɪɴ.\n\n"
                 f"Remaining bets: {MAX_BETS - user_data['module_bets']}"
             )
             return
