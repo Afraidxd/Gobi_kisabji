@@ -13,6 +13,15 @@ from shivu import collection, top_global_groups_collection, group_user_totals_co
 from shivu import application, LOGGER
 from shivu.modules import ALL_MODULES
 
+locks = {}
+message_counters = {}
+spam_counters = {}
+last_characters = {}
+sent_characters = {}
+first_correct_guesses = {}
+message_counts = {}
+
+
 
 
 rarity_emojis = {
