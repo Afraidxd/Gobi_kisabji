@@ -18,12 +18,12 @@ async def start_race_challenge(update: Update, context: CallbackContext):
 
     # Check if the message is a reply
     if not update.message.reply_to_message:
-        await update.message.reply_text("Please reply to a user's message to challenge them to a race.")
+        await update.message.reply_text("ᴘʟᴇᴀsᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴜsᴇʀ's ᴍᴇssᴀɢᴇ ᴛᴏ ᴄʜᴀʟʟᴇɴɢᴇ ᴛʜᴇᴍ ᴛᴏ ᴀ ʀᴀᴄᴇ.")
         return
 
     args = context.args
     if not args or not args[0].isdigit() or int(args[0]) <= 0:
-        await update.message.reply_text("Please specify a valid amount of tokens for the race. Example: /race 10")
+        await update.message.reply_text("ᴜsᴀɢᴇ /ʀᴀᴄᴇ [ᴀᴍᴏᴜɴᴛ]")
         return
 
     amount = int(args[0])
@@ -32,21 +32,20 @@ async def start_race_challenge(update: Update, context: CallbackContext):
 
     # Check if the user is trying to challenge themselves
     if challenged_user_id == challenger_id:
-        await update.message.reply_text("You cannot challenge yourself!")
+        await update.message.reply_text("ʏᴏᴜ ᴄᴀɴɴᴏᴛ ᴄʜᴀʟʟᴇɴɢᴇ ʏᴏᴜʀsᴇʟғ!")
         return
 
     # Check cooldown period
     current_time = datetime.now()
     cooldown_period = timedelta(minutes=10)
     if (challenger_id in last_race_time and current_time < last_race_time[challenger_id] + cooldown_period) or \
-   (challenged_user_id in last_race_time and current_time < last_race_time[challenged_user_id] + cooldown_period):
-    remaining_time_challenger = (last_race_time.get(challenger_id, current_time) + cooldown_period - current_time).seconds // 60
-    remaining_time_challenged = (last_race_time.get(challenged_user_id, current_time) + cooldown_period - current_time).seconds // 60
-    await update.message.reply_text(
-        f"One of the users is in cooldown period. Please wait {max(remaining_time_challenger, remaining_time_challenged)} minutes before racing again."
-    )
-    return
-
+       (challenged_user_id in last_race_time and current_time < last_race_time[challenged_user_id] + cooldown_period):
+        remaining_time_challenger = (last_race_time.get(challenger_id, current_time) + cooldown_period - current_time).seconds // 60
+        remaining_time_challenged = (last_race_time.get(challenged_user_id, current_time) + cooldown_period - current_time).seconds // 60
+        await update.message.reply_text(
+            f"One of the users is in cooldown period. Please wait {max(remaining_time_challenger, remaining_time_challenged)} minutes before racing again."
+        )
+        return
 
     challenger_name = update.effective_user.first_name
     challenged_name = update.message.reply_to_message.from_user.first_name
@@ -56,11 +55,11 @@ async def start_race_challenge(update: Update, context: CallbackContext):
     challenged_balance = await user_collection.find_one({'id': challenged_user_id}, projection={'balance': 1})
 
     if not challenger_balance or challenger_balance.get('balance', 0) < amount:
-        await update.message.reply_text("You do not have enough tokens to challenge.")
+        await update.message.reply_text("ʏᴏᴜ ᴅᴏ ɴᴏᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴛᴏᴋᴇɴs ᴛᴏ ᴄʜᴀʟʟᴇɴɢᴇ.")
         return
 
     if not challenged_balance or challenged_balance.get('balance', 0) < amount:
-        await update.message.reply_text("The challenged user does not have enough tokens.")
+        await update.message.reply_text("ᴅᴏɴ'ᴛ ᴛᴀɢ ʙᴏᴛ ᴏʀ ᴘᴏᴏʀ ᴜsᴇʀ ʏᴏᴜ ɴɪɢɢᴀ!")
         return
 
     # Store the challenge
@@ -77,15 +76,16 @@ async def start_race_challenge(update: Update, context: CallbackContext):
     # Notify the challenged user
     keyboard = [
         [
-            InlineKeyboardButton("Accept", callback_data=f"race_accept_{challenger_id}_{challenged_user_id}"),
-            InlineKeyboardButton("Decline", callback_data=f"race_decline_{challenger_id}_{challenged_user_id}")
+            InlineKeyboardButton("ᴀᴄᴄᴇᴘᴛ", callback_data=f"race_accept_{challenger_id}_{challenged_user_id}"),
+            InlineKeyboardButton("ᴅᴇᴄʟɪɴᴇ", callback_data=f"race_decline_{challenger_id}_{challenged_user_id}")
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_to_message.reply_text(
-        f"You have been challenged by {challenger_name} to a race for Ŧ{amount} tokens! Do you accept?",
+        f"ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴄʜᴀʟʟᴇɴɢᴇᴅ ʙʏ {challenger_name} ᴛᴏ ᴀ ʀᴀᴄᴇ ғᴏʀ {amount} ᴛᴏᴋᴇɴs! ᴅᴏ ʏᴏᴜ ᴀᴄᴄᴇᴘᴛ?",
         reply_markup=reply_markup
     )
+
 
 async def race_accept(update: Update, context: CallbackContext):
     query = update.callback_query
