@@ -4,7 +4,6 @@ from telegram import Update
 from datetime import datetime, timedelta
 import random
 
-DAILY_MAX_EARNINGS = 1_000_000_000_000_000
 MAX_BETS = 50
 COOLDOWN_PERIOD = timedelta(minutes=30)
 
@@ -60,8 +59,8 @@ async def sbet(update, context):
         if remaining_cooldown > timedelta(0):
             formatted_time = format_timedelta(remaining_cooldown)
             await update.message.reply_text(
-                f"You have reached your bet limit. Please wait {formatted_time} before betting again.\n"
-                f"Remaining bets: 0"
+                f"You have reached your bet limit. Please wait {formatted_time} before betting again.\n\n"
+                f"Remaining bets: {MAX_BETS - user_data['module_bets']}"
             )
             return
         else:
@@ -78,14 +77,22 @@ async def sbet(update, context):
         await update.message.reply_text("Use /bet <amount>")
         return
 
+    # Adjust bet amount based on profit percentage
+    if 'last_profit' in user_data:
+        profit_percentage = user_data['last_profit']
+        adjusted_amount = int(amount * (1 + profit_percentage))
+    else:
+        adjusted_amount = amount
+
     # Check user's balance
-    if user_data.get('balance', 0) < amount:
+    if user_data.get('balance', 0) < adjusted_amount:
         await update.message.reply_text("Insufficient balance to make the bet.")
         return
 
     # Perform the bet
     if random.random() < 0.5:
         won_amount = 2 * amount
+        profit_percentage = (won_amount - amount) / amount
         await user_collection.update_one(
             {'id': user_id},
             {
@@ -95,15 +102,15 @@ async def sbet(update, context):
                     'module_daily_earnings': won_amount,
                     'module_bets': 1
                 },
-                '$set': {'module_last_bet_time': current_time}
+                '$set': {'module_last_bet_time': current_time, 'last_profit': profit_percentage}
             }
         )
         updated_balance = user_data.get('balance', 0) + won_amount
         remaining_bets = MAX_BETS - (user_data['module_bets'] + 1)
         await update.message.reply_text(
-            f"🎉 Congratulations! You won {won_amount}!\n\n"
-            f"💰 Your updated balance is {updated_balance}.\n"
-            f"🕒 Remaining bets: {remaining_bets}"
+            f"Congratulations! You won {won_amount}!\n\n"
+            f"Your updated balance is {updated_balance}.\n\n"
+            f"Remaining bets: {remaining_bets}"
         )
     else:
         await user_collection.update_one(
@@ -119,9 +126,9 @@ async def sbet(update, context):
         updated_balance = user_data.get('balance', 0) - amount
         remaining_bets = MAX_BETS - (user_data['module_bets'] + 1)
         await update.message.reply_text(
-            f"❌ You lost {amount}.\n\n"
-            f"💰 Your updated balance is {updated_balance}.\n"
-            f"🕒 Remaining bets: {remaining_bets}"
+            f"Oops! You lost {amount}.\n\n"
+            f"Your updated balance is {updated_balance}.\n\n"
+            f"Remaining bets: {remaining_bets}"
         )
 
 application.add_handler(CommandHandler("bet", sbet, block=False))
