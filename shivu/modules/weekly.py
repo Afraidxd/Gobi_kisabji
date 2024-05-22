@@ -6,7 +6,7 @@ import random
 
 DAILY_MAX_EARNINGS = 1_000_000_000_000_000
 MAX_BETS = 50
-COOLDOWN_PERIOD = timedelta(minutes=30)
+COOLDOWN_PERIOD = timedelta(seconds=30)
 
 async def sbet(update, context):
     user_id = update.effective_user.id
