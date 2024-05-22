@@ -11,6 +11,10 @@ from telegram.error import Forbidden
 challenges = {}
 
 async def start_race_challenge(update: Update, context: CallbackContext):
+    if update.message.chat.type != 'group':
+        await update.message.reply_text("This command can only be used in a group chat.")
+        return
+
     # Check if the message is a reply
     if not update.message.reply_to_message:
         await update.message.reply_text("Please reply to a user's message to challenge them to a race.")
@@ -44,7 +48,8 @@ async def start_race_challenge(update: Update, context: CallbackContext):
         'challenger': challenger_id,
         'challenger_name': challenger_name,
         'amount': amount,
-        'timestamp': datetime.now()
+        'timestamp': datetime.now(),
+        'chat_id': update.message.chat_id
     }
 
     # Notify the challenged user
@@ -76,15 +81,14 @@ async def race_accept(update: Update, context: CallbackContext):
         return
 
     challenge_data = challenges[challenged_user_id]
-    await start_race(query, context, challenger_id, challenged_user_id, challenge_data['amount'], challenge_data['challenger_name'])
+    await start_race(query, context, challenger_id, challenged_user_id, challenge_data['amount'], challenge_data['challenger_name'], challenge_data['chat_id'])
 
-async def start_race(query, context: CallbackContext, challenger_id: int, challenged_user_id: int, amount: int, challenger_name: str):
+async def start_race(query, context: CallbackContext, challenger_id: int, challenged_user_id: int, amount: int, challenger_name: str, chat_id: int):
     try:
         # Notify users about race start
-        await context.bot.send_message(chat_id=challenged_user_id, text="🏁 The race has started! 🏁")
-        await context.bot.send_message(chat_id=challenger_id, text="🏁 The race has started! 🏁")
+        await context.bot.send_message(chat_id=chat_id, text="🏁 The race has started! 🏁")
     except Forbidden as e:
-        await context.bot.send_message(chat_id=query.message.chat_id, text="Unable to start the race due to a messaging error. Ensure both users have interacted with the bot.")
+        await context.bot.send_message(chat_id=chat_id, text="Unable to start the race due to a messaging error. Ensure both users have interacted with the bot.")
         return
 
     # Deduct tokens from both users
