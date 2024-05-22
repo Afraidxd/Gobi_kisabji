@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 import random
 
 DAILY_MAX_EARNINGS = 1_000_000_000_000_000
-TOTAL_MAX_EARNINGS = 500_000_000_000_000_000
 MAX_BETS = 50
 COOLDOWN_PERIOD = timedelta(minutes=30)
 
@@ -31,11 +30,18 @@ async def sbet(update, context):
             'module_last_reset': current_time
         }
         await user_collection.insert_one(user_data)
+    else:
+        # Ensure `module_last_reset` is initialized
+        if 'module_last_reset' not in user_data:
+            user_data['module_last_reset'] = current_time
 
     # Reset daily earnings at midnight UTC
     if user_data['module_last_reset'].date() < current_time.date():
         user_data['module_daily_earnings'] = 0
-        await user_collection.update_one({'id': user_id}, {'$set': {'module_daily_earnings': 0, 'module_last_reset': current_time}})
+        await user_collection.update_one(
+            {'id': user_id}, 
+            {'$set': {'module_daily_earnings': 0, 'module_last_reset': current_time}}
+        )
 
     # Check if the user is in cooldown period
     if user_data['module_bets'] >= MAX_BETS:
@@ -65,28 +71,9 @@ async def sbet(update, context):
         await update.message.reply_text("Insufficient balance to make the bet.")
         return
 
-    # Check if the user has reached the total earning limit for this module
-    if user_data.get('module_earnings', 0) >= TOTAL_MAX_EARNINGS:
-        await update.message.reply_text("You have reached your total earning limit. Please use your balance for betting again.")
-        return
-
-    # Check if the user has reached the daily earning limit for this module
-    if user_data.get('module_daily_earnings', 0) >= DAILY_MAX_EARNINGS:
-        await update.message.reply_text("You have reached your daily earning limit. Please come back tomorrow to bet again.")
-        return
-
     # Perform the bet
     if random.random() < 0.5:
         won_amount = 2 * amount
-        potential_daily_earnings = user_data.get('module_daily_earnings', 0) + won_amount
-        potential_total_earnings = user_data.get('module_earnings', 0) + won_amount
-        
-        # Ensure earnings do not exceed limits
-        if potential_daily_earnings > DAILY_MAX_EARNINGS:
-            won_amount = DAILY_MAX_EARNINGS - user_data.get('module_daily_earnings', 0)
-        if potential_total_earnings > TOTAL_MAX_EARNINGS:
-            won_amount = TOTAL_MAX_EARNINGS - user_data.get('module_earnings', 0)
-        
         await user_collection.update_one(
             {'id': user_id},
             {
