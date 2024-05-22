@@ -120,11 +120,7 @@ async def start_race(query, context: CallbackContext, challenger_id: int, challe
     await asyncio.sleep(2)  # 2-second delay
 
     # Determine the winner
-    challenger_skill = (await user_collection.find_one({'id': challenger_id}, projection={'skill': 1})).get('skill', 0)
-    challenged_skill = (await user_collection.find_one({'id': challenged_user_id}, projection={'skill': 1})).get('skill', 0)
-    total_skill = challenger_skill + challenged_skill
-
-    if random.random() < challenger_skill / total_skill:
+    if random.random() < 0.5:
         winner_id = challenger_id
         loser_id = challenged_user_id
         winner_name = challenger_name
