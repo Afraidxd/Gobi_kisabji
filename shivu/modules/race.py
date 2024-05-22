@@ -86,8 +86,8 @@ async def race_accept(update: Update, context: CallbackContext):
 
 async def start_race(query, context: CallbackContext, challenger_id: int, challenged_user_id: int, amount: int, challenger_name: str, chat_id: int, message_id: int):
     try:
-        # Notify users about race start
-        await context.bot.send_message(chat_id=chat_id, text="🏁 The race has started! 🏁", reply_to_message_id=message_id)
+        # Edit the original challenge message
+        await query.edit_message_text(text="🏁 The race has started! 🏁")
     except Forbidden as e:
         await context.bot.send_message(chat_id=chat_id, text="Unable to start the race due to a messaging error. Ensure both users have interacted with the bot.")
         return
@@ -104,19 +104,21 @@ async def start_race(query, context: CallbackContext, challenger_id: int, challe
         winner_id = challenger_id
         loser_id = challenged_user_id
         winner_name = challenger_name
+        loser_name = (await user_collection.find_one({'id': challenged_user_id})).get('first_name', 'User')
     else:
         winner_id = challenged_user_id
         loser_id = challenger_id
         winner_name = (await user_collection.find_one({'id': challenged_user_id})).get('first_name', 'User')
+        loser_name = challenger_name
 
     reward = 2 * amount
     await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': reward}})
 
     winner_message = f"🎉 Congratulations, {winner_name}! 🎉\nYou won the race and earned Ŧ{reward} tokens."
-    loser_message = "Better luck next time, you lost the race."
+    loser_message = f"😢 Better luck next time, {loser_name}. You lost the race and the Ŧ{amount} tokens."
 
     try:
-        # Send messages to the group chat as a reply to the original challenge message
+        # Send messages to the group chat as replies to the original challenge message
         await context.bot.send_message(chat_id=chat_id, text=winner_message, reply_to_message_id=message_id)
         await context.bot.send_message(chat_id=chat_id, text=loser_message, reply_to_message_id=message_id)
     except Forbidden:
