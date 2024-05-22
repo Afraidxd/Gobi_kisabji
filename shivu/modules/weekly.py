@@ -18,8 +18,8 @@ async def sbet(update, context):
         projection={'balance': 1, 'module_earnings': 1, 'module_bets': 1, 'module_last_bet_time': 1, 'module_daily_earnings': 1, 'module_last_reset': 1}
     )
 
+    # Initialize missing fields if necessary
     if not user_data:
-        # Initialize user data if not found
         user_data = {
             'id': user_id,
             'balance': 0,
@@ -31,7 +31,14 @@ async def sbet(update, context):
         }
         await user_collection.insert_one(user_data)
     else:
-        # Ensure `module_last_reset` is initialized
+        if 'module_earnings' not in user_data:
+            user_data['module_earnings'] = 0
+        if 'module_bets' not in user_data:
+            user_data['module_bets'] = 0
+        if 'module_last_bet_time' not in user_data:
+            user_data['module_last_bet_time'] = datetime.min
+        if 'module_daily_earnings' not in user_data:
+            user_data['module_daily_earnings'] = 0
         if 'module_last_reset' not in user_data:
             user_data['module_last_reset'] = current_time
 
