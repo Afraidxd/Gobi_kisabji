@@ -1,139 +1,170 @@
-import importlib
+from shivu import user_collection, application
+
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import CallbackContext, CommandHandler, CallbackQueryHandler
 import random
-from datetime import timedelta
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder
-from shivu import user_collection, application as app
-from shivu.modules import ALL_MODULES
+from datetime import datetime, timedelta
+import asyncio
+from telegram.error import Forbidden
 
-locks = {}
-message_counters = {}
-spam_counters = {}
-last_characters = {}
-sent_characters = {}
-first_correct_guesses = {}
-message_counts = {}
-user_tokens = {}
-current_guess = {}
+# Dictionary to store challenges and cooldown times
+challenges = {}
+last_race_time = {}
 
-OWNER_ID = 6747352706
-
-# Importing race module
-import shivu.modules.race as race_module
-
-# Importing other modules
-for module_name in ALL_MODULES:
-    imported_module = importlib.import_module("shivu.modules." + module_name)
-
-# List of images and their correct answers
-images = [
-    ("https://telegra.ph/file/a6ef02040254d51d60360.jpg", "🐺"),
-    ("https://telegra.ph/file/59c070e068e9d379a3270.jpg", "🦬"),
-    ("https://telegra.ph/file/5185ad733940b4447031e.jpg", "🍞"),
-    ("https://telegra.ph/file/2424eb24186f2378ef363.jpg", "🧄"),
-    ("https://telegra.ph/file/d3864edbee52ac19bb6f2.jpg", "🦥"),
-    ("https://telegra.ph/file/249af44d79d33c27ce622.jpg", "🫓"),
-    ("https://telegra.ph/file/d4c03930563c9f9062868.jpg", "🦏"),
-    ("https://telegra.ph/file/c3e8b7ea12c560e0dfcd6.jpg", "🗻"),
-    ("https://telegra.ph/file/424d46d2ff69e92ea3f8d.jpg", "🧂"),
-    ("https://telegra.ph/file/3666bac9b5ce891c4613f.jpg", "🦨")
-]
-
-def get_random_image():
-    return random.choice(images)
-
-async def suck_it(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id if update else OWNER_ID
-
-    if update and update.effective_user.id != OWNER_ID:
-        await update.message.reply_text("Only the owner can use this command.")
+async def start_race_challenge(update: Update, context: CallbackContext):
+    if update.message.chat.type not in ['group', 'supergroup']:
+        await update.message.reply_text("This command can only be used in a group chat.")
         return
 
-    image_path, correct_answer = get_random_image()
+    # Check if the message is a reply
+    if not update.message.reply_to_message:
+        await update.message.reply_text("ᴘʟᴇᴀsᴇ ʀᴇᴘʟʏ ᴛᴏ ᴀ ᴜsᴇʀ's ᴍᴇssᴀɢᴇ ᴛᴏ ᴄʜᴀʟʟᴇɴɢᴇ ᴛʜᴇᴍ ᴛᴏ ᴀ ʀᴀᴄᴇ.")
+        return
 
-    # Store the correct answer in the current_guess dictionary
-    current_guess[chat_id] = correct_answer
+    args = context.args
+    if not args or not args[0].isdigit() or int(args[0]) <= 0:
+        await update.message.reply_text("ᴜsᴀɢᴇ /ʀᴀᴄᴇ [ᴀᴍᴏᴜɴᴛ]")
+        return
 
-    # Create inline keyboard with guess options
-    incorrect_answers = [img[1] for img in images if img[1] != correct_answer]
-    wrong_options = random.sample(incorrect_answers, 5)
-    all_options = [correct_answer] + wrong_options
-    random.shuffle(all_options)
+    amount = int(args[0])
+    challenged_user_id = update.message.reply_to_message.from_user.id
+    challenger_id = update.effective_user.id
 
+    # Check if the user is trying to challenge themselves
+    if challenged_user_id == challenger_id:
+        await update.message.reply_text("ʏᴏᴜ ᴄᴀɴɴᴏᴛ ᴄʜᴀʟʟᴇɴɢᴇ ʏᴏᴜʀsᴇʟғ!")
+        return
+
+    # Check cooldown period
+    current_time = datetime.now()
+    cooldown_period = timedelta(minutes=10)
+    if (challenger_id in last_race_time and current_time < last_race_time[challenger_id] + cooldown_period) or \
+       (challenged_user_id in last_race_time and current_time < last_race_time[challenged_user_id] + cooldown_period):
+        remaining_time_challenger = (last_race_time.get(challenger_id, current_time) + cooldown_period - current_time).seconds // 60
+        remaining_time_challenged = (last_race_time.get(challenged_user_id, current_time) + cooldown_period - current_time).seconds // 60
+        await update.message.reply_text(
+            f"One of the users is in cooldown period. Please wait {max(remaining_time_challenger, remaining_time_challenged)} minutes before racing again."
+        )
+        return
+
+    challenger_name = update.effective_user.first_name
+    challenged_name = update.message.reply_to_message.from_user.first_name
+
+    # Check balance of both users
+    challenger_balance = await user_collection.find_one({'id': challenger_id}, projection={'balance': 1})
+    challenged_balance = await user_collection.find_one({'id': challenged_user_id}, projection={'balance': 1})
+
+    if not challenger_balance or challenger_balance.get('balance', 0) < amount:
+        await update.message.reply_text("ʏᴏᴜ ᴅᴏ ɴᴏᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴛᴏᴋᴇɴs ᴛᴏ ᴄʜᴀʟʟᴇɴɢᴇ.")
+        return
+
+    if not challenged_balance or challenged_balance.get('balance', 0) < amount:
+        await update.message.reply_text("ᴅᴏɴ'ᴛ ᴛᴀɢ ʙᴏᴛ ᴏʀ ᴘᴏᴏʀ ᴜsᴇʀ ʏᴏᴜ ɴɪɢɢᴀ!")
+        return
+
+    # Store the challenge
+    challenges[challenged_user_id] = {
+        'challenger': challenger_id,
+        'challenger_name': challenger_name,
+        'challenged_name': challenged_name,
+        'amount': amount,
+        'timestamp': datetime.now(),
+        'chat_id': update.message.chat_id,
+        'message_id': update.message.message_id
+    }
+
+    # Notify the challenged user
     keyboard = [
-        [InlineKeyboardButton(all_options[0], callback_data=all_options[0]), InlineKeyboardButton(all_options[1], callback_data=all_options[1])],
-        [InlineKeyboardButton(all_options[2], callback_data=all_options[2]), InlineKeyboardButton(all_options[3], callback_data=all_options[3])],
-        [InlineKeyboardButton(all_options[4], callback_data=all_options[4]), InlineKeyboardButton(all_options[5], callback_data=all_options[5])]
+        [
+            InlineKeyboardButton("ᴀᴄᴄᴇᴘᴛ", callback_data=f"race_accept_{challenger_id}_{challenged_user_id}"),
+            InlineKeyboardButton("ᴅᴇᴄʟɪɴᴇ", callback_data=f"race_decline_{challenger_id}_{challenged_user_id}")
+        ]
     ]
-
     reply_markup = InlineKeyboardMarkup(keyboard)
-
-    # Send image with inline keyboard and caption
-    await context.bot.send_photo(
-        chat_id=chat_id,
-        photo=image_path,
-        caption="Guess the correct emoji for the image! Click on one of the buttons below.",
+    await update.message.reply_to_message.reply_text(
+        f"ʏᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴄʜᴀʟʟᴇɴɢᴇᴅ ʙʏ {challenger_name} ᴛᴏ ᴀ ʀᴀᴄᴇ ғᴏʀ {amount} ᴛᴏᴋᴇɴs! ᴅᴏ ʏᴏᴜ ᴀᴄᴄᴇᴘᴛ?",
         reply_markup=reply_markup
     )
 
-async def button(update: Update, context: CallbackContext) -> None:
+
+async def race_accept(update: Update, context: CallbackContext):
     query = update.callback_query
-    chat_id = query.message.chat_id
-    user_id = query.from_user.id
-    guess = query.data
+    challenged_user_id = update.effective_user.id
 
-    # Check if the guess is correct
-    if guess == current_guess.get(chat_id):
-        # Award random tokens between 5000 and 20000 to the first correct guesser
-        tokens_awarded = random.randint(5000, 20000)
-        if user_id not in user_tokens:
-            user_tokens[user_id] = 0
-        user_tokens[user_id] += tokens_awarded
+    callback_data = query.data.split('_')
+    challenger_id = int(callback_data[2])
 
-        # Update the user's balance in the database
-        await user_collection.update_one(
-            {'id': user_id},
-            {'$inc': {'balance': tokens_awarded}},
-            upsert=True
-        )
-
-        await query.answer(text=f'Correct! You have been awarded {tokens_awarded} tokens!')
-        await query.edit_message_caption(
-            caption=f"Correct! The answer is {guess}. Guessed by {query.from_user.first_name} and rewarded with {tokens_awarded} tokens."
-        )
-        # Remove the question from current guesses
-        del current_guess[chat_id]
-    else:
-        await query.answer(text='Wrong guess, try again!')
-
-async def send_random_image_every_5_minutes(context: CallbackContext):
-    await suck_it(None, context)
-
-async def set_interval(update: Update, context: CallbackContext) -> None:
-    if update.effective_user.id != OWNER_ID:
-        await update.message.reply_text("Only the owner can use this command.")
+    if challenged_user_id not in challenges:
+        await query.answer("Challenge not found!", show_alert=True)
         return
 
+    if challenges[challenged_user_id]['challenger'] != challenger_id:
+        await query.answer("This challenge is not for you!", show_alert=True)
+        return
+
+    challenge_data = challenges[challenged_user_id]
+    await start_race(query, context, challenger_id, challenged_user_id, challenge_data['amount'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenge_data['chat_id'], challenge_data['message_id'])
+
+async def start_race(query, context: CallbackContext, challenger_id: int, challenged_user_id: int, amount: int, challenger_name: str, challenged_name: str, chat_id: int, message_id: int):
     try:
-        minutes = int(context.args[0])
-        seconds = int(context.args[1])
-        interval = timedelta(minutes=minutes, seconds=seconds)
+        # Edit the original challenge message
+        await query.edit_message_text(text="🏁 The race has started! 🏁")
+    except Forbidden as e:
+        await context.bot.send_message(chat_id=chat_id, text="Unable to start the race due to a messaging error. Ensure both users have interacted with the bot.")
+        return
 
-        # Stop the current job
-        context.job_queue.stop()
+    # Deduct tokens from both users
+    await user_collection.update_one({'id': challenger_id}, {'$inc': {'balance': -amount}})
+    await user_collection.update_one({'id': challenged_user_id}, {'$inc': {'balance': -amount}})
 
-        # Schedule sending random images with the new interval
-        context.job_queue.run_repeating(send_random_image_every_5_minutes, interval=interval, first=0)
+    # Race simulation
+    await asyncio.sleep(2)  # 2-second delay
 
-        await update.message.reply_text(f"Interval set to {minutes} minutes and {seconds} seconds.")
-    except (IndexError, ValueError):
-        await update.message.reply_text("Usage: /setinterval <minutes> <seconds>")
+    # Determine the winner
+    if random.random() < 0.5:
+        winner_id = challenger_id
+        loser_id = challenged_user_id
+        winner_name = challenger_name
+        loser_name = challenged_name
+    else:
+        winner_id = challenged_user_id
+        loser_id = challenger_id
+        winner_name = challenged_name
+        loser_name = challenger_name
 
+    reward = 2 * amount
+    await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': reward}})
 
-# Adding other handlers
-app.add_handler(CommandHandler("sendimage", suck_it))
-app.add_handler(CallbackQueryHandler(button))
-app.add_handler(CommandHandler("setinterval", set_interval))
+    result_message = (
+        f"🎉 Congratulations, [{winner_name}](tg://user?id={winner_id})! 🎉\n"
+        f"You won the race and earned Ŧ{reward} tokens.\n\n"
+        f"😢 Better luck next time, [{loser_name}](tg://user?id={loser_id}). You lost the race and the Ŧ{amount} tokens."
+    )
 
-# Schedule sending random images every 5 minutes initially
-app.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
+    try:
+        # Send the result message to the group chat as a reply to the original challenge message
+        await context.bot.send_message(chat_id=chat_id, text=result_message, reply_to_message_id=message_id, parse_mode='Markdown')
+    except Forbidden:
+        pass  # Silently handle if the bot can't message one of the users
+
+    # Clean up the challenge and update last race time
+    del challenges[challenged_user_id]
+    last_race_time[challenger_id] = datetime.now()
+    last_race_time[challenged_user_id] = datetime.now()
+
+async def race_decline(update: Update, context: CallbackContext):
+    query = update.callback_query
+    challenged_user_id = query.from_user.id
+
+    callback_data = query.data.split('_')
+    challenger_id = int(callback_data[2])
+
+    if challenged_user_id in challenges and challenges[challenged_user_id]['challenger'] == challenger_id:
+        await query.edit_message_text("Challenge declined.")
+        del challenges[challenged_user_id]
+    else:
+        await query.answer("Challenge not found or already expired.", show_alert=True)
+
+application.add_handler(CommandHandler("race", start_race_challenge))
+application.add_handler(CallbackQueryHandler(race_accept, pattern=r'^race_accept_'))
+application.add_handler(CallbackQueryHandler(race_decline, pattern=r'^race_decline_'))
