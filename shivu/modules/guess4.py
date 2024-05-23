@@ -128,8 +128,3 @@ def main():
     application.add_handler(CommandHandler("setthreshold", set_threshold, block=False))
     application.add_handler(CallbackQueryHandler(button))
     application.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
-
-    application.run_polling()
-
-if __name__ == '__main__':
-    main()
