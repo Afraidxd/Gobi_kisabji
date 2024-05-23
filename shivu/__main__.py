@@ -1,9 +1,9 @@
 import importlib
 import logging
 from telegram.ext import Application
-from shivu import application, LOGGER
+from shivu import application as app, LOGGER
 from shivu.modules import ALL_MODULES
-from bot_commands import add_handlers
+from ALL_MODULES import add_handlers
 
 # Enable logging
 logging.basicConfig(
