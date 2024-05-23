@@ -3,7 +3,7 @@ import random
 from datetime import timedelta
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler
-from shivu import user_collection, shivuu, application
+from shivu import user_collection, application
 from shivu.modules import ALL_MODULES
 
 locks = {}
@@ -42,11 +42,12 @@ def get_random_image():
     return random.choice(images)
 
 async def send_image(update: Update, context: CallbackContext) -> None:
-    if update.effective_user.id != OWNER_ID:
-        await update.message.reply_text("Only the owner can use this command.")
-        return
+    if update:
+        if update.effective_user.id != OWNER_ID:
+            await update.message.reply_text("Only the owner can use this command.")
+            return
 
-    chat_id = update.effective_chat.id
+    chat_id = update.effective_chat.id if update else OWNER_ID
     image_path, correct_answer = get_random_image()
 
     # Store the correct answer in the current_guess dictionary
@@ -64,7 +65,7 @@ async def send_image(update: Update, context: CallbackContext) -> None:
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     # Send image with inline keyboard
-    await context.bot.send_photo(chat_id=chat_id, photo=open(image_path, 'rb'), reply_markup=reply_markup)
+    await context.bot.send_photo(chat_id=chat_id, photo=image_path, reply_markup=reply_markup)
 
 async def button(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
@@ -97,15 +98,4 @@ async def button(update: Update, context: CallbackContext) -> None:
         query.answer(text='Wrong guess, try again!')
 
 async def send_random_image_every_5_minutes(context: CallbackContext):
-    chat_id = OWNER_ID  # Send to the owner's chat ID
     await send_image(None, context)
-
-def main() -> None:
-    """Run bot."""
-    application.add_handler(CommandHandler("sendimage", send_image))
-    application.add_handler(CallbackQueryHandler(button))
-
-    # Schedule sending random images every 5 minutes
-    application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
-
-    
