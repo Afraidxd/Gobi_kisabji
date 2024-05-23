@@ -110,9 +110,15 @@ async def button(update: Update, context: CallbackContext) -> None:
     else:
         await query.answer(text='Wrong guess, try again!')
 
-async def send_random_image_every_5_minutes(context: CallbackContext):
-    fake_update = Update(0)
-    fake_update.effective_chat = context.bot.get_chat(OWNER_ID)
+async def send_random_image_every_5_minutes(context: CallbackContext, chat_id: int):
+    fake_update = Update(
+        update_id=0,
+        message=Message(
+            message_id=0,
+            chat=Chat(id=chat_id, type="group"),  # Use the provided chat_id and set type to "group"
+            from_user=User(id=OWNER_ID)
+        )
+    )
     await suck_it(fake_update, context)
 
 async def set_interval(update: Update, context: CallbackContext) -> None:
@@ -125,11 +131,13 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
         seconds = int(context.args[1])
         interval = timedelta(minutes=minutes, seconds=seconds)
 
+        chat_id = update.effective_chat.id  # Get the chat ID where the command was used
+
         # Stop the current job
         context.job_queue.stop()
 
         # Schedule sending random images with the new interval
-        context.job_queue.run_repeating(send_random_image_every_5_minutes, interval=interval, first=0)
+        context.job_queue.run_repeating(send_random_image_every_5_minutes, interval=interval, first=0, context=chat_id)
 
         await update.message.reply_text(f"Interval set to {minutes} minutes and {seconds} seconds.")
     except (IndexError, ValueError):
