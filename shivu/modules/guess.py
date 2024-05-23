@@ -33,7 +33,7 @@ images = [
     ("https://telegra.ph/file/d3864edbee52ac19bb6f2.jpg", "🦥"),
     ("https://telegra.ph/file/249af44d79d33c27ce622.jpg", "🫓"),
     ("https://telegra.ph/file/d4c03930563c9f9062868.jpg", "🦏"),
-    ("path/to/image8.jpg", "Correct Answer 8"),
+    ("https://telegra.ph/file/c3e8b7ea12c560e0dfcd6.jpg", "🗻"),
     ("path/to/image9.jpg", "Correct Answer 9"),
     ("path/to/image10.jpg", "Correct Answer 10")
 ]
