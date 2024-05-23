@@ -135,7 +135,7 @@ def main() -> None:
     # Schedule sending random images every 5 minutes
     app.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
 
-    app.run_polling(drop_pending_updates=True)
+        app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     shivuu.start()
