@@ -1,39 +1,32 @@
 import importlib
-import time
-import random
-import re
-import asyncio
-from html import escape
-
-from typing import Optional
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import Update
-from telegram.ext import Updater, CallbackQueryHandler
-from telegram.ext import CommandHandler, MessageHandler, filters
-
-from telegram.ext import CommandHandler, CallbackContext, MessageHandler, CallbackQueryHandler, filters
-
-from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu 
+import logging
+from telegram.ext import Application
 from shivu import application, LOGGER
 from shivu.modules import ALL_MODULES
+from bot_commands import add_handlers
 
-from telegram.ext import Application
-for module_name in ALL_MODULES:
-    importlib.import_module(f"shivu.modules.{module_name}")
-
-from shivu import application as app 
 # Enable logging
-
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 def main():
-    
-    application = Application.builder().token("app").build()
+    logger.info("Starting bot")
+
+    # Initialize the application with your token
+    app = Application.builder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
+
+    # Dynamically import all modules
+    for module_name in ALL_MODULES:
+        importlib.import_module(f"shivu.modules.{module_name}")
 
     # Add handlers from bot_commands
-   application.add_handlers(application)
+    add_handlers(app)
 
     logger.info("Bot started")
-    application.run_polling()
+    app.run_polling()
 
 if __name__ == '__main__':
     main()
