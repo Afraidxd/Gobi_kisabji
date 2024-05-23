@@ -131,10 +131,11 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
         await update.message.reply_text(f"Interval set to {minutes} minutes and {seconds} seconds.")
     except (IndexError, ValueError):
         await update.message.reply_text("Usage: /setinterval <minutes> <seconds>")
+from shivu import application as app
 
 # Adding handlers to the application
 def main():
-    application = Application.builder().token("YOUR_BOT_TOKEN").build()
+    application = Application.builder().token("app").build()
 
     application.add_handler(CommandHandler("sendimage", suck_it, block=False))
     application.add_handler(CallbackQueryHandler(button))
