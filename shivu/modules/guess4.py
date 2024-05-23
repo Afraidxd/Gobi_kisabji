@@ -2,10 +2,8 @@ import importlib
 import random
 from datetime import timedelta
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder, MessageHandler, filters
-from shivu import user_collection, shivuu
-from shivu.modules import ALL_MODULES
-from shivu import application as app
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder
+from shivu import user_collection, application as app
 
 locks = {}
 message_counters = {}
@@ -19,11 +17,10 @@ current_guess = {}
 
 OWNER_ID = 6747352706
 
+# Importing modules
+from shivu.modules import ALL_MODULES
 for module_name in ALL_MODULES:
     imported_module = importlib.import_module("shivu.modules." + module_name)
-
-last_user = {}
-warned_users = {}
 
 # List of images and their correct answers
 images = [
@@ -129,26 +126,9 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
     except (IndexError, ValueError):
         await update.message.reply_text("Usage: /setinterval <minutes> <seconds>")
 
-def guess(update: Update, context: CallbackContext) -> None:
-    # Placeholder for the guess function implementation
-    pass
+app.add_handler(CommandHandler("sendimage", suck_it))
+app.add_handler(CallbackQueryHandler(button))
+app.add_handler(CommandHandler("setinterval", set_interval))
 
-def give(update: Update, context: CallbackContext) -> None:
-    # Placeholder for the give function implementation
-    pass
-
-def fav(update: Update, context: CallbackContext) -> None:
-    # Placeholder for the fav function implementation
-    pass
-
-def message_counter(update: Update, context: CallbackContext) -> None:
-    # Placeholder for the message counter function implementation
-    pass
-
-
-    app.add_handler(CommandHandler("sendimage", suck_it))
-    app.add_handler(CallbackQueryHandler(button))
-    app.add_handler(CommandHandler("setinterval", set_interval))
-
-    # Schedule sending random images every 5 minutes initially
-    app.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
+# Schedule sending random images every 5 minutes initially
+app.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
