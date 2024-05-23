@@ -1,16 +1,9 @@
 import importlib
-import time
 import random
-import re
-import asyncio
-from html import escape
-
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import Update
-from telegram.ext import CommandHandler, CallbackContext, MessageHandler, CallbackQueryHandler, filters
-
-from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu 
-from shivu import application, LOGGER
+from datetime import timedelta
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler
+from shivu import user_collection, shivuu, application
 from shivu.modules import ALL_MODULES
 
 locks = {}
@@ -20,6 +13,10 @@ last_characters = {}
 sent_characters = {}
 first_correct_guesses = {}
 message_counts = {}
+user_tokens = {}
+current_guess = {}
+
+OWNER_ID = 6747352706
 
 for module_name in ALL_MODULES:
     imported_module = importlib.import_module("shivu.modules." + module_name)
@@ -27,39 +24,89 @@ for module_name in ALL_MODULES:
 last_user = {}
 warned_users = {}
 
-def escape_markdown(text):
-    escape_chars = r'\*_`\\~>#+-=|{}.!'
-    return re.sub(r'([%s])' % re.escape(escape_chars), r'\\\1', text)
+# List of images and their correct answers
+images = [
+    ("path/to/image1.jpg", "Correct Answer 1"),
+    ("path/to/image2.jpg", "Correct Answer 2"),
+    ("path/to/image3.jpg", "Correct Answer 3"),
+    ("path/to/image4.jpg", "Correct Answer 4"),
+    ("path/to/image5.jpg", "Correct Answer 5"),
+    ("path/to/image6.jpg", "Correct Answer 6"),
+    ("path/to/image7.jpg", "Correct Answer 7"),
+    ("path/to/image8.jpg", "Correct Answer 8"),
+    ("path/to/image9.jpg", "Correct Answer 9"),
+    ("path/to/image10.jpg", "Correct Answer 10")
+]
 
+def get_random_image():
+    return random.choice(images)
 
-async def fav(update: Update, context: CallbackContext) -> None:
-    user_id = update.effective_user.id
-
-    if not context.args:
-        await update.message.reply_text('Please provide a character ID.')
+async def send_image(update: Update, context: CallbackContext) -> None:
+    if update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("Only the owner can use this command.")
         return
 
-    character_id = context.args[0]
+    chat_id = update.effective_chat.id
+    image_path, correct_answer = get_random_image()
 
-    user = await user_collection.find_one({'id': user_id})
-    if not user:
-        await update.message.reply_text('You are not registered yet. Please use /register command to register.')
-        return
+    # Store the correct answer in the current_guess dictionary
+    current_guess[chat_id] = correct_answer
 
-    character = next((c for c in user.get('characters', []) if c['id'] == character_id), None)
-    if not character:
-        await update.message.reply_text('This character is not in your collection.')
-        return
+    # Create inline keyboard with guess options
+    all_options = [correct_answer] + [img[1] for img in random.sample(images, 5) if img[1] != correct_answer]
+    options = random.sample(all_options, 6)
+    keyboard = [
+        [InlineKeyboardButton(options[0], callback_data=options[0]), InlineKeyboardButton(options[1], callback_data=options[1])],
+        [InlineKeyboardButton(options[2], callback_data=options[2]), InlineKeyboardButton(options[3], callback_data=options[3])],
+        [InlineKeyboardButton(options[4], callback_data=options[4]), InlineKeyboardButton(options[5], callback_data=options[5])]
+    ]
 
-    user['favorites'] = [character_id]
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await user_collection.update_one({'id': user_id}, {'$set': {'favorites': user['favorites']}})
+    # Send image with inline keyboard
+    await context.bot.send_photo(chat_id=chat_id, photo=open(image_path, 'rb'), reply_markup=reply_markup)
 
-    await update.message.reply_text(f'Character {character["name"]} has been added to your favorites.')
+async def button(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    chat_id = query.message.chat_id
+    user_id = query.from_user.id
+    guess = query.data
+
+    # Check if the guess is correct
+    if guess == current_guess.get(chat_id):
+        # Award random tokens between 5000 and 20000 to the first correct guesser
+        tokens_awarded = random.randint(5000, 20000)
+        if user_id not in user_tokens:
+            user_tokens[user_id] = 0
+        user_tokens[user_id] += tokens_awarded
+
+        # Update the user's balance in the database
+        await user_collection.update_one(
+            {'id': user_id},
+            {'$inc': {'balance': tokens_awarded}},
+            upsert=True
+        )
+
+        query.answer(text=f'Correct! You have been awarded {tokens_awarded} tokens!')
+        await query.edit_message_text(
+            text=f"Correct! The answer is {guess}. Guessed by {query.from_user.first_name} and rewarded with {tokens_awarded} tokens."
+        )
+        # Remove the question from current guesses
+        del current_guess[chat_id]
+    else:
+        query.answer(text='Wrong guess, try again!')
+
+async def send_random_image_every_5_minutes(context: CallbackContext):
+    chat_id = OWNER_ID  # Send to the owner's chat ID
+    await send_image(None, context)
 
 def main() -> None:
     """Run bot."""
-    application.add_handler(CommandHandler("favorite", fav, block=False))
+    application.add_handler(CommandHandler("sendimage", send_image))
+    application.add_handler(CallbackQueryHandler(button))
+
+    # Schedule sending random images every 5 minutes
+    application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
 
     application.run_polling(drop_pending_updates=True)
 
