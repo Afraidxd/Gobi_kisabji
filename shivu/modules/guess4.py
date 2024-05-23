@@ -3,7 +3,7 @@ import random
 from datetime import timedelta, datetime
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder
-from shivu import user_collection
+from shivu import user_collection, application
 from shivu.modules import ALL_MODULES
 
 locks = {}
