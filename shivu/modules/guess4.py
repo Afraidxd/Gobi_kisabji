@@ -1,6 +1,6 @@
 import importlib
 import random
-from datetime import timedelta
+from datetime import timedelta, datetime
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder
 from shivu import user_collection, application as app
@@ -17,9 +17,6 @@ user_tokens = {}
 current_guess = {}
 
 OWNER_ID = 6747352706
-
-# Importing race module
-import shivu.modules.race as race_module
 
 # Importing other modules
 for module_name in ALL_MODULES:
