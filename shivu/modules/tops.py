@@ -1,26 +1,38 @@
 import importlib
+import time
+import random
 import re
+import asyncio
+import io
+import requests
+from html import escape  # Ensure this import is present
 
-from telegram import Update
-from telegram.ext import CommandHandler, CallbackContext
+from typing import Optional
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import Updater, CallbackQueryHandler, CommandHandler, MessageHandler, filters, CallbackContext
 
-from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu
+from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu 
 from shivu import application, LOGGER
 from shivu.modules import ALL_MODULES
 
-locks = {}
-message_counters = {}
-spam_counters = {}
-last_characters = {}
-sent_characters = {}
-first_correct_guesses = {}
-message_counts = {}
+# Define the send_leaderboard_message function
+async def send_leaderboard_message(context: CallbackContext, chat_id: int, message: str, photo_url: str, message_id: int = None):
+    if message_id:
+        await context.bot.edit_message_caption(
+            chat_id=chat_id,
+            message_id=message_id,
+            caption=message,
+            parse_mode='HTML'
+        )
+    else:
+        await context.bot.send_photo(
+            chat_id=chat_id,
+            photo=photo_url,
+            caption=message,
+            parse_mode='HTML'
+        )
 
-last_user = {}
-warned_users = {}
-started_users = set()  # Keep track of users who have started the bot in private
-
-
+# Define the mtop function
 async def mtop(update: Update, context: CallbackContext):
     top_users = await user_collection.find({}, {'id': 1, 'username': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}).sort('balance', -1).limit(10).to_list(10)
     
@@ -61,4 +73,13 @@ async def mtop(update: Update, context: CallbackContext):
     else:
         await update.message.reply_text("Failed to download photo")
 
+# Define the button handler function
+async def button_handler(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    await query.answer()
+
+    if query.data == 'saleslist:close':
+        await query.message.delete()
+
+# Add the command and callback handlers
 application.add_handler(CommandHandler("tops", mtop))
