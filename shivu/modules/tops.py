@@ -60,3 +60,5 @@ async def mtop(update: Update, context: CallbackContext):
         await send_leaderboard_message(context, update.effective_chat.id, top_users_message, photo_url)
     else:
         await update.message.reply_text("Failed to download photo")
+
+application.add_handler(CommandHandler("tops", mtop))
