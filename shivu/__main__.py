@@ -41,7 +41,7 @@ images = [
 def get_random_image():
     return random.choice(images)
 
-async def send_image(update: Update, context: CallbackContext) -> None:
+async def suck_it(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id if update else OWNER_ID
 
     if update and update.effective_user.id != OWNER_ID:
@@ -129,7 +129,7 @@ def main() -> None:
     app = ApplicationBuilder().token("6627459799:AAEiY_xENQUklRGc3OWMmwF6rkNdMPkv4OA").build()
 
    
-    app.add_handler(CommandHandler("sendimage", send_image))
+    app.add_handler(CommandHandler("sendimage", suck_it))
     app.add_handler(CallbackQueryHandler(button))
 
     # Schedule sending random images every 5 minutes
