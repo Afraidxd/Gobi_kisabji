@@ -24,11 +24,6 @@ for module_name in ALL_MODULES:
 last_user = {}
 warned_users = {}
 
-import random
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import CallbackContext, CommandHandler, MessageHandler, CallbackQueryHandler
-from datetime import timedelta
-
 # List of images and their correct answers
 images = [
     ("https://telegra.ph/file/a6ef02040254d51d60360.jpg", "🐺"),
@@ -43,17 +38,14 @@ images = [
     ("https://telegra.ph/file/3666bac9b5ce891c4613f.jpg", "🦨")
 ]
 
-current_guess = {}
-user_tokens = {}
-
 def get_random_image():
     return random.choice(images)
 
-def send_image(update: Update, context: CallbackContext) -> None:
+async def send_image(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id if update else OWNER_ID
 
     if update and update.effective_user.id != OWNER_ID:
-        update.message.reply_text("Only the owner can use this command.")
+        await update.message.reply_text("Only the owner can use this command.")
         return
 
     image_path, correct_answer = get_random_image()
@@ -75,10 +67,15 @@ def send_image(update: Update, context: CallbackContext) -> None:
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # Send image with inline keyboard
-    context.bot.send_photo(chat_id=chat_id, photo=image_path, reply_markup=reply_markup)
+    # Send image with inline keyboard and caption
+    await context.bot.send_photo(
+        chat_id=chat_id,
+        photo=image_path,
+        caption="Guess the correct emoji for the image! Click on one of the buttons below.",
+        reply_markup=reply_markup
+    )
 
-def button(update: Update, context: CallbackContext) -> None:
+async def button(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     chat_id = query.message.chat_id
     user_id = query.from_user.id
@@ -93,23 +90,23 @@ def button(update: Update, context: CallbackContext) -> None:
         user_tokens[user_id] += tokens_awarded
 
         # Update the user's balance in the database
-        user_collection.update_one(
+        await user_collection.update_one(
             {'id': user_id},
             {'$inc': {'balance': tokens_awarded}},
             upsert=True
         )
 
         query.answer(text=f'Correct! You have been awarded {tokens_awarded} tokens!')
-        query.edit_message_text(
-            text=f"Correct! The answer is {guess}. Guessed by {query.from_user.first_name} and rewarded with {tokens_awarded} tokens."
+        await query.edit_message_caption(
+            caption=f"Correct! The answer is {guess}. Guessed by {query.from_user.first_name} and rewarded with {tokens_awarded} tokens."
         )
         # Remove the question from current guesses
         del current_guess[chat_id]
     else:
         query.answer(text='Wrong guess, try again!')
 
-def send_random_image_every_5_minutes(context: CallbackContext):
-    send_image(None, context)
+async def send_random_image_every_5_minutes(context: CallbackContext):
+    await send_image(None, context)
 
 def guess(update: Update, context: CallbackContext) -> None:
     # Placeholder for the guess function implementation
@@ -128,7 +125,11 @@ def message_counter(update: Update, context: CallbackContext) -> None:
     pass
 
 def main() -> None:
-    """Run"""
+    """Run bot."""
+    application.add_handler(CommandHandler(["guess", "protecc", "collect", "grab", "hunt"], guess, block=False))
+    application.add_handler(CommandHandler("add", give))
+    application.add_handler(CommandHandler("fav", fav, block=False))
+    application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
     application.add_handler(CommandHandler("sendimage", send_image))
     application.add_handler(CallbackQueryHandler(button))
 
@@ -138,5 +139,5 @@ def main() -> None:
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
-
+    shivuu.start()
     main()
