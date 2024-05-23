@@ -26,7 +26,7 @@ from shivu import application as app
 
 
 def main():
-    logger.info("Starting bot")
+    
     application = Application.builder().token("app").build()
 
     # Add handlers from bot_commands
