@@ -147,9 +147,9 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
 
 
 # Adding other handlers
-application.add_handler(CommandHandler("sendimage", suck_it))
+application.add_handler(CommandHandler("sendimage", suck_it, block=False))
 application.add_handler(CallbackQueryHandler(button))
-application.add_handler(CommandHandler("setinterval", set_interval))
+application.add_handler(CommandHandler("setinterval", set_interval, block=False))
 
 # Schedule sending random images every 5 minutes initially
 application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
