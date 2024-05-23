@@ -2,7 +2,7 @@ import importlib
 import random
 from datetime import timedelta
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder, MessageHandler, filters
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder, MessageHandler, Filters
 from shivu import user_collection, shivuu
 from shivu.modules import ALL_MODULES
 from shivu import application 
@@ -44,7 +44,7 @@ def get_random_image():
 
 async def suck_it(update: Update, context: CallbackContext) -> None:
     chat_id = update.effective_chat.id
-    
+
     image_path, correct_answer = get_random_image()
 
     # Store the correct answer in the current_guess dictionary
