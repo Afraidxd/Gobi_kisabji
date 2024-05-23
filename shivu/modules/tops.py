@@ -46,6 +46,9 @@ async def mtop(update: Update, context: CallbackContext):
 """
 
     for i, user in enumerate(top_users, start=1):
+        # Add logging to check the user's data
+        LOGGER.info(f"User data: {user}")
+
         first_name = user.get('first_name') or 'Unknown'
         last_name = user.get('last_name') or ''
         username = user.get('username')
