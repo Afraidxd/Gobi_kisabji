@@ -47,8 +47,13 @@ def decorate_all_handlers(module):
 
 def main() -> None:
     """Run bot."""
-        application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("start", start))
 
+    for module_name in ALL_MODULES:
+        imported_module = importlib.import_module("shivu.modules." + module_name)
+        decorate_all_handlers(imported_module)
+    
+    LOGGER.info("Starting bot...")
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
