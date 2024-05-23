@@ -1,19 +1,10 @@
 import importlib
-import time
 import random
-import re
-import asyncio
-from html import escape 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
-from telegram import Update
-from telegram.ext import CommandHandler, CallbackContext, MessageHandler, filters, CallbackQueryHandler
-
-from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu
-from shivu import application, PHOTO_URL, SUPPORT_CHAT, UPDATE_CHAT, BOT_USERNAME, db, GROUP_ID, LOGGER
-from shivu import pm_users as collection 
+from datetime import timedelta
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, Application, Updater, MessageHandler, filters
+from shivu import user_collection, application
 from shivu.modules import ALL_MODULES
-
 
 locks = {}
 message_counters = {}
@@ -22,257 +13,125 @@ last_characters = {}
 sent_characters = {}
 first_correct_guesses = {}
 message_counts = {}
+user_tokens = {}
+current_guess = {}
 
-
+OWNER_ID = 6747352706
 
 for module_name in ALL_MODULES:
     imported_module = importlib.import_module("shivu.modules." + module_name)
 
-
 last_user = {}
 warned_users = {}
-def escape_markdown(text):
-    escape_chars = r'\*_`\\~>#+-=|{}.!'
-    return re.sub(r'([%s])' % re.escape(escape_chars), r'\\\1', text)
 
+# List of images and their correct answers
+images = [
+    ("https://telegra.ph/file/a6ef02040254d51d60360.jpg", "🐺"),
+    ("https://telegra.ph/file/59c070e068e9d379a3270.jpg", "🦬"),
+    ("https://telegra.ph/file/5185ad733940b4447031e.jpg", "🍞"),
+    ("https://telegra.ph/file/2424eb24186f2378ef363.jpg", "🧄"),
+    ("https://telegra.ph/file/d3864edbee52ac19bb6f2.jpg", "🦥"),
+    ("https://telegra.ph/file/249af44d79d33c27ce622.jpg", "🫓"),
+    ("https://telegra.ph/file/d4c03930563c9f9062868.jpg", "🦏"),
+    ("https://telegra.ph/file/c3e8b7ea12c560e0dfcd6.jpg", "🗻"),
+    ("https://telegra.ph/file/424d46d2ff69e92ea3f8d.jpg", "🧂"),
+    ("https://telegra.ph/file/3666bac9b5ce891c4613f.jpg", "🦨")
+]
 
-async def message_counter(update: Update, context: CallbackContext) -> None:
-    chat_id = str(update.effective_chat.id)
-    user_id = update.effective_user.id
-
-    if chat_id not in locks:
-        locks[chat_id] = asyncio.Lock()
-    lock = locks[chat_id]
-
-    async with lock:
-
-        chat_frequency = await user_totals_collection.find_one({'chat_id': chat_id})
-        if chat_frequency:
-            message_frequency = chat_frequency.get('message_frequency', 100)
-        else:
-            message_frequency = 100
-
-
-        if chat_id in last_user and last_user[chat_id]['user_id'] == user_id:
-            last_user[chat_id]['count'] += 1
-            if last_user[chat_id]['count'] >= 10:
-
-                if user_id in warned_users and time.time() - warned_users[user_id] < 600:
-                    return
-                else:
-
-                    await update.message.reply_text(f"⚠️ Don't Spam {update.effective_user.first_name}...\nyour messages will be ignored for 10 minutes...")
-                    warned_users[user_id] = time.time()
-                    return
-        else:
-            last_user[chat_id] = {'user_id': user_id, 'count': 1}
-
-
-        if chat_id in message_counts:
-            message_counts[chat_id] += 1
-        else:
-            message_counts[chat_id] = 1
-
-
-        if message_counts[chat_id] % message_frequency == 0:
-            await send_image(update, context)
-
-            message_counts[chat_id] = 0
+def get_random_image():
+    return random.choice(images)
 
 async def send_image(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id
+    chat_id = update.effective_chat.id if update else OWNER_ID
 
-
-    all_characters = list(await collection.find({}).to_list(length=None))
-
-
-    if chat_id not in sent_characters:
-        sent_characters[chat_id] = []
-
-
-    if len(sent_characters[chat_id]) == len(all_characters):
-        sent_characters[chat_id] = []
-
-
-    character = random.choice([c for c in all_characters if c['id'] not in sent_characters[chat_id]])
-
-
-    sent_characters[chat_id].append(character['id'])
-    last_characters[chat_id] = character
-
-
-    if chat_id in first_correct_guesses:
-        del first_correct_guesses[chat_id]
-
-
-    await context.bot.send_photo(
-        chat_id=chat_id,
-        photo=character['img_url'],
-        caption="""A New Character Has Just Appeared Use /guess [name]
-And Add This Character In Your Collection""",
-        parse_mode='Markdown')
-
-async def guess(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id
-    user_id = update.effective_user.id
-
-    if chat_id not in last_characters:
+    if update and update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("Only the owner can use this command.")
         return
 
-    if chat_id in first_correct_guesses:
-        await update.message.reply_text(f'❌️ Already guessed by Someone..So Try Next Time Bruhh')
-        return
+    image_path, correct_answer = get_random_image()
 
-    guess = ' '.join(context.args).lower() if context.args else ''
+    # Store the correct answer in the current_guess dictionary
+    current_guess[chat_id] = correct_answer
 
-    if "()" in guess or "&" in guess.lower():
-        await update.message.reply_text("You can't use '&' in your guess.")
-        return
+    # Create inline keyboard with guess options
+    incorrect_answers = [img[1] for img in images if img[1] != correct_answer]
+    wrong_options = random.sample(incorrect_answers, 5)
+    all_options = [correct_answer] + wrong_options
+    random.shuffle(all_options)
 
+    keyboard = [
+        [InlineKeyboardButton(all_options[0], callback_data=all_options[0]), InlineKeyboardButton(all_options[1], callback_data=all_options[1])],
+        [InlineKeyboardButton(all_options[2], callback_data=all_options[2]), InlineKeyboardButton(all_options[3], callback_data=all_options[3])],
+        [InlineKeyboardButton(all_options[4], callback_data=all_options[4]), InlineKeyboardButton(all_options[5], callback_data=all_options[5])]
+    ]
 
-    name_parts = last_characters[chat_id]['name'].lower().split()
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
-    if sorted(name_parts) == sorted(guess.split()) or any(part == guess for part in name_parts):
+    # Send image with inline keyboard
+    await context.bot.send_photo(chat_id=chat_id, photo=image_path, reply_markup=reply_markup)
 
+async def button(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    chat_id = query.message.chat_id
+    user_id = query.from_user.id
+    guess = query.data
 
-        first_correct_guesses[chat_id] = user_id
+    # Check if the guess is correct
+    if guess == current_guess.get(chat_id):
+        # Award random tokens between 5000 and 20000 to the first correct guesser
+        tokens_awarded = random.randint(5000, 20000)
+        if user_id not in user_tokens:
+            user_tokens[user_id] = 0
+        user_tokens[user_id] += tokens_awarded
 
-        user = await user_collection.find_one({'id': user_id})
-        if user:
-            update_fields = {}
-            if hasattr(update.effective_user, 'username') and update.effective_user.username != user.get('username'):
-                update_fields['username'] = update.effective_user.username
-            if update.effective_user.first_name != user.get('first_name'):
-                update_fields['first_name'] = update.effective_user.first_name
-            if update_fields:
-                await user_collection.update_one({'id': user_id}, {'$set': update_fields})
+        # Update the user's balance in the database
+        await user_collection.update_one(
+            {'id': user_id},
+            {'$inc': {'balance': tokens_awarded}},
+            upsert=True
+        )
 
-            await user_collection.update_one({'id': user_id}, {'$push': {'characters': last_characters[chat_id]}})
-
-        elif hasattr(update.effective_user, 'username'):
-            await user_collection.insert_one({
-                'id': user_id,
-                'username': update.effective_user.username,
-                'first_name': update.effective_user.first_name,
-                'characters': [last_characters[chat_id]],
-            })
-
-
-        group_user_total = await group_user_totals_collection.find_one({'user_id': user_id, 'group_id': chat_id})
-        if group_user_total:
-            update_fields = {}
-            if hasattr(update.effective_user, 'username') and update.effective_user.username != group_user_total.get('username'):
-                update_fields['username'] = update.effective_user.username
-            if update.effective_user.first_name != group_user_total.get('first_name'):
-                update_fields['first_name'] = update.effective_user.first_name
-            if update_fields:
-                await group_user_totals_collection.update_one({'user_id': user_id, 'group_id': chat_id}, {'$set': update_fields})
-
-            await group_user_totals_collection.update_one({'user_id': user_id, 'group_id': chat_id}, {'$inc': {'count': 1}})
-
-        else:
-            await group_user_totals_collection.insert_one({
-                'user_id': user_id,
-                'group_id': chat_id,
-                'username': update.effective_user.username,
-                'first_name': update.effective_user.first_name,
-                'count': 1,
-            })
-
-
-
-        group_info = await top_global_groups_collection.find_one({'group_id': chat_id})
-        if group_info:
-            update_fields = {}
-            if update.effective_chat.title != group_info.get('group_name'):
-                update_fields['group_name'] = update.effective_chat.title
-            if update_fields:
-                await top_global_groups_collection.update_one({'group_id': chat_id}, {'$set': update_fields})
-
-            await top_global_groups_collection.update_one({'group_id': chat_id}, {'$inc': {'count': 1}})
-
-        else:
-            await top_global_groups_collection.insert_one({
-                'group_id': chat_id,
-                'group_name': update.effective_chat.title,
-                'count': 1,
-            })
-
-
-        await update.message.reply_text(f'<b><a href="tg://user?id={user_id}">{update.effective_user.first_name}</a></b> You Got New Character ✅️ \n\nCharacter name: <b>{last_characters[chat_id]["name"]}</b> \nAnime: <b>{last_characters[chat_id]["anime"]}</b> \nRairty: <b>{last_characters[chat_id]["rarity"]}</b>\n\nThis character has been added to your harem now do /collection to check your new character', parse_mode='HTML')
-
+        query.answer(text=f'Correct! You have been awarded {tokens_awarded} tokens!')
+        await query.edit_message_text(
+            text=f"Correct! The answer is {guess}. Guessed by {query.from_user.first_name} and rewarded with {tokens_awarded} tokens."
+        )
+        # Remove the question from current guesses
+        del current_guess[chat_id]
     else:
-        await update.message.reply_text('Incorrect Name.. ❌️')
+        query.answer(text='Wrong guess, try again!')
 
-async def fav(update: Update, context: CallbackContext) -> None:
-    user_id = update.effective_user.id
+async def send_random_image_every_5_minutes(context: CallbackContext):
+    await send_image(None, context)
 
+def guess(update: Update, context: CallbackContext) -> None:
+    # Placeholder for the guess function implementation
+    pass
 
-    if not context.args:
-        await update.message.reply_text('Please provide a character ID.')
-        return
+def give(update: Update, context: CallbackContext) -> None:
+    # Placeholder for the give function implementation
+    pass
 
-    character_id = context.args[0]
+def fav(update: Update, context: CallbackContext) -> None:
+    # Placeholder for the fav function implementation
+    pass
 
-
-    user = await user_collection.find_one({'id': user_id})
-    if not user:
-        await update.message.reply_text('You have not guessed any characters yet.')
-        return
-
-
-    character = next((c for c in user['characters'] if c['id'] == character_id), None)
-    if not character:
-        await update.message.reply_text('This character is not in your collection.')
-        return
-
-
-    user['favorites'] = [character_id]
-
-
-    await user_collection.update_one({'id': user_id}, {'$set': {'favorites': user['favorites']}})
-
-    await update.message.reply_text(f'Character {character["name"]} has been added to your favorites.')
-
-from typing import List, Optional
-
-async def give(update: Update, context: CallbackContext) -> None:
-    user_id = update.effective_user.id
-    args = context.args
-
-    if len(args) < 1:
-        await update.message.reply_text("Please provide a character ID.")
-        return
-
-    character_id = args[0]
-
-    user = await user_collection.find_one({'id': user_id})
-    if not user:
-        await user_collection.insert_one({'id': user_id, 'characters': []})
-        user = await user_collection.find_one({'id': user_id})
-
-    character = next((c for c in all_characters if c['id'] == int(character_id)), None)
-    if not character:
-        await update.message.reply_text("This character does not exist.")
-        return
-
-    user['characters'].append(character)
-    await user_collection.update_one({'id': user_id}, {'$set': {'characters': user['characters']}})
-
-    await update.message.reply_text(f"Character {character['name']} has been added to your collection.")
+def message_counter(update: Update, context: CallbackContext) -> None:
+    # Placeholder for the message counter function implementation
+    pass
 
 def main() -> None:
     """Run bot."""
-
-
     application.add_handler(CommandHandler(["guess", "protecc", "collect", "grab", "hunt"], guess, block=False))
-
-application.add_handler(CommandHandler("add", give))
-
+    application.add_handler(CommandHandler("add", give))
     application.add_handler(CommandHandler("fav", fav, block=False))
     application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
-    application.run_polling(drop_pending_updates=True)
+    application.add_handler(CommandHandler("sendimage", send_image))
+    application.add_handler(CallbackQueryHandler(button))
 
+    # Schedule sending random images every 5 minutes
+    application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
+
+    application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     shivuu.start()
