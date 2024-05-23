@@ -75,7 +75,7 @@ async def button(update: Update, context: CallbackContext) -> None:
     # Check if the guess is correct
     if guess == current_guess.get(chat_id):
         # Award random tokens between 5000 and 20000 to the first correct guesser
-        tokens_awarded = random.randint(5000, 20000)
+        tokens_awarded = random.randint(5000, 10000)
         if user_id not in user_tokens:
             user_tokens[user_id] = 0
         user_tokens[user_id] += tokens_awarded
