@@ -2,11 +2,12 @@ import importlib
 import random
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, filters
 from shivu import user_collection
 from shivu.modules import ALL_MODULES
-
+from shivu import application 
 # Enable logging
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 OWNER_ID = 6747352706
@@ -40,16 +41,18 @@ def get_random_image():
 
 async def suck_it(update: Update, context: CallbackContext) -> None:
     logger.info("suck_it command called")
-    if update and update.effective_chat.type == 'private':
+    chat = update.effective_chat
+    user = update.effective_user
+
+    if chat.type == 'private':
         await update.message.reply_text("Please use this command in a group.")
         return
 
-    if update and update.effective_user.id != OWNER_ID:
+    if user.id != OWNER_ID:
         await update.message.reply_text("Only the owner can use this command.")
         return
 
-    chat_id = update.effective_chat.id if update else OWNER_ID
-
+    chat_id = chat.id
     image_path, correct_answer = get_random_image()
     current_guess[chat_id] = correct_answer
 
@@ -107,7 +110,9 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
 
 async def set_threshold(update: Update, context: CallbackContext) -> None:
     logger.info("set_threshold command called")
-    if update.effective_user.id != OWNER_ID:
+    user = update.effective_user
+
+    if user.id != OWNER_ID:
         await update.message.reply_text("Only the owner can use this command.")
         return
 
@@ -122,4 +127,3 @@ def add_handlers(application):
     application.add_handler(CommandHandler("sendimage", suck_it, block=False))
     application.add_handler(CommandHandler("setthreshold", set_threshold, block=False))
     application.add_handler(CallbackQueryHandler(button))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
