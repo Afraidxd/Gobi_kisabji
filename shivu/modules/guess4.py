@@ -123,7 +123,7 @@ async def set_threshold(update: Update, context: CallbackContext) -> None:
     except (IndexError, ValueError):
         await update.message.reply_text("Usage: /setthreshold <number>")
 
-def add_handlers(application):
+
     application.add_handler(CommandHandler("sendimage", suck_it, block=False))
     application.add_handler(CommandHandler("setthreshold", set_threshold, block=False))
     application.add_handler(CallbackQueryHandler(button))
