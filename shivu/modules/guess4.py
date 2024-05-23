@@ -40,7 +40,10 @@ def get_random_image():
     return random.choice(images)
 
 async def suck_it(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id if update.effective_chat else OWNER_ID
+    if update is None:
+        chat_id = OWNER_ID
+    else:
+        chat_id = update.effective_chat.id if update.effective_chat else OWNER_ID
 
     if update and update.effective_chat.type == 'private':
         await update.message.reply_text("Please use this command in a group.")
@@ -108,7 +111,9 @@ async def button(update: Update, context: CallbackContext) -> None:
         await query.answer(text='Wrong guess, try again!')
 
 async def send_random_image_every_5_minutes(context: CallbackContext):
-    await suck_it(None, context)
+    fake_update = Update(0)
+    fake_update.effective_chat = context.bot.get_chat(OWNER_ID)
+    await suck_it(fake_update, context)
 
 async def set_interval(update: Update, context: CallbackContext) -> None:
     if update.effective_user.id != OWNER_ID:
@@ -138,3 +143,5 @@ app.add_handler(CommandHandler("setinterval", set_interval))
 
 # Schedule sending random images every 5 minutes initially
 app.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
+
+app.run()
