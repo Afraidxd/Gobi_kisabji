@@ -109,6 +109,26 @@ async def button(update: Update, context: CallbackContext) -> None:
 async def send_random_image_every_5_minutes(context: CallbackContext):
     await suck_it(None, context)
 
+async def set_interval(update: Update, context: CallbackContext) -> None:
+    if update.effective_user.id != OWNER_ID:
+        await update.message.reply_text("Only the owner can use this command.")
+        return
+
+    try:
+        minutes = int(context.args[0])
+        seconds = int(context.args[1])
+        interval = timedelta(minutes=minutes, seconds=seconds)
+
+        # Stop the current job
+        context.job_queue.stop()
+
+        # Schedule sending random images with the new interval
+        context.job_queue.run_repeating(send_random_image_every_5_minutes, interval=interval, first=0)
+
+        await update.message.reply_text(f"Interval set to {minutes} minutes and {seconds} seconds.")
+    except (IndexError, ValueError):
+        await update.message.reply_text("Usage: /setinterval <minutes> <seconds>")
+
 def guess(update: Update, context: CallbackContext) -> None:
     # Placeholder for the guess function implementation
     pass
@@ -128,14 +148,14 @@ def message_counter(update: Update, context: CallbackContext) -> None:
 def main() -> None:
     """Run bot."""
 
-   
     app.add_handler(CommandHandler("sendimage", suck_it))
     app.add_handler(CallbackQueryHandler(button))
+    app.add_handler(CommandHandler("setinterval", set_interval))
 
-    # Schedule sending random images every 5 minutes
+    # Schedule sending random images every 5 minutes initially
     app.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
 
-        app.run_polling(drop_pending_updates=True)
+    app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     shivuu.start()
