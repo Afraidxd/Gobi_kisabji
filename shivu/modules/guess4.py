@@ -2,7 +2,7 @@ import importlib
 import random
 from datetime import timedelta, datetime
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler
 from shivu import user_collection
 from shivu.modules import ALL_MODULES
 from shivu import application
