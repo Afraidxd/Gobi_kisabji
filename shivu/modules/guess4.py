@@ -142,4 +142,4 @@ application.add_handler(CallbackQueryHandler(button))
 application.add_handler(CommandHandler("setinterval", set_interval))
 
 # Schedule sending random images every 5 minutes initially
-app.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
+application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
