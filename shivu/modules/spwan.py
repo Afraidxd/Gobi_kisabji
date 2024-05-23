@@ -149,9 +149,6 @@ async def get_user_balance(user_id: int) -> int:
     user = await user_collection.find_one({"id": user_id})
     return user.get("balance") if user else None
 
-# Add the following handler to your application
-application.add_handler(CommandHandler("start", message_counter))
-application.add_handler(CallbackQueryHandler(button_click))
 
 
 async def guess(update: Update, context: CallbackContext) -> None:
