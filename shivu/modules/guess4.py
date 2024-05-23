@@ -1,9 +1,8 @@
 import importlib
 import random
 import logging
-from datetime import timedelta
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, Chat, Message, User
-from telegram.ext import Application, CommandHandler, CallbackContext, CallbackQueryHandler, JobQueue
+from telegram.ext import Application, CommandHandler, CallbackContext, CallbackQueryHandler
 from shivu import user_collection
 from shivu.modules import ALL_MODULES
 
@@ -37,6 +36,8 @@ images = [
 # Store current guesses and user tokens
 current_guess = {}
 user_tokens = {}
+message_counts = {}
+message_threshold = 10
 
 def get_random_image():
     return random.choice(images)
@@ -97,40 +98,26 @@ async def button(update: Update, context: CallbackContext) -> None:
     else:
         await query.answer(text='Wrong guess, try again!')
 
-async def send_random_image_every_5_minutes(context: CallbackContext) -> None:
-    chat_id = context.job.context
-    fake_update = Update(
-        update_id=0,
-        message=Message(
-            message_id=0,
-            chat=Chat(id=chat_id, type="group"),
-            from_user=User(id=OWNER_ID)
-        )
-    )
-    await suck_it(fake_update, context)
+async def handle_message(update: Update, context: CallbackContext) -> None:
+    chat_id = update.effective_chat.id
+    message_counts[chat_id] = message_counts.get(chat_id, 0) + 1
 
-async def set_interval(update: Update, context: CallbackContext) -> None:
+    if message_counts[chat_id] >= message_threshold:
+        message_counts[chat_id] = 0
+        await suck_it(update, context)
+
+async def set_threshold(update: Update, context: CallbackContext) -> None:
     if update.effective_user.id != OWNER_ID:
         await update.message.reply_text("Only the owner can use this command.")
         return
 
     try:
-        minutes = int(context.args[0])
-        seconds = int(context.args[1])
-        interval = timedelta(minutes=minutes, seconds=seconds)
-
-        chat_id = update.effective_chat.id
-
-        # Stop the current job queue
-        for job in context.job_queue.jobs():
-            job.schedule_removal()
-
-        # Schedule sending random images with the new interval
-        context.job_queue.run_repeating(send_random_image_every_5_minutes, interval=interval, first=0, context=chat_id)
-
-        await update.message.reply_text(f"Interval set to {minutes} minutes and {seconds} seconds.")
+        global message_threshold
+        message_threshold = int(context.args[0])
+        await update.message.reply_text(f"Message threshold set to {message_threshold}.")
     except (IndexError, ValueError):
-        await update.message.reply_text("Usage: /setinterval <minutes> <seconds>")
+        await update.message.reply_text("Usage: /setthreshold <number>")
+
 from shivu import application as app
 
 # Adding handlers to the application
@@ -138,10 +125,11 @@ def main():
     application = Application.builder().token("app").build()
 
     application.add_handler(CommandHandler("sendimage", suck_it, block=False))
+    application.add_handler(CommandHandler("setthreshold", set_threshold, block=False))
+    application.add_handler(CallbackQueryHandler(button))
+    application.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
 
-    application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
+    application.run_polling()
 
- application.add_handler(CallbackQueryHandler(button))
-    application.add_handler(CommandHandler("setinterval", set_interval, block=False))
-
-    # Schedule sending random images every 5 minutes initially
+if __name__ == '__main__':
+    main()
