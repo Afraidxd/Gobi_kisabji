@@ -30,7 +30,7 @@ def main():
     application = Application.builder().token("app").build()
 
     # Add handlers from bot_commands
-    add_handlers(application)
+   application.add_handlers(application)
 
     logger.info("Bot started")
     application.run_polling()
