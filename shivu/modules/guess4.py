@@ -40,7 +40,11 @@ def get_random_image():
     return random.choice(images)
 
 async def suck_it(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id if update else OWNER_ID
+    chat_id = update.effective_chat.id if update.effective_chat else OWNER_ID
+
+    if update and update.effective_chat.type == 'private':
+        await update.message.reply_text("Please use this command in a group.")
+        return
 
     if update and update.effective_user.id != OWNER_ID:
         await update.message.reply_text("Only the owner can use this command.")
