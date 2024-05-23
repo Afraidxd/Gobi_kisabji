@@ -1,3 +1,26 @@
+import importlib
+import re
+
+from telegram import Update
+from telegram.ext import CommandHandler, CallbackContext
+
+from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu
+from shivu import application, LOGGER
+from shivu.modules import ALL_MODULES
+
+locks = {}
+message_counters = {}
+spam_counters = {}
+last_characters = {}
+sent_characters = {}
+first_correct_guesses = {}
+message_counts = {}
+
+last_user = {}
+warned_users = {}
+started_users = set()  # Keep track of users who have started the bot in private
+
+
 async def mtop(update: Update, context: CallbackContext):
     top_users = await user_collection.find({}, {'id': 1, 'username': 1, 'first_name': 1, 'last_name': 1, 'balance': 1}).sort('balance', -1).limit(10).to_list(10)
     
