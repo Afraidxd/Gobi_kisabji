@@ -138,8 +138,10 @@ def main():
     application = Application.builder().token("app").build()
 
     application.add_handler(CommandHandler("sendimage", suck_it, block=False))
-    application.add_handler(CallbackQueryHandler(button))
+
+    application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
+
+ application.add_handler(CallbackQueryHandler(button))
     application.add_handler(CommandHandler("setinterval", set_interval, block=False))
 
     # Schedule sending random images every 5 minutes initially
-    application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
