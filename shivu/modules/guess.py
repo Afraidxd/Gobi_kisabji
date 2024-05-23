@@ -28,7 +28,7 @@ warned_users = {}
 images = [
     ("https://telegra.ph/file/a6ef02040254d51d60360.jpg", "🐺"),
     ("https://telegra.ph/file/59c070e068e9d379a3270.jpg", "🦬"),
-    ("path/to/image3.jpg", "Correct Answer 3"),
+    ("https://telegra.ph/file/5185ad733940b4447031e.jpg", "🍞"),
     ("path/to/image4.jpg", "Correct Answer 4"),
     ("path/to/image5.jpg", "Correct Answer 5"),
     ("path/to/image6.jpg", "Correct Answer 6"),
