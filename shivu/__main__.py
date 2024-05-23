@@ -2,7 +2,7 @@ import importlib
 import random
 from datetime import timedelta
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, Application, Updater, MessageHandler, filters
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, Application, MessageHandler, filters
 from shivu import user_collection, application, shivuu
 from shivu.modules import ALL_MODULES
 
@@ -134,5 +134,4 @@ def main() -> None:
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
-    shivuu.start()
     main()
