@@ -103,7 +103,8 @@ async def button(update: Update, context: CallbackContext) -> None:
         await query.answer(text='Wrong guess, try again!')
 
 async def send_random_image_every_5_minutes(context: CallbackContext):
-    await suck_it(None, context)
+    chat_id = context.job.context['chat_id']
+    await suck_it(update=None, context=context)
 
 async def set_interval(update: Update, context: CallbackContext) -> None:
     if update.effective_user.id != OWNER_ID:
@@ -119,7 +120,12 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
         context.job_queue.stop()
 
         # Schedule sending random images with the new interval
-        context.job_queue.run_repeating(send_random_image_every_5_minutes, interval=interval, first=0)
+        context.job_queue.run_repeating(
+            send_random_image_every_5_minutes, 
+            interval=interval, 
+            first=0, 
+            context={'chat_id': update.effective_chat.id}
+        )
 
         await update.message.reply_text(f"Interval set to {minutes} minutes and {seconds} seconds.")
     except (IndexError, ValueError):
@@ -128,12 +134,16 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
 def main() -> None:
     """Run bot."""
 
-
     application.add_handler(CommandHandler("sendimage", suck_it))
     application.add_handler(CallbackQueryHandler(button))
     application.add_handler(CommandHandler("setinterval", set_interval))
 
-    application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
+    application.job_queue.run_repeating(
+        send_random_image_every_5_minutes, 
+        interval=timedelta(minutes=5), 
+        first=0, 
+        context={'chat_id': None}
+    )
 
     application.run_polling(drop_pending_updates=True)
 
