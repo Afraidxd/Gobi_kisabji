@@ -3,7 +3,7 @@ import logging
 from telegram.ext import Application
 from shivu import application as app, LOGGER
 from shivu.modules import ALL_MODULES
-from ALL_MODULES import add_handlers
+from shivu.modules import add_handlers
 
 # Enable logging
 logging.basicConfig(
@@ -16,7 +16,7 @@ def main():
     logger.info("Starting bot")
 
     # Initialize the application with your token
-    app = Application.builder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
+    app = Application.builder().token("app").build()
 
     # Dynamically import all modules
     for module_name in ALL_MODULES:
