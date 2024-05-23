@@ -111,7 +111,8 @@ async def button(update: Update, context: CallbackContext) -> None:
     else:
         await query.answer(text='Wrong guess, try again!')
 
-async def send_random_image_every_5_minutes(context: CallbackContext, chat_id: int):
+async def send_random_image_every_5_minutes(context: CallbackContext) -> None:
+    chat_id = context.job.context
     fake_update = Update(
         update_id=0,
         message=Message(
