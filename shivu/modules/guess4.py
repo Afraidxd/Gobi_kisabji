@@ -1,10 +1,18 @@
 import importlib
 import random
+import logging
 from datetime import timedelta
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, Chat, Message, User
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler
-from shivu import user_collection, application
+from telegram.ext import Application, CommandHandler, CallbackContext, CallbackQueryHandler, JobQueue
+from shivu import user_collection
 from shivu.modules import ALL_MODULES
+
+# Enable logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 OWNER_ID = 6747352706
 
@@ -125,9 +133,12 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
         await update.message.reply_text("Usage: /setinterval <minutes> <seconds>")
 
 # Adding handlers to the application
-application.add_handler(CommandHandler("sendimage", suck_it, block=False))
-application.add_handler(CallbackQueryHandler(button))
-application.add_handler(CommandHandler("setinterval", set_interval, block=False))
+def main():
+    application = Application.builder().token("YOUR_BOT_TOKEN").build()
 
-# Schedule sending random images every 5 minutes initially
-application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
+    application.add_handler(CommandHandler("sendimage", suck_it, block=False))
+    application.add_handler(CallbackQueryHandler(button))
+    application.add_handler(CommandHandler("setinterval", set_interval, block=False))
+
+    # Schedule sending random images every 5 minutes initially
+    application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
