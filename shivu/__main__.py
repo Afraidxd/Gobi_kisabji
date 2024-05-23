@@ -2,7 +2,7 @@ import importlib
 import random
 from datetime import timedelta
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, Application, Updater
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, Application, Updater, MessageHandler, filters
 from shivu import user_collection, application
 from shivu.modules import ALL_MODULES
 
@@ -78,7 +78,7 @@ async def button(update: Update, context: CallbackContext) -> None:
 
     # Check if the guess is correct
     if guess == current_guess.get(chat_id):
-        # Award random tokens between 5000 and 10000 to the first correct guesser
+        # Award random tokens between 5000 and 20000 to the first correct guesser
         tokens_awarded = random.randint(5000, 20000)
         if user_id not in user_tokens:
             user_tokens[user_id] = 0
@@ -103,8 +103,28 @@ async def button(update: Update, context: CallbackContext) -> None:
 async def send_random_image_every_5_minutes(context: CallbackContext):
     await send_image(None, context)
 
+def guess(update: Update, context: CallbackContext) -> None:
+    # Placeholder for the guess function implementation
+    pass
+
+def give(update: Update, context: CallbackContext) -> None:
+    # Placeholder for the give function implementation
+    pass
+
+def fav(update: Update, context: CallbackContext) -> None:
+    # Placeholder for the fav function implementation
+    pass
+
+def message_counter(update: Update, context: CallbackContext) -> None:
+    # Placeholder for the message counter function implementation
+    pass
+
 def main() -> None:
     """Run bot."""
+    application.add_handler(CommandHandler(["guess", "protecc", "collect", "grab", "hunt"], guess, block=False))
+    application.add_handler(CommandHandler("add", give))
+    application.add_handler(CommandHandler("fav", fav, block=False))
+    application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
     application.add_handler(CommandHandler("sendimage", send_image))
     application.add_handler(CallbackQueryHandler(button))
 
@@ -114,5 +134,5 @@ def main() -> None:
     application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
-    application = Application.builder().token("YOUR_TELEGRAM_BOT_TOKEN").build()
+    shivuu.start()
     main()
