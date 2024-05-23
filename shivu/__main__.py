@@ -5,7 +5,6 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder, MessageHandler, filters
 from shivu import user_collection, shivuu
 from shivu.modules import ALL_MODULES
-from shivu import application as app
 
 locks = {}
 message_counters = {}
@@ -16,16 +15,16 @@ first_correct_guesses = {}
 message_counts = {}
 user_tokens = {}
 current_guess = {}
+group_chats = set()
 
 OWNER_ID = 6747352706
 
 for module_name in ALL_MODULES:
-    imported_module = importlib.import_module("shivu.modules." + module_name)
+    importlib.import_module("shivu.modules." + module_name)
 
 last_user = {}
 warned_users = {}
 
-# List of images and their correct answers
 images = [
     ("https://telegra.ph/file/a6ef02040254d51d60360.jpg", "🐺"),
     ("https://telegra.ph/file/59c070e068e9d379a3270.jpg", "🦬"),
@@ -43,18 +42,15 @@ def get_random_image():
     return random.choice(images)
 
 async def suck_it(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id if update else OWNER_ID
-
     if update and update.effective_user.id != OWNER_ID:
         await update.message.reply_text("Only the owner can use this command.")
         return
 
-    image_path, correct_answer = get_random_image()
+    chat_id = update.effective_chat.id if update else OWNER_ID
 
-    # Store the correct answer in the current_guess dictionary
+    image_path, correct_answer = get_random_image()
     current_guess[chat_id] = correct_answer
 
-    # Create inline keyboard with guess options
     incorrect_answers = [img[1] for img in images if img[1] != correct_answer]
     wrong_options = random.sample(incorrect_answers, 5)
     all_options = [correct_answer] + wrong_options
@@ -68,7 +64,6 @@ async def suck_it(update: Update, context: CallbackContext) -> None:
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # Send image with inline keyboard and caption
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=image_path,
@@ -82,15 +77,10 @@ async def button(update: Update, context: CallbackContext) -> None:
     user_id = query.from_user.id
     guess = query.data
 
-    # Check if the guess is correct
     if guess == current_guess.get(chat_id):
-        # Award random tokens between 5000 and 20000 to the first correct guesser
         tokens_awarded = random.randint(5000, 20000)
-        if user_id not in user_tokens:
-            user_tokens[user_id] = 0
-        user_tokens[user_id] += tokens_awarded
+        user_tokens[user_id] = user_tokens.get(user_id, 0) + tokens_awarded
 
-        # Update the user's balance in the database
         await user_collection.update_one(
             {'id': user_id},
             {'$inc': {'balance': tokens_awarded}},
@@ -101,13 +91,13 @@ async def button(update: Update, context: CallbackContext) -> None:
         await query.edit_message_caption(
             caption=f"Correct! The answer is {guess}. Guessed by {query.from_user.first_name} and rewarded with {tokens_awarded} tokens."
         )
-        # Remove the question from current guesses
         del current_guess[chat_id]
     else:
         await query.answer(text='Wrong guess, try again!')
 
 async def send_random_image_every_5_minutes(context: CallbackContext):
-    await suck_it(None, context)
+    for group_id in group_chats:
+        await suck_it(Update(message=None, effective_chat={'id': group_id}), context)
 
 async def set_interval(update: Update, context: CallbackContext) -> None:
     if update.effective_user.id != OWNER_ID:
@@ -119,43 +109,29 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
         seconds = int(context.args[1])
         interval = timedelta(minutes=minutes, seconds=seconds)
 
-        # Stop the current job
-        context.job_queue.stop()
+        current_jobs = context.job_queue.get_jobs_by_name("send_random_images")
+        for job in current_jobs:
+            job.schedule_removal()
 
-        # Schedule sending random images with the new interval
-        context.job_queue.run_repeating(send_random_image_every_5_minutes, interval=interval, first=0)
+        context.job_queue.run_repeating(send_random_image_every_5_minutes, interval=interval, first=0, name="send_random_images")
 
         await update.message.reply_text(f"Interval set to {minutes} minutes and {seconds} seconds.")
     except (IndexError, ValueError):
         await update.message.reply_text("Usage: /setinterval <minutes> <seconds>")
 
-def guess(update: Update, context: CallbackContext) -> None:
-    # Placeholder for the guess function implementation
-    pass
-
-def give(update: Update, context: CallbackContext) -> None:
-    # Placeholder for the give function implementation
-    pass
-
-def fav(update: Update, context: CallbackContext) -> None:
-    # Placeholder for the fav function implementation
-    pass
-
-def message_counter(update: Update, context: CallbackContext) -> None:
-    # Placeholder for the message counter function implementation
-    pass
-
 def main() -> None:
-    """Run bot."""
+    application = ApplicationBuilder().token("6627459799:AAEiY_xENQUklRGc3OWMmwF6rkNdMPkv4OA").build()
 
-    app.add_handler(CommandHandler("sendimage", suck_it))
-    app.add_handler(CallbackQueryHandler(button))
-    app.add_handler(CommandHandler("setinterval", set_interval))
+    application.add_handler(CommandHandler("sendimage", suck_it))
+    application.add_handler(CallbackQueryHandler(button))
+    application.add_handler(CommandHandler("setinterval", set_interval))
 
-    # Schedule sending random images every 5 minutes initially
-    app.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
+    # Add handler for all group chats
+    application.add_handler(MessageHandler(filters.ChatTypeFilter('group'), lambda update, context: group_chats.add(update.effective_chat.id)))
 
-    app.run_polling(drop_pending_updates=True)
+    application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0, name="send_random_images")
+
+    application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     shivuu.start()
