@@ -106,7 +106,7 @@ async def button(update: Update, context: CallbackContext) -> None:
         await query.answer(text='Wrong guess, try again!')
 
 async def send_random_image_every_5_minutes(context: CallbackContext):
-    await send_image(None, context)
+    await suck_it(None, context)
 
 def guess(update: Update, context: CallbackContext) -> None:
     # Placeholder for the guess function implementation
