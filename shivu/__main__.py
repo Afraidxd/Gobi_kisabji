@@ -5,6 +5,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder, MessageHandler, filters
 from shivu import user_collection, shivuu
 from shivu.modules import ALL_MODULES
+from shivu import application 
 
 locks = {}
 message_counters = {}
@@ -42,12 +43,8 @@ def get_random_image():
     return random.choice(images)
 
 async def suck_it(update: Update, context: CallbackContext) -> None:
-    chat_id = update.effective_chat.id if update else OWNER_ID
-
-    if update and update.effective_user.id != OWNER_ID:
-        await update.message.reply_text("Only the owner can use this command.")
-        return
-
+    chat_id = update.effective_chat.id
+    
     image_path, correct_answer = get_random_image()
 
     # Store the correct answer in the current_guess dictionary
@@ -131,7 +128,6 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
 def main() -> None:
     """Run bot."""
 
-    application = ApplicationBuilder().token("6627459799:AAEiY_xENQUklRGc3OWMmwF6rkNdMPkv4OA").build()
 
     application.add_handler(CommandHandler("sendimage", suck_it))
     application.add_handler(CallbackQueryHandler(button))
