@@ -45,15 +45,12 @@ def decorate_all_handlers(module):
             handler = attr
             handler.callback = check_private_start(handler.callback)
 
-def main():
-    application.add_handler(CommandHandler("start", start))
+def main() -> None:
+    """Run bot."""
+        application.add_handler(CommandHandler("start", start))
 
-    for module_name in ALL_MODULES:
-        imported_module = importlib.import_module("shivu.modules." + module_name)
-        decorate_all_handlers(imported_module)
-    
-    LOGGER.info("Starting bot...")
-    shivuu.start()  # Assuming shivuu.start() starts the bot using your framework
+    application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
+    shivuu.start()
     main()
