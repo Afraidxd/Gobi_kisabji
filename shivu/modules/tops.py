@@ -54,11 +54,17 @@ async def mtop(update: Update, context: CallbackContext):
         username = user.get('username')
         user_id = user.get('id') or 'Unknown'
         full_name = f"{first_name} {last_name}".strip()
+        
+        # Debug logs for user names and links
+        LOGGER.info(f"User full_name: {full_name}, username: {username}, user_id: {user_id}")
 
         if username:
             user_link = f'<a href="https://t.me/{username}">{escape(full_name)}</a>'
         else:
             user_link = f'<a href="tg://user?id={user_id}">{escape(full_name)}</a>'
+
+        # Log the generated user link
+        LOGGER.info(f"Generated user link: {user_link}")
 
         top_users_message += f"{i}. {user_link} - Ŧ{user.get('balance', 0):,}\n"
 
@@ -66,6 +72,9 @@ async def mtop(update: Update, context: CallbackContext):
 ───────────────────
 └─────═━🏎━═─────┘
 """
+
+    # Log the final message before sending
+    LOGGER.info(f"Top users message: {top_users_message}")
 
     photo_url = "https://telegra.ph/file/044cf17e444fcb931ec97.jpg"
     photo_response = requests.get(photo_url)
