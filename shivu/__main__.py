@@ -2,7 +2,7 @@ import importlib
 import random
 from datetime import timedelta
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder, MessageHandler, filters
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder, filters
 from shivu import user_collection, shivuu
 from shivu.modules import ALL_MODULES
 from shivu import application 
@@ -103,8 +103,9 @@ async def button(update: Update, context: CallbackContext) -> None:
         await query.answer(text='Wrong guess, try again!')
 
 async def send_random_image_every_5_minutes(context: CallbackContext):
-    chat_id = context.job.context['chat_id']
-    await suck_it(update=None, context=context)
+    # Broadcast the message to all active chat groups
+    for chat_id in message_counts.keys():
+        await suck_it(Update(effective_chat=type('obj', (object,), {'id': chat_id})), context)
 
 async def set_interval(update: Update, context: CallbackContext) -> None:
     if update.effective_user.id != OWNER_ID:
@@ -120,12 +121,7 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
         context.job_queue.stop()
 
         # Schedule sending random images with the new interval
-        context.job_queue.run_repeating(
-            send_random_image_every_5_minutes, 
-            interval=interval, 
-            first=0, 
-            context={'chat_id': update.effective_chat.id}
-        )
+        context.job_queue.run_repeating(send_random_image_every_5_minutes, interval=interval, first=0)
 
         await update.message.reply_text(f"Interval set to {minutes} minutes and {seconds} seconds.")
     except (IndexError, ValueError):
@@ -133,17 +129,11 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
 
 def main() -> None:
     """Run bot."""
-
     application.add_handler(CommandHandler("sendimage", suck_it))
     application.add_handler(CallbackQueryHandler(button))
     application.add_handler(CommandHandler("setinterval", set_interval))
 
-    application.job_queue.run_repeating(
-        send_random_image_every_5_minutes, 
-        interval=timedelta(minutes=5), 
-        first=0, 
-        context={'chat_id': None}
-    )
+    application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
 
     application.run_polling(drop_pending_updates=True)
 
