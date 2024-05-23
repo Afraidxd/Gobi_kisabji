@@ -131,7 +131,7 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
 def main() -> None:
     """Run bot."""
 
-    application = ApplicationBuilder().token("YOUR_BOT_TOKEN_HERE").build()
+    application = ApplicationBuilder().token("6627459799:AAEiY_xENQUklRGc3OWMmwF6rkNdMPkv4OA").build()
 
     application.add_handler(CommandHandler("sendimage", suck_it))
     application.add_handler(CallbackQueryHandler(button))
