@@ -2,8 +2,8 @@ import importlib
 import random
 from datetime import timedelta
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, Application, MessageHandler, filters
-from shivu import user_collection, application, shivuu
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder, MessageHandler, filters
+from shivu import user_collection, shivuu
 from shivu.modules import ALL_MODULES
 
 locks = {}
@@ -126,17 +126,15 @@ def message_counter(update: Update, context: CallbackContext) -> None:
 
 def main() -> None:
     """Run bot."""
-    application.add_handler(CommandHandler(["guess", "protecc", "collect", "grab", "hunt"], guess, block=False))
-    application.add_handler(CommandHandler("add", give))
-    application.add_handler(CommandHandler("fav", fav, block=False))
-    application.add_handler(MessageHandler(filters.ALL, message_counter, block=False))
-    application.add_handler(CommandHandler("sendimage", send_image))
-    application.add_handler(CallbackQueryHandler(button))
+    app = ApplicationBuilder().token("6627459799:AAEiY_xENQUklRGc3OWMmwF6rkNdMPkv4OA").build()
+
+    app.add_handler(CommandHandler("sendimage", send_image))
+    app.add_handler(CallbackQueryHandler(button))
 
     # Schedule sending random images every 5 minutes
-    application.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
+    app.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
 
-    application.run_polling(drop_pending_updates=True)
+    app.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     shivuu.start()
