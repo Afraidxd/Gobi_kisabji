@@ -26,7 +26,7 @@ warned_users = {}
 
 # List of images and their correct answers
 images = [
-    ("path/to/image1.jpg", "Correct Answer 1"),
+    ("https://telegra.ph/file/a6ef02040254d51d60360.jpg", "🐺"),
     ("path/to/image2.jpg", "Correct Answer 2"),
     ("path/to/image3.jpg", "Correct Answer 3"),
     ("path/to/image4.jpg", "Correct Answer 4"),
