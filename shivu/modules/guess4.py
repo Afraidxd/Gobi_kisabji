@@ -3,7 +3,7 @@ import random
 from datetime import timedelta, datetime
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder
-from shivu import user_collection, application as app
+from shivu import user_collection
 from shivu.modules import ALL_MODULES
 
 locks = {}
@@ -137,9 +137,9 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
 
 
 # Adding other handlers
-app.add_handler(CommandHandler("sendimage", suck_it))
-app.add_handler(CallbackQueryHandler(button))
-app.add_handler(CommandHandler("setinterval", set_interval))
+application.add_handler(CommandHandler("sendimage", suck_it))
+application.add_handler(CallbackQueryHandler(button))
+application.add_handler(CommandHandler("setinterval", set_interval))
 
 # Schedule sending random images every 5 minutes initially
 app.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
