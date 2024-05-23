@@ -96,14 +96,14 @@ async def button(update: Update, context: CallbackContext) -> None:
             upsert=True
         )
 
-        query.answer(text=f'Correct! You have been awarded {tokens_awarded} tokens!')
+        await query.answer(text=f'Correct! You have been awarded {tokens_awarded} tokens!')
         await query.edit_message_caption(
             caption=f"Correct! The answer is {guess}. Guessed by {query.from_user.first_name} and rewarded with {tokens_awarded} tokens."
         )
         # Remove the question from current guesses
         del current_guess[chat_id]
     else:
-        query.answer(text='Wrong guess, try again!')
+        await query.answer(text='Wrong guess, try again!')
 
 async def send_random_image_every_5_minutes(context: CallbackContext):
     await send_image(None, context)
@@ -128,6 +128,7 @@ def main() -> None:
     """Run bot."""
     app = ApplicationBuilder().token("6627459799:AAEiY_xENQUklRGc3OWMmwF6rkNdMPkv4OA").build()
 
+   
     app.add_handler(CommandHandler("sendimage", send_image))
     app.add_handler(CallbackQueryHandler(button))
 
