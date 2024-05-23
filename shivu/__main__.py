@@ -3,7 +3,7 @@ import logging
 from telegram.ext import Application
 from shivu import application, LOGGER
 from shivu.modules import ALL_MODULES
-from modules.guess4 import add_handlers  # Ensure this matches the file name exactly
+from guess4 import add_handlers  # Ensure this matches the file name exactly
 
 # Enable logging
 logging.basicConfig(
