@@ -1,16 +1,13 @@
+
 import importlib
 import random
 import logging
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, Chat, Message, User
-from telegram.ext import Application, CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, filters
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, filters
 from shivu import user_collection
 from shivu.modules import ALL_MODULES
 
 # Enable logging
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
 logger = logging.getLogger(__name__)
 
 OWNER_ID = 6747352706
@@ -43,6 +40,7 @@ def get_random_image():
     return random.choice(images)
 
 async def suck_it(update: Update, context: CallbackContext) -> None:
+    logger.info("suck_it command called")
     if update and update.effective_chat.type == 'private':
         await update.message.reply_text("Please use this command in a group.")
         return
@@ -75,6 +73,7 @@ async def suck_it(update: Update, context: CallbackContext) -> None:
     )
 
 async def button(update: Update, context: CallbackContext) -> None:
+    logger.info("Button callback called")
     query = update.callback_query
     chat_id = query.message.chat_id
     user_id = query.from_user.id
@@ -99,6 +98,7 @@ async def button(update: Update, context: CallbackContext) -> None:
         await query.answer(text='Wrong guess, try again!')
 
 async def handle_message(update: Update, context: CallbackContext) -> None:
+    logger.info("Message received")
     chat_id = update.effective_chat.id
     message_counts[chat_id] = message_counts.get(chat_id, 0) + 1
 
@@ -107,6 +107,7 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
         await suck_it(update, context)
 
 async def set_threshold(update: Update, context: CallbackContext) -> None:
+    logger.info("set_threshold command called")
     if update.effective_user.id != OWNER_ID:
         await update.message.reply_text("Only the owner can use this command.")
         return
@@ -118,9 +119,7 @@ async def set_threshold(update: Update, context: CallbackContext) -> None:
     except (IndexError, ValueError):
         await update.message.reply_text("Usage: /setthreshold <number>")
 
-def main():
-    application = Application.builder().token("6627459799:AAEiY_xENQUklRGc3OWMmwF6rkNdMPkv4OA").build()
-
+def add_handlers(application):
     application.add_handler(CommandHandler("sendimage", suck_it, block=False))
     application.add_handler(CommandHandler("setthreshold", set_threshold, block=False))
     application.add_handler(CallbackQueryHandler(button))
