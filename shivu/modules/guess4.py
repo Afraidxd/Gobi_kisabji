@@ -4,6 +4,7 @@ from datetime import timedelta
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder
 from shivu import user_collection, application as app
+from shivu.modules import ALL_MODULES
 
 locks = {}
 message_counters = {}
@@ -17,8 +18,10 @@ current_guess = {}
 
 OWNER_ID = 6747352706
 
-# Importing modules
-from shivu.modules import ALL_MODULES
+# Importing race module
+import shivu.modules.race as race_module
+
+# Importing other modules
 for module_name in ALL_MODULES:
     imported_module = importlib.import_module("shivu.modules." + module_name)
 
@@ -126,6 +129,8 @@ async def set_interval(update: Update, context: CallbackContext) -> None:
     except (IndexError, ValueError):
         await update.message.reply_text("Usage: /setinterval <minutes> <seconds>")
 
+
+# Adding other handlers
 app.add_handler(CommandHandler("sendimage", suck_it))
 app.add_handler(CallbackQueryHandler(button))
 app.add_handler(CommandHandler("setinterval", set_interval))
