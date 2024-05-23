@@ -1,15 +1,10 @@
 import importlib
-import time
-import random
 import re
-import asyncio
-from html import escape
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import Update
-from telegram.ext import CommandHandler, CallbackContext, MessageHandler, CallbackQueryHandler, filters
+from telegram.ext import CommandHandler, CallbackContext
 
-from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu 
+from shivu import collection, top_global_groups_collection, group_user_totals_collection, user_collection, user_totals_collection, shivuu
 from shivu import application, LOGGER
 from shivu.modules import ALL_MODULES
 
@@ -56,9 +51,9 @@ def main():
     for module_name in ALL_MODULES:
         imported_module = importlib.import_module("shivu.modules." + module_name)
         decorate_all_handlers(imported_module)
-
+    
     LOGGER.info("Starting bot...")
-    application.run_polling()
+    shivuu.start()  # Assuming shivuu.start() starts the bot using your framework
 
 if __name__ == "__main__":
     main()
