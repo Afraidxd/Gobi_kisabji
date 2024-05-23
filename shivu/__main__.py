@@ -5,6 +5,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder, MessageHandler, filters
 from shivu import user_collection, shivuu
 from shivu.modules import ALL_MODULES
+from shivu import application as app
 
 locks = {}
 message_counters = {}
@@ -126,7 +127,6 @@ def message_counter(update: Update, context: CallbackContext) -> None:
 
 def main() -> None:
     """Run bot."""
-    app = ApplicationBuilder().token("6627459799:AAEiY_xENQUklRGc3OWMmwF6rkNdMPkv4OA").build()
 
    
     app.add_handler(CommandHandler("sendimage", suck_it))
