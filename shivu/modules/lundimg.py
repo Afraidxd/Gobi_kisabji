@@ -50,7 +50,7 @@ async def suck_it(update: Update, context: CallbackContext) -> None:
         return
 
     if user.id != OWNER_ID:
-        await update.message.reply_text("Only the owner can use this command.")
+        await update.message.reply_text(ᴅᴏɴ'ᴛ ᴛʀʏ ᴛᴏ ᴜsᴇ ᴏᴡɴᴇʀ ᴄᴏᴍᴍᴀɴᴅs Yᴏᴜ ɴɪɢɢᴀ.")
         return
 
     chat_id = chat.id
