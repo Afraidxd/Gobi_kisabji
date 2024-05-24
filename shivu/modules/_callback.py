@@ -45,8 +45,7 @@ async def cbq(update: Update, context: CallbackContext):
         await race_accept(update, context)
     elif data.startswith('race_decline_'):
         await race_decline(update, context)
-   
-   from .lundimg import dick_button
+        from .lundimg import dick_button
     elif data.startswith('dick_button'):
         await dick_button(update, context)
 
