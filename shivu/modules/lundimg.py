@@ -1,11 +1,13 @@
+# main.py
 import importlib
 import random
 import logging
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, filters
+from telegram import Update
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, Filters
 from shivu import user_collection
 from shivu.modules import ALL_MODULES
 from shivu import application
+from shivu.modules.lundimg import dick_button
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -73,29 +75,6 @@ async def suck_it(update: Update, context: CallbackContext) -> None:
         caption="Iᴅᴇɴᴛɪғʏ ᴛʜᴇ ᴀᴘᴘʀᴏᴘʀɪᴀᴛᴇ ᴇᴍᴏᴊɪ ᴛʜᴀᴛ ᴍᴀᴛᴄʜᴇs ᴛʜᴇ ɪᴍᴀɢᴇ! Sᴇʟᴇᴄᴛ ᴛʜᴇ ᴄᴏʀʀᴇᴄᴛ ᴏᴘᴛɪᴏɴ ғʀᴏᴍ ᴛʜᴇ ʙᴜᴛᴛᴏɴs ʙᴇʟᴏᴡ.",
         reply_markup=reply_markup
     )
-
-async def dick_button(update: Update, context: CallbackContext) -> None:
-    logger.info("Button callback called")
-    query = update.callback_query
-    chat_id = query.message.chat_id
-    user_id = query.from_user.id
-    guess = query.data[len("suckit_"):]
-
-    if guess == current_guess.get(chat_id):
-        tokens_awarded = random.randint(5000, 10000)
-        user_tokens[user_id] = user_tokens.get(user_id, 0) + tokens_awarded
-        await user_collection.update_one(
-            {'id': user_id},
-            {'$inc': {'balance': tokens_awarded}},
-            upsert=True
-        )
-        await query.answer(text=f'Cᴏʀʀᴇᴄᴛ! Yᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴡᴀʀᴅᴇᴅ {tokens_awarded} ᴛᴏᴋᴇɴs!', show_alert=True)
-        await query.edit_message_caption(
-            caption=f"🎉 Cᴏʀʀᴇᴄᴛ! Tʜᴇ ᴀɴsᴡᴇʀ ɪs {guess}. Gᴜᴇssᴇᴅ ʙʏ {query.from_user.first_name} ᴀɴᴅ ʀᴇᴡᴀʀᴅᴇᴅ ᴡɪᴛʜ {tokens_awarded} ᴛᴏᴋᴇɴs."
-        )
-        del current_guess[chat_id]
-    else:
-        await query.answer(text='❌ Wʀᴏɴɢ ɢᴜᴇss, ᴛʀʏ ᴀɢᴀɪɴ!', show_alert=True)
 
 async def handle_message(update: Update, context: CallbackContext) -> None:
     logger.info("Message received")
