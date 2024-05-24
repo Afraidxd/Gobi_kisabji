@@ -124,5 +124,5 @@ async def set_threshold(update: Update, context: CallbackContext) -> None:
 # Register handlers
 application.add_handler(CommandHandler("sendimage", suck_it))
 application.add_handler(CommandHandler("setthreshold", set_threshold))
-application.add_handler(CallbackQueryHandler(dick_button))
+application.add_handler(CallbackQueryHandler(dick_button, pattern='.*'))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
