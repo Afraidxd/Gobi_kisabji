@@ -2,10 +2,10 @@ import importlib
 import random
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import Application, CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, filters
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, filters
 from shivu import user_collection
 from shivu.modules import ALL_MODULES
-from shivu import application 
+from shivu import application
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
@@ -124,13 +124,8 @@ async def set_threshold(update: Update, context: CallbackContext) -> None:
     except (IndexError, ValueError):
         await update.message.reply_text("Usage: /setthreshold <number>")
 
-# Initialize the application
-application = Application.builder().token("application").build()
-
 # Register handlers
-application.add_handler(CommandHandler("sendimage", suck_it, block=False))
-application.add_handler(CommandHandler("setthreshold", set_threshold, block=False))
+application.add_handler(CommandHandler("sendimage", suck_it))
+application.add_handler(CommandHandler("setthreshold", set_threshold))
 application.add_handler(CallbackQueryHandler(button))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-
-# Start the bot
