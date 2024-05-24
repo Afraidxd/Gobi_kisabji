@@ -11,7 +11,7 @@ from shivu import application
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-OWNER_ID = [6747352706, 6919722801]
+OWNER_IDS = [6747352706, 6919722801]
 
 # Import all modules dynamically
 for module_name in ALL_MODULES:
@@ -46,11 +46,11 @@ async def suck_it(update: Update, context: CallbackContext) -> None:
     user = update.effective_user
 
     if chat.type == 'private':
-        await update.message.reply_text("Please use this command in a group.")
+        await update.message.reply_text("Pʟᴇᴀsᴇ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ɪɴ ᴀ ɢʀᴏᴜᴘ.")
         return
 
-    if user.id != OWNER_ID:
-        await update.message.reply_text("ᴅᴏɴ'ᴛ ᴛʀʏ ᴛᴏ ᴜsᴇ ᴏᴡɴᴇʀ ᴄᴏᴍᴍᴀɴᴅs Yᴏᴜ ɴɪɢɢᴀ.")
+    if user.id not in OWNER_IDS:
+        await update.message.reply_text("Yᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴜᴛʜᴏʀɪᴢᴇᴅ ᴛᴏ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ.")
         return
 
     chat_id = chat.id
@@ -89,9 +89,9 @@ async def dick_button(update: Update, context: CallbackContext) -> None:
             {'$inc': {'balance': tokens_awarded}},
             upsert=True
         )
-        await query.answer(text=f'Correct! You have been awarded {tokens_awarded} tokens!', show_alert=True)
+        await query.answer(text=f'Cᴏʀʀᴇᴄᴛ! Yᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴡᴀʀᴅᴇᴅ {tokens_awarded} ᴛᴏᴋᴇɴs!', show_alert=True)
         await query.edit_message_caption(
-            caption=f"🎉 Cᴏʀʀᴇᴄᴛ! Tʜᴇ ᴀɴsᴡᴇʀ ɪs {guess}. ɢᴜᴇssᴇᴅ ʙʏ {query.from_user.first_name} ᴀɴᴅ ʀᴇᴡᴀʀᴅᴇᴅ ᴡɪᴛʜ {tokens_awarded} ᴛᴏᴋᴇɴs."
+            caption=f"🎉 Cᴏʀʀᴇᴄᴛ! Tʜᴇ ᴀɴsᴡᴇʀ ɪs {guess}. Gᴜᴇssᴇᴅ ʙʏ {query.from_user.first_name} ᴀɴᴅ ʀᴇᴡᴀʀᴅᴇᴅ ᴡɪᴛʜ {tokens_awarded} ᴛᴏᴋᴇɴs."
         )
         del current_guess[chat_id]
     else:
@@ -110,16 +110,16 @@ async def set_threshold(update: Update, context: CallbackContext) -> None:
     logger.info("set_threshold command called")
     user = update.effective_user
 
-    if user.id != OWNER_ID:
-        await update.message.reply_text("ᴅᴏɴ'ᴛ ᴛʀʏ ᴛᴏ ᴜsᴇ ᴏᴡɴᴇʀ ᴄᴏᴍᴍᴀɴᴅs Yᴏᴜ ɴɪɢɢᴀ")
+    if user.id not in OWNER_IDS:
+        await update.message.reply_text("Yᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴜᴛʜᴏʀɪᴢᴇᴅ ᴛᴏ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ.")
         return
 
     try:
         global message_threshold
         message_threshold = int(context.args[0])
-        await update.message.reply_text(f"Message threshold set to {message_threshold}.")
+        await update.message.reply_text(f"Mᴇssᴀɢᴇ ᴛʜʀᴇsʜᴏʟᴅ sᴇᴛ ᴛᴏ {message_threshold}.")
     except (IndexError, ValueError):
-        await update.message.reply_text("Usage: /setthreshold <number>")
+        await update.message.reply_text("Uѕαgє: /ѕєттняєѕнσℓ∂ <numвєя>")
 
 # Register handlers
 application.add_handler(CommandHandler("sendimage", suck_it))
