@@ -70,7 +70,7 @@ async def suck_it(update: Update, context: CallbackContext) -> None:
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=image_path,
-        caption="Guess the correct emoji for the image! Click on one of the buttons below.",
+        caption="Iᴅᴇɴᴛɪғʏ ᴛʜᴇ ᴀᴘᴘʀᴏᴘʀɪᴀᴛᴇ ᴇᴍᴏᴊɪ ᴛʜᴀᴛ ᴍᴀᴛᴄʜᴇs ᴛʜᴇ ɪᴍᴀɢᴇ! Sᴇʟᴇᴄᴛ ᴛʜᴇ ᴄᴏʀʀᴇᴄᴛ ᴏᴘᴛɪᴏɴ ғʀᴏᴍ ᴛʜᴇ ʙᴜᴛᴛᴏɴs ʙᴇʟᴏᴡ.",
         reply_markup=reply_markup
     )
 
@@ -91,11 +91,11 @@ async def dick_button(update: Update, context: CallbackContext) -> None:
         )
         await query.answer(text=f'Correct! You have been awarded {tokens_awarded} tokens!', show_alert=True)
         await query.edit_message_caption(
-            caption=f"🎉 Correct! The answer is {guess}. Guessed by {query.from_user.first_name} and rewarded with {tokens_awarded} tokens."
+            caption=f"🎉 Cᴏʀʀᴇᴄᴛ! Tʜᴇ ᴀɴsᴡᴇʀ ɪs {guess}. ɢᴜᴇssᴇᴅ ʙʏ {query.from_user.first_name} ᴀɴᴅ ʀᴇᴡᴀʀᴅᴇᴅ ᴡɪᴛʜ {tokens_awarded} ᴛᴏᴋᴇɴs."
         )
         del current_guess[chat_id]
     else:
-        await query.answer(text='❌ Wrong guess, try again!', show_alert=True)
+        await query.answer(text='❌ Wʀᴏɴɢ ɢᴜᴇss, ᴛʀʏ ᴀɢᴀɪɴ!', show_alert=True)
 
 async def handle_message(update: Update, context: CallbackContext) -> None:
     logger.info("Message received")
@@ -111,7 +111,7 @@ async def set_threshold(update: Update, context: CallbackContext) -> None:
     user = update.effective_user
 
     if user.id != OWNER_ID:
-        await update.message.reply_text("Only the owner can use this command.")
+        await update.message.reply_text("ᴅᴏɴ'ᴛ ᴛʀʏ ᴛᴏ ᴜsᴇ ᴏᴡɴᴇʀ ᴄᴏᴍᴍᴀɴᴅs Yᴏᴜ ɴɪɢɢᴀ")
         return
 
     try:
