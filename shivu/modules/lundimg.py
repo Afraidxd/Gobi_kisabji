@@ -62,7 +62,7 @@ async def suck_it(update: Update, context: CallbackContext) -> None:
     random.shuffle(options)
 
     keyboard = [
-        [InlineKeyboardButton(option, callback_data=option) for option in options[i:i+2]]
+        [InlineKeyboardButton(option, callback_data=f"suckit_{option}") for option in options[i:i+2]]
         for i in range(0, len(options), 2)
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -79,7 +79,7 @@ async def dick_button(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     chat_id = query.message.chat_id
     user_id = query.from_user.id
-    guess = query.data
+    guess = query.data[len("suckit_"):]
 
     if guess == current_guess.get(chat_id):
         tokens_awarded = random.randint(5000, 20000)
@@ -124,5 +124,5 @@ async def set_threshold(update: Update, context: CallbackContext) -> None:
 # Register handlers
 application.add_handler(CommandHandler("sendimage", suck_it))
 application.add_handler(CommandHandler("setthreshold", set_threshold))
-application.add_handler(CallbackQueryHandler(dick_button, pattern='.*'))
+application.add_handler(CallbackQueryHandler(dick_button, pattern='^suckit_'))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
