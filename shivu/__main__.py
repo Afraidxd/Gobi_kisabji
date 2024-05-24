@@ -24,26 +24,6 @@ def escape_markdown(text):
     escape_chars = r'\*_`\\~>#+-=|{}.!'
     return re.sub(r'([%s])' % re.escape(escape_chars), r'\\\1', text)
 
-def start(update: Update, context: CallbackContext):
-    user_id = update.effective_user.id
-    started_users.add(user_id)
-    update.message.reply_text("Thank you for starting the bot in private. You can now use it in groups!")
-
-def check_private_start(func):
-    def wrapper(update: Update, context: CallbackContext, *args, **kwargs):
-        user_id = update.effective_user.id
-        if user_id not in started_users:
-            update.message.reply_text("Please start the bot in private first.")
-            return
-        return func(update, context, *args, **kwargs)
-    return wrapper
-
-def decorate_all_handlers(module):
-    for attr_name in dir(module):
-        attr = getattr(module, attr_name)
-        if isinstance(attr, CommandHandler):
-            handler = attr
-            handler.callback = check_private_start(handler.callback)
 
 def main() -> None:
     """Run bot."""
@@ -51,7 +31,6 @@ def main() -> None:
 
     for module_name in ALL_MODULES:
         imported_module = importlib.import_module("shivu.modules." + module_name)
-        decorate_all_handlers(imported_module)
 
     LOGGER.info("Starting bot...")
     application.run_polling(drop_pending_updates=True)
