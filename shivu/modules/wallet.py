@@ -48,7 +48,7 @@ async def balance(update, context):
         balance_info = (
             f"\n\n💰 ᴄᴏɪɴꜱ: Ŧ{format_number(user_balance)}"
             f"\n🏅 ᴄᴏɪɴꜱ ʀᴀɴᴋ: {coins_rank}"
-            f"\n🎭 ᴄʜᴀʀᴀᴄᴛᴇʀꜱ: {total_characters}/{total_database_characters}"
+            f"\n🎭 ᴄᴀʀs: {total_characters}/{total_database_characters}"
         )
 
         balance_message = (
