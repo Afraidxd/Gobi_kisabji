@@ -69,7 +69,7 @@ rarity_map = 1 (⚪️ Common), 2 (🟣 Rare), 3 (🟡 Legendary), 4 (🟢 Mediu
         message = await context.bot.send_photo(
             chat_id=CHARA_CHANNEL_ID,
             photo=args[0],
-            caption=f'<b>Waifu Name:</b> {character_name}\n<b>Anime Name:</b> {anime}\n<b>Quality:</b> {rarity}\n<b>Price:</b> {price}\n<b>ID:</b> {id}\nAdded by <a href="tg://user?id={update.effective_user.id}">{update.effective_user.first_name}</a>',
+            caption=f'<b>Name:</b> {character_name}\n<b>Company :</b> {anime}\n<b>Quality:</b> {rarity}\n<b>Price:</b> {price}\n<b>ID:</b> {id}\nAdded by <a href="tg://user?id={update.effective_user.id}">{update.effective_user.first_name}</a>',
             parse_mode='HTML'
         )
 
