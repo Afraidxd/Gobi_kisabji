@@ -2,7 +2,7 @@ import importlib
 import random
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, filters
 from shivu import user_collection
 from shivu.modules import ALL_MODULES
 from shivu import application
@@ -46,11 +46,11 @@ async def suck_it(update: Update, context: CallbackContext) -> None:
     user = update.effective_user
 
     if chat.type == 'private':
-        await update.message.reply_text("Please use this command in a group.")
+        await update.message.reply_text("Pʟᴇᴀsᴇ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ ɪɴ ᴀ ɢʀᴏᴜᴘ.")
         return
 
     if user.id not in OWNER_IDS:
-        await update.message.reply_text("You are not authorized to use this command.")
+        await update.message.reply_text("Yᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴜᴛʜᴏʀɪᴢᴇᴅ ᴛᴏ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ.")
         return
 
     chat_id = chat.id
@@ -70,7 +70,7 @@ async def suck_it(update: Update, context: CallbackContext) -> None:
     await context.bot.send_photo(
         chat_id=chat_id,
         photo=image_path,
-        caption="Identify the appropriate emoji that matches the image! Select the correct option from the buttons below.",
+        caption="Iᴅᴇɴᴛɪғʏ ᴛʜᴇ ᴀᴘᴘʀᴏᴘʀɪᴀᴛᴇ ᴇᴍᴏᴊɪ ᴛʜᴀᴛ ᴍᴀᴛᴄʜᴇs ᴛʜᴇ ɪᴍᴀɢᴇ! Sᴇʟᴇᴄᴛ ᴛʜᴇ ᴄᴏʀʀᴇᴄᴛ ᴏᴘᴛɪᴏɴ ғʀᴏᴍ ᴛʜᴇ ʙᴜᴛᴛᴏɴs ʙᴇʟᴏᴡ.",
         reply_markup=reply_markup
     )
 
@@ -89,13 +89,13 @@ async def dick_button(update: Update, context: CallbackContext) -> None:
             {'$inc': {'balance': tokens_awarded}},
             upsert=True
         )
-        await query.answer(text=f'Correct! You have been awarded {tokens_awarded} tokens!', show_alert=True)
+        await query.answer(text=f'Cᴏʀʀᴇᴄᴛ! Yᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴡᴀʀᴅᴇᴅ {tokens_awarded} ᴛᴏᴋᴇɴs!', show_alert=True)
         await query.edit_message_caption(
-            caption=f"🎉 Correct! The answer is {guess}. Guessed by {query.from_user.first_name} and rewarded with {tokens_awarded} tokens."
+            caption=f"🎉 Cᴏʀʀᴇᴄᴛ! Tʜᴇ ᴀɴsᴡᴇʀ ɪs {guess}. Gᴜᴇssᴇᴅ ʙʏ {query.from_user.first_name} ᴀɴᴅ ʀᴇᴡᴀʀᴅᴇᴅ ᴡɪᴛʜ {tokens_awarded} ᴛᴏᴋᴇɴs."
         )
         del current_guess[chat_id]
     else:
-        await query.answer(text='❌ Wrong guess, try again!', show_alert=True)
+        await query.answer(text='❌ Wʀᴏɴɢ ɢᴜᴇss, ᴛʀʏ ᴀɢᴀɪɴ!', show_alert=True)
 
 async def handle_message(update: Update, context: CallbackContext) -> None:
     logger.info("Message received")
@@ -111,18 +111,19 @@ async def set_threshold(update: Update, context: CallbackContext) -> None:
     user = update.effective_user
 
     if user.id not in OWNER_IDS:
-        await update.message.reply_text("You are not authorized to use this command.")
+        await update.message.reply_text("Yᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴜᴛʜᴏʀɪᴢᴇᴅ ᴛᴏ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ.")
         return
 
     try:
         global message_threshold
         message_threshold = int(context.args[0])
-        await update.message.reply_text(f"Message threshold set to {message_threshold}.")
+        await update.message.reply_text(f"Mᴇssᴀɢᴇ ᴛʜʀᴇsʜᴏʟᴅ sᴇᴛ ᴛᴏ {message_threshold}.")
     except (IndexError, ValueError):
-        await update.message.reply_text("Usage: /setthreshold <number>")
+        await update.message.reply_text("Uѕαgє: /ѕєттняєѕнσℓ∂ <numвєя>")
 
 # Register handlers
 application.add_handler(CommandHandler("sendimage", suck_it))
 application.add_handler(CommandHandler("setthreshold", set_threshold))
 application.add_handler(CallbackQueryHandler(dick_button, pattern='^suckit_'))
-application.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_message))
+application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+Make it like if transhold completed bot will send the image It doesn't matter who have completed it
