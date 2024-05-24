@@ -82,7 +82,7 @@ async def dick_button(update: Update, context: CallbackContext) -> None:
     guess = query.data[len("suckit_"):]
 
     if guess == current_guess.get(chat_id):
-        tokens_awarded = random.randint(5000, 20000)
+        tokens_awarded = random.randint(5000, 10000)
         user_tokens[user_id] = user_tokens.get(user_id, 0) + tokens_awarded
         await user_collection.update_one(
             {'id': user_id},
