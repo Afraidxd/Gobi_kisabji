@@ -50,7 +50,7 @@ async def suck_it(update: Update, context: CallbackContext) -> None:
         return
 
     if user.id != OWNER_ID:
-        await update.message.reply_text("ᴅᴏɴ'ᴛ ᴛʀʏ ᴛᴏ ᴜsᴇ ᴏᴡɴᴇʀ ᴄᴏᴍᴍᴀɴᴅs Yᴏᴜ ɴɪɢɢᴀ.")
+        await update.message.reply_text("Only the owner can use this command.")
         return
 
     chat_id = chat.id
@@ -89,13 +89,13 @@ async def dick_button(update: Update, context: CallbackContext) -> None:
             {'$inc': {'balance': tokens_awarded}},
             upsert=True
         )
-        await query.answer(text=f'Correct! You have been awarded {tokens_awarded} tokens!')
+        await query.answer(text=f'Correct! You have been awarded {tokens_awarded} tokens!', show_alert=True)
         await query.edit_message_caption(
-            caption=f"Correct! The answer is {guess}. Guessed by {query.from_user.first_name} and rewarded with {tokens_awarded} tokens."
+            caption=f"🎉 Correct! The answer is {guess}. Guessed by {query.from_user.first_name} and rewarded with {tokens_awarded} tokens."
         )
         del current_guess[chat_id]
     else:
-        await query.answer(text='Wrong guess, try again!')
+        await query.answer(text='❌ Wrong guess, try again!', show_alert=True)
 
 async def handle_message(update: Update, context: CallbackContext) -> None:
     logger.info("Message received")
