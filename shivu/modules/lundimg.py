@@ -140,3 +140,5 @@ app.add_handler(CommandHandler("sendimage", suck_it))
 app.add_handler(CallbackQueryHandler(button))
 app.add_handler(CommandHandler("setthreshold", set_message_threshold))
 app.add_handler(MessageHandler(filters.ALL, count_messages))
+
+app.run_polling()
