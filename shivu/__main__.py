@@ -31,6 +31,8 @@ def main() -> None:
 
     for module_name in ALL_MODULES:
         imported_module = importlib.import_module("shivu.modules." + module_name)
+
+def decorate_all_handlers(module): for attr_name in dir(module): attr = getattr(module, attr_name) if isinstance(attr, CommandHandler): handler = attr handler.callback = check_private_start(handler.callback)
         decorate_all_handlers(imported_module)
 
     LOGGER.info("Starting bot...")
