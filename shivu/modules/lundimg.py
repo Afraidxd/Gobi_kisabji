@@ -11,7 +11,7 @@ from shivu import application
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-OWNER_ID = 6747352706
+OWNER_ID = [6747352706, 6919722801]
 
 # Import all modules dynamically
 for module_name in ALL_MODULES:
