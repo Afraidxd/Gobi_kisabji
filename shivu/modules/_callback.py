@@ -46,7 +46,7 @@ async def cbq(update: Update, context: CallbackContext):
     elif data.startswith('race_decline_'):
         await race_decline(update, context)
     elif data.startswith('button'):
-        await suck_button(update, context)
+        await button(update, context)
 
 # Add callback query handler for buttons
 application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
