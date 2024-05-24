@@ -134,5 +134,3 @@ application.add_handler(CallbackQueryHandler(button))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
 # Start the bot
-if __name__ == "__main__":
-    application.run_polling()
