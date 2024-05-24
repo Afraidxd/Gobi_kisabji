@@ -1,8 +1,7 @@
 import importlib
 import random
-from datetime import timedelta, datetime
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder
+from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, ApplicationBuilder, MessageHandler, filters
 from shivu import user_collection, application as app
 from shivu.modules import ALL_MODULES
 
@@ -15,6 +14,7 @@ first_correct_guesses = {}
 message_counts = {}
 user_tokens = {}
 current_guess = {}
+message_thresholds = {}  # Stores message threshold per chat
 
 OWNER_ID = 6747352706
 
@@ -40,16 +40,13 @@ def get_random_image():
     return random.choice(images)
 
 async def suck_it(update: Update, context: CallbackContext) -> None:
-    if update is None:
-        chat_id = OWNER_ID
-    else:
-        chat_id = update.effective_chat.id if update.effective_chat else OWNER_ID
+    chat_id = update.effective_chat.id if update.effective_chat else OWNER_ID
 
-    if update and update.effective_chat.type == 'private':
+    if update.effective_chat.type == 'private':
         await update.message.reply_text("Please use this command in a group.")
         return
 
-    if update and update.effective_user.id != OWNER_ID:
+    if update.effective_user.id != OWNER_ID:
         await update.message.reply_text("Only the owner can use this command.")
         return
 
@@ -110,36 +107,36 @@ async def button(update: Update, context: CallbackContext) -> None:
     else:
         await query.answer(text='Wrong guess, try again!')
 
-async def send_random_image_every_5_minutes(context: CallbackContext):
-    fake_update = Update(0)
-    fake_update.effective_chat = context.bot.get_chat(OWNER_ID)
-    await suck_it(fake_update, context)
-
-async def set_interval(update: Update, context: CallbackContext) -> None:
+async def set_message_threshold(update: Update, context: CallbackContext) -> None:
     if update.effective_user.id != OWNER_ID:
         await update.message.reply_text("Only the owner can use this command.")
         return
 
     try:
-        minutes = int(context.args[0])
-        seconds = int(context.args[1])
-        interval = timedelta(minutes=minutes, seconds=seconds)
-
-        # Stop the current job
-        context.job_queue.stop()
-
-        # Schedule sending random images with the new interval
-        context.job_queue.run_repeating(send_random_image_every_5_minutes, interval=interval, first=0)
-
-        await update.message.reply_text(f"Interval set to {minutes} minutes and {seconds} seconds.")
+        threshold = int(context.args[0])
+        chat_id = update.effective_chat.id
+        message_thresholds[chat_id] = threshold
+        await update.message.reply_text(f"Message threshold set to {threshold} messages.")
     except (IndexError, ValueError):
-        await update.message.reply_text("Usage: /setinterval <minutes> <seconds>")
+        await update.message.reply_text("Usage: /setthreshold <number_of_messages>")
 
+async def count_messages(update: Update, context: CallbackContext) -> None:
+    chat_id = update.effective_chat.id
+
+    if chat_id not in message_counts:
+        message_counts[chat_id] = 0
+
+    message_counts[chat_id] += 1
+
+    # Default threshold to 10-20 messages if not set by owner
+    threshold = message_thresholds.get(chat_id, random.randint(10, 20))
+
+    if message_counts[chat_id] >= threshold:
+        await suck_it(update, context)
+        message_counts[chat_id] = 0
 
 # Adding other handlers
 app.add_handler(CommandHandler("sendimage", suck_it))
 app.add_handler(CallbackQueryHandler(button))
-app.add_handler(CommandHandler("setinterval", set_interval))
-
-# Schedule sending random images every 5 minutes initially
-app.job_queue.run_repeating(send_random_image_every_5_minutes, interval=timedelta(minutes=5), first=0)
+app.add_handler(CommandHandler("setthreshold", set_message_threshold))
+app.add_handler(MessageHandler(filters.ALL, count_messages))
