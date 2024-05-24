@@ -74,7 +74,7 @@ async def suck_it(update: Update, context: CallbackContext) -> None:
         reply_markup=reply_markup
     )
 
-async def suck_button(update: Update, context: CallbackContext) -> None:
+async def button(update: Update, context: CallbackContext) -> None:
     logger.info("Button callback called")
     query = update.callback_query
     chat_id = query.message.chat_id
@@ -124,5 +124,5 @@ async def set_threshold(update: Update, context: CallbackContext) -> None:
 # Register handlers
 application.add_handler(CommandHandler("sendimage", suck_it))
 application.add_handler(CommandHandler("setthreshold", set_threshold))
-application.add_handler(CallbackQueryHandler(suck_button))
+application.add_handler(CallbackQueryHandler(button))
 application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
