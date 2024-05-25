@@ -15,7 +15,6 @@ async def start_match_challenge(update: Update, context: CallbackContext):
         await update.message.reply_text("This command can only be used in a group chat.")
         return
 
-    # Check if the message is a reply
     if not update.message.reply_to_message:
         await update.message.reply_text("Please reply to a user's message to challenge them to a match.")
         return
@@ -29,12 +28,10 @@ async def start_match_challenge(update: Update, context: CallbackContext):
     challenged_user_id = update.message.reply_to_message.from_user.id
     challenger_id = update.effective_user.id
 
-    # Check if the user is trying to challenge themselves
     if challenged_user_id == challenger_id:
         await update.message.reply_text("You cannot challenge yourself!")
         return
 
-    # Check cooldown period
     current_time = datetime.now()
     cooldown_period = timedelta(minutes=5)
     if (challenger_id in last_match_time and current_time < last_match_time[challenger_id] + cooldown_period) or \
@@ -49,7 +46,6 @@ async def start_match_challenge(update: Update, context: CallbackContext):
     challenger_name = update.effective_user.first_name
     challenged_name = update.message.reply_to_message.from_user.first_name
 
-    # Check balance of both users
     challenger_balance = await user_collection.find_one({'id': challenger_id}, projection={'balance': 1})
     challenged_balance = await user_collection.find_one({'id': challenged_user_id}, projection={'balance': 1})
 
@@ -61,7 +57,6 @@ async def start_match_challenge(update: Update, context: CallbackContext):
         await update.message.reply_text("The challenged user does not have enough tokens to accept the challenge.")
         return
 
-    # Store the challenge
     challenges[challenged_user_id] = {
         'challenger': challenger_id,
         'challenger_name': challenger_name,
@@ -76,7 +71,6 @@ async def start_match_challenge(update: Update, context: CallbackContext):
         'bullets': ['live', 'live', 'live', 'blank', 'blank'],
     }
 
-    # Notify the challenged user
     keyboard = [
         [
             InlineKeyboardButton("Accept", callback_data=f"match_accept_{challenger_id}_{challenged_user_id}"),
@@ -109,13 +103,11 @@ async def match_accept(update: Update, context: CallbackContext):
 
 async def start_match(query, context: CallbackContext, challenger_id: int, challenged_user_id: int, amount: int, challenger_name: str, challenged_name: str, chat_id: int, message_id: int):
     try:
-        # Edit the original challenge message
         await query.edit_message_text(text="The match has begun!")
     except Forbidden:
         await context.bot.send_message(chat_id=chat_id, text="Unable to start the match due to a messaging error. Ensure both users have interacted with the bot.")
         return
 
-    # Deduct tokens from both users
     await user_collection.update_one({'id': challenger_id}, {'$inc': {'balance': -amount}})
     await user_collection.update_one({'id': challenged_user_id}, {'$inc': {'balance': -amount}})
 
@@ -176,25 +168,21 @@ async def handle_shoot(update: Update, context: CallbackContext):
             else:
                 challenge_data['challenged_lives'] -= 1
             challenge_data['turn'] = challenger_id if shooter_id == challenged_user_id else challenged_user_id
-        # If blank, shooter gets another turn
     elif action == "opponent":
         if bullet == "live":
             if shooter_id == challenge_data['challenger']:
                 challenge_data['challenged_lives'] -= 1
             else:
                 challenge_data['challenger_lives'] -= 1
-            # Shooter gets another turn if hitting opponent with live bullet
         else:
             challenge_data['turn'] = challenger_id if shooter_id == challenged_user_id else challenged_user_id
 
-    # Check if game is over
     if challenge_data['challenger_lives'] <= 0 or challenge_data['challenged_lives'] <= 0:
         winner_id = challenger_id if challenge_data['challenged_lives'] <= 0 else challenged_user_id
         loser_id = challenged_user_id if winner_id == challenger_id else challenger_id
         winner_name = challenge_data['challenger_name'] if winner_id == challenger_id else challenge_data['challenged_name']
         loser_name = challenge_data['challenged_name'] if winner_id == challenger_id else challenge_data['challenger_name']
 
-        # Update database for winner and loser
         await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': challenge_data['amount'] * 2}})
 
         await context.bot.send_message(challenge_data['chat_id'],
@@ -206,8 +194,7 @@ async def handle_shoot(update: Update, context: CallbackContext):
     else:
         await display_status_and_prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenger_id, challenged_user_id)
 
-# Handlers
-def match_decline(update: Update, context: CallbackContext):
+async def match_decline(update: Update, context: CallbackContext):
     query = update.callback_query
     challenged_user_id = update.effective_user.id
     callback_data = query.data.split('_')
@@ -215,12 +202,11 @@ def match_decline(update: Update, context: CallbackContext):
 
     if challenged_user_id in challenges and challenges[challenged_user_id]['challenger'] == challenger_id:
         del challenges[challenged_user_id]
-        query.answer("You have declined the match.")
-        query.edit_message_text(text="The match challenge was declined.")
+        await query.answer("You have declined the match.")
+        await query.edit_message_text(text="The match challenge was declined.")
     else:
-        query.answer("You cannot decline this challenge.", show_alert=True)
+        await query.answer("You cannot decline this challenge.", show_alert=True)
 
-def main():
     application.add_handler(CommandHandler("match", start_match_challenge))
     application.add_handler(CallbackQueryHandler(match_accept, pattern=r"^match_accept_"))
     application.add_handler(CallbackQueryHandler(match_decline, pattern=r"^match_decline_"))
