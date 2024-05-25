@@ -120,9 +120,17 @@ async def start_match(query, context: CallbackContext, challenger_id: int, chall
     await user_collection.update_one({'id': challenged_user_id}, {'$inc': {'balance': -amount}})
 
     challenge_data = challenges[challenged_user_id]
-    await prompt_shoot(context, challenge_data['turn'], chat_id, challenger_name, challenged_name, challenger_id, challenged_user_id)
+    await display_status_and_prompt_shoot(context, challenge_data['turn'], chat_id, challenger_name, challenged_name, challenger_id, challenged_user_id)
 
-async def prompt_shoot(context: CallbackContext, turn_user_id: int, chat_id: int, challenger_name: str, challenged_name: str, challenger_id: int, challenged_user_id: int):
+async def display_status_and_prompt_shoot(context: CallbackContext, turn_user_id: int, chat_id: int, challenger_name: str, challenged_name: str, challenger_id: int, challenged_user_id: int):
+    challenge_data = challenges[challenged_user_id]
+    status_message = (
+        f"Match Status:\n"
+        f"{challenger_name}: {challenge_data['challenger_lives']} lives\n"
+        f"{challenged_name}: {challenge_data['challenged_lives']} lives\n"
+        f"Bullets remaining: {challenge_data['bullets'].count('live')} live, {challenge_data['bullets'].count('blank')} blank\n"
+    )
+
     turn_user_name = challenger_name if turn_user_id == challenger_id else challenged_name
 
     keyboard = [
@@ -132,7 +140,7 @@ async def prompt_shoot(context: CallbackContext, turn_user_id: int, chat_id: int
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await context.bot.send_message(chat_id, text=f"{turn_user_name}, it's your turn! Choose your action:", reply_markup=reply_markup)
+    await context.bot.send_message(chat_id, text=status_message + f"\n{turn_user_name}, it's your turn! Choose your action:", reply_markup=reply_markup)
 
 async def handle_shoot(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -180,13 +188,23 @@ async def handle_shoot(update: Update, context: CallbackContext):
         winner_id = challenger_id if challenge_data['challenged_lives'] <= 0 else challenged_user_id
         loser_id = challenged_user_id if winner_id == challenger_id else challenger_id
         await context.bot.send_message(challenge_data['chat_id'], text=f"{challenge_data['challenger_name']} and {challenge_data['challenged_name']} have finished their match. The winner is {challenge_data['challenger_name'] if winner_id == challenger_id else challenge_data['challenged_name']}!")
+        
+        # Give the winner the wagered amount (both wagers combined)
         await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': amount * 2}})
         del challenges[challenged_user_id]
     else:
-        challenge_data['bullets'] = bullets  # Update bullets after round
-        await prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenger_id, challenged_user_id)
+        # Update bullets in the challenge data
+        challenge_data['bullets'] = bullets
+        # Prompt the next user
+        await display_status_and_prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenger_id, challenged_user_id)
 
-# Add command handlers to the application
-application.add_handler(CommandHandler('match', start_match_challenge))
-application.add_handler(CallbackQueryHandler(match_accept, pattern=r'^match_accept_'))
-application.add_handler(CallbackQueryHandler(handle_sh
+# Register handlers
+start_handler = CommandHandler('match', start_match_challenge)
+accept_handler = CallbackQueryHandler(match_accept, pattern=r'^match_accept_')
+decline_handler = CallbackQueryHandler(lambda update, context: update.callback_query.answer("Challenge declined."), pattern=r'^match_decline_')
+shoot_handler = CallbackQueryHandler(handle_shoot, pattern=r'^shoot_')
+
+application.add_handler(start_handler)
+application.add_handler(accept_handler)
+application.add_handler(decline_handler)
+application.add_handler(shoot_handler)
