@@ -226,5 +226,3 @@ def main():
     application.add_handler(CallbackQueryHandler(match_decline, pattern=r"^match_decline_"))
     application.add_handler(CallbackQueryHandler(handle_shoot, pattern=r"^shoot_"))
 
-if __name__ == "__main__":
-    main()
