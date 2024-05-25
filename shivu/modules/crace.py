@@ -111,7 +111,7 @@ async def start_match(query, context: CallbackContext, challenger_id: int, chall
     try:
         # Edit the original challenge message
         await query.edit_message_text(text="The match has begun!")
-    except Forbidden as e:
+    except Forbidden:
         await context.bot.send_message(chat_id=chat_id, text="Unable to start the match due to a messaging error. Ensure both users have interacted with the bot.")
         return
 
@@ -124,14 +124,18 @@ async def start_match(query, context: CallbackContext, challenger_id: int, chall
 
 async def display_status_and_prompt_shoot(context: CallbackContext, turn_user_id: int, chat_id: int, challenger_name: str, challenged_name: str, challenger_id: int, challenged_user_id: int):
     challenge_data = challenges[challenged_user_id]
+    challenger_link = f"[{challenger_name}](tg://user?id={challenger_id})"
+    challenged_link = f"[{challenged_name}](tg://user?id={challenged_user_id})"
+
     status_message = (
-        f"Match Status:\n"
-        f"{challenger_name}: {challenge_data['challenger_lives']} lives\n"
-        f"{challenged_name}: {challenge_data['challenged_lives']} lives\n"
-        f"Bullets remaining: {challenge_data['bullets'].count('live')} live, {challenge_data['bullets'].count('blank')} blank\n"
+        f"🏁 **Match Status** 🏁\n"
+        f"{challenger_link}: {challenge_data['challenger_lives']} ❤️ lives\n"
+        f"{challenged_link}: {challenge_data['challenged_lives']} ❤️ lives\n"
+        f"🔫 Bullets remaining: {challenge_data['bullets'].count('live')} live, {challenge_data['bullets'].count('blank')} blank\n"
     )
 
     turn_user_name = challenger_name if turn_user_id == challenger_id else challenged_name
+    turn_user_link = challenger_link if turn_user_id == challenger_id else challenged_link
 
     keyboard = [
         [
@@ -140,16 +144,16 @@ async def display_status_and_prompt_shoot(context: CallbackContext, turn_user_id
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await context.bot.send_message(chat_id, text=status_message + f"\n{turn_user_name}, it's your turn! Choose your action:", reply_markup=reply_markup)
+    await context.bot.send_message(chat_id, text=status_message + f"\n{turn_user_link}, it's your turn! Choose your action:", reply_markup=reply_markup, parse_mode='Markdown')
 
 async def handle_shoot(update: Update, context: CallbackContext):
     query = update.callback_query
     callback_data = query.data.split('_')
 
-    action = callback_data[0]
-    shooter_id = int(callback_data[1])
-    challenger_id = int(callback_data[2])
-    challenged_user_id = int(callback_data[3])
+    action = callback_data[1]
+    shooter_id = int(callback_data[2])
+    challenger_id = int(callback_data[3])
+    challenged_user_id = int(callback_data[4])
     
     if challenged_user_id not in challenges:
         await query.answer("This match no longer exists.", show_alert=True)
@@ -165,7 +169,7 @@ async def handle_shoot(update: Update, context: CallbackContext):
     random.shuffle(bullets)
     bullet = bullets.pop()
     
-    if action == "shoot_self":
+    if action == "self":
         if bullet == "live":
             if shooter_id == challenge_data['challenger']:
                 challenge_data['challenger_lives'] -= 1
@@ -173,7 +177,7 @@ async def handle_shoot(update: Update, context: CallbackContext):
                 challenge_data['challenged_lives'] -= 1
             challenge_data['turn'] = challenger_id if shooter_id == challenged_user_id else challenged_user_id
         # If blank, shooter gets another turn
-    elif action == "shoot_opponent":
+    elif action == "opponent":
         if bullet == "live":
             if shooter_id == challenge_data['challenger']:
                 challenge_data['challenged_lives'] -= 1
@@ -187,24 +191,4 @@ async def handle_shoot(update: Update, context: CallbackContext):
     if challenge_data['challenger_lives'] <= 0 or challenge_data['challenged_lives'] <= 0:
         winner_id = challenger_id if challenge_data['challenged_lives'] <= 0 else challenged_user_id
         loser_id = challenged_user_id if winner_id == challenger_id else challenger_id
-        await context.bot.send_message(challenge_data['chat_id'], text=f"{challenge_data['challenger_name']} and {challenge_data['challenged_name']} have finished their match. The winner is {challenge_data['challenger_name'] if winner_id == challenger_id else challenge_data['challenged_name']}!")
-        
-        # Give the winner the wagered amount (both wagers combined)
-        await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': amount * 2}})
-        del challenges[challenged_user_id]
-    else:
-        # Update bullets in the challenge data
-        challenge_data['bullets'] = bullets
-        # Prompt the next user
-        await display_status_and_prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenger_id, challenged_user_id)
-
-# Register handlers
-start_handler = CommandHandler('match', start_match_challenge)
-accept_handler = CallbackQueryHandler(match_accept, pattern=r'^match_accept_')
-decline_handler = CallbackQueryHandler(lambda update, context: update.callback_query.answer("Challenge declined."), pattern=r'^match_decline_')
-shoot_handler = CallbackQueryHandler(handle_shoot, pattern=r'^shoot_')
-
-application.add_handler(start_handler)
-application.add_handler(accept_handler)
-application.add_handler(decline_handler)
-application.add_handler(shoot_handler)
+        await context.bot.send_message(challenge_data['chat_id'], text=f"{challenge_data['challenger_name']} and {challenge_data['challenged_name']} have finished their match. The winner is {challenge_data}")
