@@ -53,7 +53,9 @@ async def suck_it(update: Update, context: CallbackContext) -> None:
         await update.message.reply_text("Yᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴜᴛʜᴏʀɪᴢᴇᴅ ᴛᴏ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ.")
         return
 
-    chat_id = chat.id
+    await send_random_image(context, chat.id)
+
+async def send_random_image(context: CallbackContext, chat_id: int) -> None:
     image_path, correct_answer = get_random_image()
     current_guess[chat_id] = correct_answer
 
@@ -104,7 +106,7 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
 
     if message_counts[chat_id] >= message_threshold:
         message_counts[chat_id] = 0
-        await suck_it(update, context)
+        await send_random_image(context, chat_id)
 
 async def set_threshold(update: Update, context: CallbackContext) -> None:
     logger.info("set_threshold command called")
