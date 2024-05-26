@@ -112,6 +112,16 @@ async def start_match(query, context: CallbackContext, challenger_id: int, chall
     await user_collection.update_one({'id': challenged_user_id}, {'$inc': {'balance': -amount}})
 
     challenge_data = challenges[challenged_user_id]
+    await reload_bullets_and_start(context, challenge_data, chat_id, challenger_name, challenged_name, challenger_id, challenged_user_id)
+
+async def reload_bullets_and_start(context: CallbackContext, challenge_data, chat_id: int, challenger_name: str, challenged_name: str, challenger_id: int, challenged_user_id: int):
+    bullets = ['live', 'live', 'live', 'blank', 'blank']
+    random.shuffle(bullets)
+    challenge_data['bullets'] = bullets
+
+    await context.bot.send_message(chat_id, text=f"5 bullets reloaded: 3 live and 2 blank.\nStarting the match in 5 seconds...")
+
+    await asyncio.sleep(5)
     await display_status_and_prompt_shoot(context, challenge_data['turn'], chat_id, challenger_name, challenged_name, challenger_id, challenged_user_id)
 
 async def display_status_and_prompt_shoot(context: CallbackContext, turn_user_id: int, chat_id: int, challenger_name: str, challenged_name: str, challenger_id: int, challenged_user_id: int):
@@ -189,20 +199,23 @@ async def handle_shoot(update: Update, context: CallbackContext):
         loser_id = challenged_user_id if winner_id == challenger_id else challenger_id
         winner_name = challenge_data['challenger_name'] if winner_id == challenger_id else challenge_data['challenged_name']
         loser_name = challenge_data['challenged_name'] if winner_id == challenger_id else challenge_data['challenger_name']
-        
+
         await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': challenge_data['amount'] * 2}})
 
         await query.edit_message_text(
             text=f"{result_message}\n\n🏆 {winner_name} wins the match and {challenge_data['amount']} tokens!"
         )
-        
+
         del challenges[challenged_user_id]
         last_match_time[challenger_id] = datetime.now()
         last_match_time[challenged_user_id] = datetime.now()
     else:
-        await query.edit_message_text(text=f"{result_message}")
-        await asyncio.sleep(5)  # Wait for 5 seconds before proceeding
-        await display_status_and_prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenge_data['challenger'], challenge_data['challenged'])
+        if len(bullets) == 0:
+            await reload_bullets_and_start(context, challenge_data, challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenge_data['challenger'], challenge_data['challenged'])
+        else:
+            await query.edit_message_text(text=f"{result_message}")
+            await asyncio.sleep(5)  # Wait for 5 seconds before proceeding
+            await display_status_and_prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenge_data['challenger'], challenge_data['challenged'])
 
 async def match_decline(update: Update, context: CallbackContext):
     query = update.callback_query
