@@ -126,8 +126,8 @@ async def reload_bullets_and_start(context: CallbackContext, challenge_data, cha
 
 async def display_status_and_prompt_shoot(context: CallbackContext, turn_user_id: int, chat_id: int, challenger_name: str, challenged_name: str, challenger_id: int, challenged_user_id: int):
     challenge_data = challenges[challenged_user_id]
-    challenger_link = f"[{challenger_name}](tg://user?id={challenger_id})"
-    challenged_link = f"[{challenged_name}](tg://user?id={challenged_user_id})"
+    challenger_link = f"<a href='tg://user?id={challenger_id}'>{challenger_name}</a>"
+    challenged_link = f"<a href='tg://user?id={challenged_user_id}'>{challenged_name}</a>"
 
     status_message = (
         f"🏁 **Match Status** 🏁\n"
@@ -146,7 +146,7 @@ async def display_status_and_prompt_shoot(context: CallbackContext, turn_user_id
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    challenge_data['message_id'] = await context.bot.send_message(chat_id, text=status_message + f"\n{turn_user_link}, it's your turn! Choose your action:", reply_markup=reply_markup, parse_mode='Markdown')
+    challenge_data['message_id'] = await context.bot.send_message(chat_id, text=status_message + f"\n{turn_user_link}, it's your turn! Choose your action:", reply_markup=reply_markup, parse_mode='HTML')
 
 async def handle_shoot(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -182,7 +182,7 @@ async def handle_shoot(update: Update, context: CallbackContext):
             result_message = f"{shooter_name} shot themselves with a live bullet!"
         else:
             result_message = f"{shooter_name} shot themselves with a blank bullet!"
-        challenge_data['turn'] = challenger_id if shooter_id == challenged_user_id else challenged_user_id
+        challenge_data['turn'] = challenger_id ifshooter_id == challenged_user_id else challenged_user_id
     elif action == "opponent":
         if bullet == "live":
             if shooter_id == challenge_data['challenger']:
