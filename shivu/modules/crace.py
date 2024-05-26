@@ -207,8 +207,7 @@ async def match_decline(update: Update, context: CallbackContext):
     else:
         await query.answer("You cannot decline this challenge.", show_alert=True)
 
-    application.add_handler(CommandHandler("match", start_match_challenge))
-    application.add_handler(CallbackQueryHandler(match_accept, pattern=r"^match_accept_"))
-    application.add_handler(CallbackQueryHandler(match_decline, pattern=r"^match_decline_"))
-    application.add_handler(CallbackQueryHandler(handle_shoot, pattern=r"^shoot_"))
-
+application.add_handler(CommandHandler("match", start_match_challenge))
+application.add_handler(CallbackQueryHandler(match_accept, pattern=r"^match_accept_"))
+application.add_handler(CallbackQueryHandler(match_decline, pattern=r"^match_decline_"))
+application.add_handler(CallbackQueryHandler(handle_shoot, pattern=r"^shoot_"))
