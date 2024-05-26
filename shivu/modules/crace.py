@@ -3,7 +3,6 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext, CommandHandler, CallbackQueryHandler
 import random
 from datetime import datetime, timedelta
-import asyncio
 from telegram.error import Forbidden
 
 # Dictionary to store challenges and cooldown times
@@ -161,21 +160,28 @@ async def handle_shoot(update: Update, context: CallbackContext):
     random.shuffle(bullets)
     bullet = bullets.pop()
 
+    shooter_name = challenge_data['challenger_name'] if shooter_id == challenger_id else challenge_data['challenged_name']
+
     if action == "self":
         if bullet == "live":
             if shooter_id == challenge_data['challenger']:
                 challenge_data['challenger_lives'] -= 1
             else:
                 challenge_data['challenged_lives'] -= 1
-            challenge_data['turn'] = challenger_id if shooter_id == challenged_user_id else challenged_user_id
+            result_message = f"{shooter_name} shot themselves with a live bullet!"
+        else:
+            result_message = f"{shooter_name} shot themselves with a blank bullet!"
+        challenge_data['turn'] = challenger_id if shooter_id == challenged_user_id else challenged_user_id
     elif action == "opponent":
         if bullet == "live":
             if shooter_id == challenge_data['challenger']:
                 challenge_data['challenged_lives'] -= 1
             else:
                 challenge_data['challenger_lives'] -= 1
+            result_message = f"{shooter_name} shot their opponent with a live bullet!"
         else:
-            challenge_data['turn'] = challenger_id if shooter_id == challenged_user_id else challenged_user_id
+            result_message = f"{shooter_name} shot their opponent with a blank bullet!"
+        challenge_data['turn'] = challenger_id if shooter_id == challenged_user_id else challenged_user_id
 
     if challenge_data['challenger_lives'] <= 0 or challenge_data['challenged_lives'] <= 0:
         winner_id = challenger_id if challenge_data['challenged_lives'] <= 0 else challenged_user_id
@@ -185,13 +191,15 @@ async def handle_shoot(update: Update, context: CallbackContext):
 
         await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': challenge_data['amount'] * 2}})
 
-        await context.bot.send_message(challenge_data['chat_id'],
+        await context.bot.edit_message_text(chat_id=challenge_data['chat_id'],
+            message_id=query.message.message_id,
             text=f"🏆 **Match Over** 🏆\n"
                  f"🎉 {winner_name} wins and takes {challenge_data['amount'] * 2} tokens!\n"
                  f"😢 {loser_name} loses the match.")
 
         del challenges[challenged_user_id]
     else:
+        await query.edit_message_text(text=result_message)
         await display_status_and_prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenger_id, challenged_user_id)
 
 async def match_decline(update: Update, context: CallbackContext):
