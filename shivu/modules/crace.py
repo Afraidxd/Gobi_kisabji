@@ -3,6 +3,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CallbackContext, CommandHandler, CallbackQueryHandler
 import random
 from datetime import datetime, timedelta
+import asyncio
 from telegram.error import Forbidden
 
 # Dictionary to store challenges and cooldown times
@@ -199,7 +200,14 @@ async def handle_shoot(update: Update, context: CallbackContext):
 
         del challenges[challenged_user_id]
     else:
-        await query.edit_message_text(text=result_message)
+        if not challenge_data['bullets']:
+            challenge_data['bullets'] = ['live', 'live', 'live', 'blank', 'blank']
+            random.shuffle(challenge_data['bullets'])
+            await query.edit_message_text(text=result_message + "\n\n🔄 Reloading bullets! The match will resume in 5 seconds.")
+            await asyncio.sleep(5)
+        else:
+            await query.edit_message_text(text=result_message)
+        
         await display_status_and_prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenger_id, challenged_user_id)
 
 async def match_decline(update: Update, context: CallbackContext):
