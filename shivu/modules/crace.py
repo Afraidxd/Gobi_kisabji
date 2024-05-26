@@ -136,7 +136,7 @@ async def display_status_and_prompt_shoot(context: CallbackContext, turn_user_id
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    await context.bot.send_message(chat_id, text=status_message + f"\n{turn_user_link}, it's your turn! Choose your action:", reply_markup=reply_markup, parse_mode='Markdown')
+    challenge_data['message_id'] = await context.bot.send_message(chat_id, text=status_message + f"\n{turn_user_link}, it's your turn! Choose your action:", reply_markup=reply_markup, parse_mode='Markdown')
 
 async def handle_shoot(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -189,26 +189,20 @@ async def handle_shoot(update: Update, context: CallbackContext):
         loser_id = challenged_user_id if winner_id == challenger_id else challenger_id
         winner_name = challenge_data['challenger_name'] if winner_id == challenger_id else challenge_data['challenged_name']
         loser_name = challenge_data['challenged_name'] if winner_id == challenger_id else challenge_data['challenger_name']
-
+        
         await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': challenge_data['amount'] * 2}})
 
-        await context.bot.edit_message_text(chat_id=challenge_data['chat_id'],
-            message_id=query.message.message_id,
-            text=f"🏆 **Match Over** 🏆\n"
-                 f"🎉 {winner_name} wins and takes {challenge_data['amount'] * 2} tokens!\n"
-                 f"😢 {loser_name} loses the match.")
-
-        del challenges[challenged_user_id]
-    else:
-        if not challenge_data['bullets']:
-            challenge_data['bullets'] = ['live', 'live', 'live', 'blank', 'blank']
-            random.shuffle(challenge_data['bullets'])
-            await query.edit_message_text(text=result_message + "\n\n🔄 Reloading bullets! The match will resume in 5 seconds.")
-            await asyncio.sleep(5)
-        else:
-            await query.edit_message_text(text=result_message)
+        await query.edit_message_text(
+            text=f"{result_message}\n\n🏆 {winner_name} wins the match and {challenge_data['amount']} tokens!"
+        )
         
-        await display_status_and_prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenger_id, challenged_user_id)
+        del challenges[challenged_user_id]
+        last_match_time[challenger_id] = datetime.now()
+        last_match_time[challenged_user_id] = datetime.now()
+    else:
+        await query.edit_message_text(text=f"{result_message}")
+        await asyncio.sleep(5)  # Wait for 5 seconds before proceeding
+        await display_status_and_prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenge_data['challenger'], challenge_data['challenged'])
 
 async def match_decline(update: Update, context: CallbackContext):
     query = update.callback_query
