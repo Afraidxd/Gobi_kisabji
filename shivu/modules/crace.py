@@ -182,7 +182,7 @@ async def handle_shoot(update: Update, context: CallbackContext):
             result_message = f"{shooter_name} shot themselves with a live bullet!"
         else:
             result_message = f"{shooter_name} shot themselves with a blank bullet!"
-        challenge_data['turn'] = challenger_id ifshooter_id == challenged_user_id else challenged_user_id
+        challenge_data['turn'] = challenger_id if shooter_id == challenged_user_id else challenged_user_id
     elif action == "opponent":
         if bullet == "live":
             if shooter_id == challenge_data['challenger']:
@@ -234,3 +234,4 @@ application.add_handler(CommandHandler("match", start_match_challenge))
 application.add_handler(CallbackQueryHandler(match_accept, pattern=r"^match_accept_"))
 application.add_handler(CallbackQueryHandler(match_decline, pattern=r"^match_decline_"))
 application.add_handler(CallbackQueryHandler(handle_shoot, pattern=r"^shoot_"))
+
