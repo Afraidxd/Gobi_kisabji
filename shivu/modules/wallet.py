@@ -3,7 +3,7 @@ from shivu import application, user_collection
 from telegram import Update
 from datetime import datetime, timedelta
 import asyncio
-
+from . import add_balance as add, deduct_balance as deduct, show_balance as show
 # Dictionary to store last payment times
 last_payment_times = {}
 from shivu import collection, user_collection, application
@@ -36,10 +36,10 @@ async def balance(update, context):
     profile = update.effective_user
 
     if user_data:
-        user_balance = user_data.get('balance', 0)
+        user_balance = await show(user_id)
         characters = user_data.get('characters', [])
 
-        coins_rank = await user_collection.count_documents({'balance': {'$gt': user_balance}}) + 1
+        #coins_rank = await user_collection.count_documents({'balance': {'$gt': user_balance}}) + 1
 
         total_characters = len(characters)
         all_characters = await collection.find({}).to_list(length=None)
@@ -47,7 +47,7 @@ async def balance(update, context):
 
         balance_info = (
             f"\n\n💰 ᴄᴏɪɴꜱ: Ŧ{format_number(user_balance)}"
-            f"\n🏅 ᴄᴏɪɴꜱ ʀᴀɴᴋ: {coins_rank}"
+            #f"\n🏅 ᴄᴏɪɴꜱ ʀᴀɴᴋ: {coins_rank}"
             f"\n🎭 ᴄᴀʀs: {total_characters}/{total_database_characters}"
         )
 
@@ -98,8 +98,8 @@ async def pay(update, context):
         await update.message.reply_text("⚠️ Use /pay <amount>")
         return
 
-    sender_balance = await user_collection.find_one({'id': sender_id}, projection={'balance': 1})
-    if not sender_balance or sender_balance.get('balance', 0) < amount:
+    sender_balance = await show(sender_id)
+    if not sender_balance < amount:
         await update.message.reply_text("❌ Insufficient balance to make the payment.")
         return
 
@@ -112,8 +112,8 @@ async def pay(update, context):
             await update.message.reply_text(f"⌛ Cooldown! You can pay again in `{formatted_cooldown}`.")
             return
 
-    await user_collection.update_one({'id': sender_id}, {'$inc': {'balance': -amount}})
-    await user_collection.update_one({'id': recipient_id}, {'$inc': {'balance': amount}}, upsert=True)
+    await deduct(sender_id, amount)
+    await add(recipient_id, amount)
 
     last_payment_times[sender_id] = datetime.now()
 
@@ -135,12 +135,10 @@ async def daily_reward(update, context):
             formatted_time_until_next_claim = format_timedelta(time_until_next_claim)
             await update.message.reply_text(f"⏳ You already claimed your today's reward. Come back Tomorrow!\n🕒 Time Until Next Claim: `{formatted_time_until_next_claim}`.")
             return
-
-    await user_collection.update_one(
-        {'id': user_id},
-        {'$inc': {'balance': 50000}, '$set': {'last_daily_reward': datetime.utcnow()}},
-        upsert=True
-    )
+    
+    await user_collection.update_one({'id': user_id}, {'$set': {'last_daily_reward': datetime.utcnow()}},
+        upsert=True)
+    await add(user_id, 50000)
 
     await update.message.reply_text("🎉 Congratulations! You claimed Ŧ50000 Tokens")
 
@@ -165,11 +163,9 @@ async def weekly(update, context):
             await update.message.reply_text(f"⏳ You already claimed your weekly bonus for this week. Come back next week!\n🕒 Time Until Next Claim: `{formatted_time_until_next_claim}`.")
             return
 
-    await user_collection.update_one(
-        {'id': user_id},
-        {'$inc': {'balance': 100000}, '$set': {'last_weekly_bonus': datetime.utcnow()}},
-        upsert=True
-    )
+    await user_collection.update_one({'id': user_id}, {'$set': {'last_weekly_bonus': datetime.utcnow()}},
+        upsert=True)
+    await add(user_id, 100000)
 
     await update.message.reply_text("🎉 Congratulations! You claimed Ŧ100000 Tokens as your weekly bonus.")
 

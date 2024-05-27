@@ -4,16 +4,16 @@ from telegram import Update
 import random
 from datetime import datetime, timedelta
 from shivu import collection, user_collection, user_totals_collection , application 
-
+from . import deduct_balance as deduct, show_balance as show
 last_propose_times = {}
 proposing_users = {}
 
 async def propose(update, context):
     user_id = update.effective_user.id
 
-    user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
+    user_balance = await show(user_id)
 
-    if not user_balance or user_balance.get('balance', 0) < 20000:
+    if user_balance < 20000:
         await update.message.reply_text("You need at least 20000 tokens to challenge.")
         proposing_users[user_id] = False  # Setting to False if balance requirement is not met
         return
@@ -36,7 +36,7 @@ async def propose(update, context):
             proposing_users[user_id] = False  # Setting to False if cooldown is active
             return
 
-    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -20000}})
+    await deduct(user_id, 20000)
 
     proposal_message = "Challenge accepted"
     photo_path = 'https://telegra.ph/file/6abcb8278a66a11778841.jpg'

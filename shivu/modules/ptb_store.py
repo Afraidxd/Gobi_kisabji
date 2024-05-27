@@ -3,7 +3,7 @@ from telegram.ext import CommandHandler, CallbackContext
 from datetime import datetime as dt
 import random
 from shivu import application, db, collection, user_collection
-
+from . import add_balance as add, show_balance as show, deduct_balance as deduct
 # Database setup
 sdb = db.new_store
 user_db = db.bought
@@ -171,8 +171,8 @@ async def handle_page(query, page, origin, user_id):
 
 async def handle_char_confirm(query, char, user_id):
     det = await get_character(char)
-    user = await user_collection.find_one({'id': user_id})
-    if det['price'] > user['balance']:
+    user = await show(user_id)
+    if det['price'] > user:
         return await query.answer("You do not have enough coins", show_alert=True)
 
     bought = await get_user_bought(user_id)
@@ -187,7 +187,7 @@ async def handle_char_confirm(query, char, user_id):
     new_bought = bought[1] if bought and bought[0] == today() else []
     new_bought.append(char)
     await update_user_bought(user_id, [today(), new_bought])
-    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -det['price']}})
+    await deduct(user_id, det['price'])
     await user_collection.update_one({'id': user_id}, {'$addToSet': {'characters': det}})
     await query.answer("Character bought successfully!", show_alert=True)
 

@@ -2,6 +2,7 @@ from telegram.ext import CommandHandler, CallbackQueryHandler
 from shivu import application, user_collection
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import random
+from . import add_balance as add , deduct_balance as deduct ,show_balance as show
 
 async def rps(update, context):
     try:
@@ -13,9 +14,9 @@ async def rps(update, context):
         return
 
     user_id = update.effective_user.id
-    user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
+    user_balance = await show(user_id)
 
-    if not user_balance or user_balance.get('balance', 0) < amount:
+    if user_balance < amount:
         await update.message.reply_text("Insufficient balance to make the bet.")
         return
 
@@ -40,9 +41,9 @@ async def rps_button(update, context):
 
     amount = context.user_data.get('amount')
     user_id = update.effective_user.id
-    user_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
+    user_balance = await show(user_id)
 
-    if not user_balance or user_balance.get('balance', 0) < amount:
+    if user_balance < amount:
         await query.answer("Insufficient balance to make the bet.")
         return
 
@@ -54,16 +55,16 @@ async def rps_button(update, context):
          (choice == 'paper' and computer_choice == 'rock') or \
          (choice == 'scissors' and computer_choice == 'paper'):
         result_message = "🎉 You won!"
-        await user_collection.update_one({'id': user_id}, {'$inc': {'balance': amount}})
+        await add(user_id, amount)
     else:
         result_message = "😔 You lost!"
-        await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -amount}})
+        await deduct(user_id, amount)
 
     
-    updated_balance = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
+    updated_balance = await show(user_id)
 
     await query.message.edit_text(
-        f"You chose {choice.capitalize()} and the computer chose {computer_choice.capitalize()}\n\n\n{result_message}\nYour updated balance is {updated_balance['balance']}\n\nPlay again?",
+        f"You chose {choice.capitalize()} and the computer chose {computer_choice.capitalize()}\n\n\n{result_message}\nYour updated balance is {updated_balance}\n\nPlay again?",
         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Play Again 🔄", callback_data='play_again')]])
     )
 
