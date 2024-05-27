@@ -3,7 +3,7 @@ from telegram.ext import CommandHandler, CallbackContext
 from datetime import datetime as dt
 import random
 from shivu import application, db, collection, user_collection
-from . import add_balance as add, show_balance as show
+from . import add_balance as add, show_balance as show, deduct_balance as deduct
 # Database setup
 sdb = db.new_store
 user_db = db.bought
