@@ -6,7 +6,7 @@ from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, 
 from shivu import user_collection
 from shivu.modules import ALL_MODULES
 from shivu import application
-
+from . import add_balance as add, show_balance as show
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -83,12 +83,8 @@ async def dick_button(update: Update, context: CallbackContext) -> None:
 
     if guess == current_guess.get(chat_id):
         tokens_awarded = random.randint(5000, 10000)
-        user_tokens[user_id] = user_tokens.get(user_id, 0) + tokens_awarded
-        await user_collection.update_one(
-            {'id': user_id},
-            {'$inc': {'balance': tokens_awarded}},
-            upsert=True
-        )
+        user_tokens[user_id] = show(user_id, 0) + tokens_awarded
+        await add(user_id}, tokens_awarded)
         await query.answer(text=f'Cᴏʀʀᴇᴄᴛ! Yᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴡᴀʀᴅᴇᴅ {tokens_awarded} ᴛᴏᴋᴇɴs!', show_alert=True)
         await query.edit_message_caption(
             caption=f"🎉 Cᴏʀʀᴇᴄᴛ! Tʜᴇ ᴀɴsᴡᴇʀ ɪs {guess}. Gᴜᴇssᴇᴅ ʙʏ {query.from_user.first_name} ᴀɴᴅ ʀᴇᴡᴀʀᴅᴇᴅ ᴡɪᴛʜ {tokens_awarded} ᴛᴏᴋᴇɴs."
