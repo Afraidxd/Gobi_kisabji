@@ -119,7 +119,11 @@ async def reload_bullets_and_start(context: CallbackContext, challenge_data, cha
     random.shuffle(bullets)
     challenge_data['bullets'] = bullets
 
-    await context.bot.send_message(chat_id, text=f"5 bullets reloaded: 3 live and 2 blank.\nStarting the match in 5 seconds...")
+    await context.bot.edit_message_text(
+        chat_id=chat_id,
+        message_id=challenge_data['message_id'],
+        text=f"5 bullets reloaded: 3 live and 2 blank.\nStarting the match in 5 seconds..."
+    )
 
     await asyncio.sleep(5)
     await display_status_and_prompt_shoot(context, challenge_data['turn'], chat_id, challenger_name, challenged_name, challenger_id, challenged_user_id)
@@ -146,7 +150,13 @@ async def display_status_and_prompt_shoot(context: CallbackContext, turn_user_id
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    challenge_data['message_id'] = await context.bot.send_message(chat_id, text=status_message + f"\n{turn_user_link}, it's your turn! Choose your action:", reply_markup=reply_markup, parse_mode='HTML')
+    await context.bot.edit_message_text(
+        chat_id=chat_id,
+        message_id=challenge_data['message_id'],
+        text=status_message + f"\n{turn_user_link}, it's your turn! Choose your action:",
+        reply_markup=reply_markup,
+        parse_mode='HTML'
+    )
 
 async def handle_shoot(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -183,6 +193,7 @@ async def handle_shoot(update: Update, context: CallbackContext):
         else:
             result_message = f"{shooter_name} shot themselves with a blank bullet!"
         challenge_data['turn'] = challenger_id if shooter_id == challenged_user_id else challenged_user_id
+
     elif action == "opponent":
         if bullet == "live":
             if shooter_id == challenge_data['challenger']:
@@ -194,43 +205,33 @@ async def handle_shoot(update: Update, context: CallbackContext):
             result_message = f"{shooter_name} shot their opponent with a blank bullet!"
         challenge_data['turn'] = challenger_id if shooter_id == challenged_user_id else challenged_user_id
 
-    if challenge_data['challenger_lives'] <= 0 or challenge_data['challenged_lives'] <= 0:
-        winner_id = challenger_id if challenge_data['challenged_lives'] <= 0 else challenged_user_id
-        loser_id = challenged_user_id if winner_id == challenger_id else challenger_id
-        winner_name = challenge_data['challenger_name'] if winner_id == challenger_id else challenge_data['challenged_name']
-        loser_name = challenge_data['challenged_name'] if winner_id == challenger_id else challenge_data['challenger_name']
+    if challenge_data['challenger_lives'] == 0 or challenge_data['challenged_lives'] == 0:
+        winner_id = challenger_id if challenge_data['challenged_lives'] == 0 else challenged_user_id
+        winner_name = challenge_data['challenger_name'] if challenge_data['challenged_lives'] == 0 else challenge_data['challenged_name']
 
         await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': challenge_data['amount'] * 2}})
-
-        await query.edit_message_text(
-            text=f"{result_message}\n\n🏆 {winner_name} wins the match and {challenge_data['amount']} tokens!"
-        )
+        result_message += f"\n\n🏆 {winner_name} wins the match and {challenge_data['amount']} tokens!"
 
         del challenges[challenged_user_id]
         last_match_time[challenger_id] = datetime.now()
         last_match_time[challenged_user_id] = datetime.now()
+
     else:
-        if len(bullets) == 0:
-            await reload_bullets_and_start(context, challenge_data, challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenge_data['challenger'], challenged_user_id)
-        else:
-            await query.edit_message_text(text=f"{result_message}")
-            await asyncio.sleep(5)  # Wait for 5 seconds before proceeding
-            await display_status_and_prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenge_data['challenger'], challenged_user_id)
+        result_message += "\n\n" + (
+            f"{challenge_data['challenger_name']} has {challenge_data['challenger_lives']} lives remaining.\n"
+            f"{challenge_data['challenged_name']} has {challenge_data['challenged_lives']} lives remaining."
+        )
 
-async def match_decline(update: Update, context: CallbackContext):
-    query = update.callback_query
-    challenged_user_id = update.effective_user.id
-    callback_data = query.data.split('_')
-    challenger_id = int(callback_data[2])
+    await context.bot.edit_message_text(
+        chat_id=challenge_data['chat_id'],
+        message_id=challenge_data['message_id'],
+        text=result_message
+    )
 
-    if challenged_user_id in challenges and challenges[challenged_user_id]['challenger'] == challenger_id:
-        del challenges[challenged_user_id]
-        await query.answer("You have declined the match.")
-        await query.edit_message_text(text="The match challenge was declined.")
-    else:
-        await query.answer("You cannot decline this challenge.", show_alert=True)
+    if challenge_data['challenger_lives'] > 0 and challenge_data['challenged_lives'] > 0:
+        await display_status_and_prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenge_data['challenger'], challenge_data['challenged_user_id'])
 
-application.add_handler(CommandHandler("match", start_match_challenge))
-application.add_handler(CallbackQueryHandler(match_accept, pattern=r"^match_accept_"))
-application.add_handler(CallbackQueryHandler(match_decline, pattern=r"^match_decline_"))
-application.add_handler(CallbackQueryHandler(handle_shoot, pattern=r"^shoot_"))
+
+    application.add_handler(CommandHandler("match", start_match_challenge))
+    application.add_handler(CallbackQueryHandler(match_accept, pattern=r'^match_accept_'))
+    application.add_handler(CallbackQueryHandler(handle_shoot, pattern=r'^shoot_'))
