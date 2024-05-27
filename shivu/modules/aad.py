@@ -1,7 +1,8 @@
 from telegram.ext import CommandHandler
 from shivu import application, user_collection
+from . import add_balance, show_balance, deduct_balance
 
-DEV_LIST = [6942997609 , 6919722801 , 7091293075 ] # Replace with the actual owner's user ID
+DEV_LIST = [6942997609 , 6919722801 , 7091293075 ] 
 
 async def addt(update, context):
     # Check if the user is the owner
@@ -18,11 +19,11 @@ async def addt(update, context):
         return
 
     # Update the user's balance with the provided amount
-    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': amount}})
+    await add_balance({user_id, amount)
 
     # Fetch the updated user balance
-    user = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
-    updated_balance = user.get('balance', 0)
+    user = await show_balance(user_id)
+    updated_balance = user
 
     # Reply with the success message and updated balance
     await update.message.reply_text(f"Sucess ! {amount} Tokens added to user {user_id}. Updated balance is :{updated_balance} Tokens.")
@@ -42,11 +43,11 @@ async def removet(update, context):
         return
 
     # Update the user's balance with the negative of the provided amount to remove coins
-    await user_collection.update_one({'id': user_id}, {'$inc': {'balance': -amount}})
+    await deduct_balance(user_id, amount)
 
     # Fetch the updated user balance
-    user = await user_collection.find_one({'id': user_id}, projection={'balance': 1})
-    updated_balance = user.get('balance', 0)
+    user = await show_balance(user_id)
+    updated_balance = user
 
     # Reply with the success message and updated balance
     await update.message.reply_text(f"Sucess! {amount} Tokens removed from user {user_id}. Updated balance:{updated_balance} Tokens.")
