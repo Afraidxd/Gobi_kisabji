@@ -2,7 +2,7 @@ from telegram.ext import CommandHandler, CallbackQueryHandler
 from shivu import application, user_collection
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 import random
-from . import add_balance as add , deduct-balance as deduct ,show_balance as show
+from . import add_balance as add , deduct_balance as deduct ,show_balance as show
 
 async def rps(update, context):
     try:
