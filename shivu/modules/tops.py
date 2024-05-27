@@ -1,4 +1,4 @@
-import importlib
+"""import importlib
 import time
 import random
 import re
@@ -82,4 +82,4 @@ async def button_handler(update: Update, context: CallbackContext) -> None:
         await query.message.delete()
 
 # Add the command and callback handlers
-application.add_handler(CommandHandler("tops", mtop))
+application.add_handler(CommandHandler("tops", mtop))"""
