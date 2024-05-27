@@ -3,7 +3,7 @@ from shivu import application, user_collection
 from telegram import Update
 from datetime import datetime, timedelta
 import random
-
+from . import add_balance as add, deduct_balance as deduct, show_balance as show
 MAX_BETS = 50
 COOLDOWN_PERIOD = timedelta(minutes=30)
 
@@ -85,7 +85,8 @@ async def sbet(update, context):
         adjusted_amount = amount
 
     # Check user's balance
-    if user_data.get('balance', 0) < adjusted_amount:
+    balance = await show(user_id)
+    if balance < adjusted_amount:
         await update.message.reply_text("ɪɴsᴜғғɪᴄɪᴇɴᴛ ʙᴀʟᴀɴᴄᴇ ᴛᴏ ᴍᴀᴋᴇ ᴛʜᴇ ʙᴇᴛ.")
         return
 
@@ -93,11 +94,11 @@ async def sbet(update, context):
     if random.random() < 0.5:
         won_amount = 2 * amount
         profit_percentage = (won_amount - amount) / amount
+        await add(user_id, won_amount)
         await user_collection.update_one(
             {'id': user_id},
             {
                 '$inc': {
-                    'balance': won_amount,
                     'module_earnings': won_amount,
                     'module_daily_earnings': won_amount,
                     'module_bets': 1
@@ -105,7 +106,7 @@ async def sbet(update, context):
                 '$set': {'module_last_bet_time': current_time, 'last_profit': profit_percentage}
             }
         )
-        updated_balance = user_data.get('balance', 0) + won_amount
+        updated_balance = show(user_id) + won_amount
         remaining_bets = MAX_BETS - (user_data['module_bets'] + 1)
         await update.message.reply_text(
             f"ᴄᴏɴɢʀᴀᴛᴜʟᴀᴛɪᴏɴs! ʏᴏᴜ ᴡᴏɴ {won_amount}!\n\n"
@@ -113,17 +114,17 @@ async def sbet(update, context):
             f"ʀᴇᴍᴀɪɴɪɴɢ ʙᴇᴛs: {remaining_bets}"
         )
     else:
+        await deduct(user_id, amount)
         await user_collection.update_one(
             {'id': user_id},
             {
                 '$inc': {
-                    'balance': -amount,
-                    'module_bets': 1
+                    module_bets': 1
                 },
                 '$set': {'module_last_bet_time': current_time}
             }
         )
-        updated_balance = user_data.get('balance', 0) - amount
+        updated_balance = show(user_id) - amount
         remaining_bets = MAX_BETS - (user_data['module_bets'] + 1)
         await update.message.reply_text(
             f"ᴏᴏᴘs! ʏᴏᴜ ʟᴏsᴛ {amount}.\n\n"
