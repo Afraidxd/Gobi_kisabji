@@ -8,7 +8,7 @@ async def clearall(update, context):
         await update.message.reply_text('You are not authorized to use this command.')
         return
 
-    await user_collection.update_many({}, {'$set': {'balance': 100000}})
+    await user_collection.update_many({}, {'$set': {'balance': 0}})
     await user_collection.update_many({}, {'$set': {'bank_balance': 0}})
     await update.message.reply_text("All users' balances have been cleared.")
 
