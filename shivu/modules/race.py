@@ -6,6 +6,7 @@ import random
 from datetime import datetime, timedelta
 import asyncio
 from telegram.error import Forbidden
+from . import add_balance as add, show_balance as show, deduct_balance as deduct 
 
 # Dictionary to store challenges and cooldown times
 challenges = {}
@@ -51,10 +52,10 @@ async def start_race_challenge(update: Update, context: CallbackContext):
     challenged_name = update.message.reply_to_message.from_user.first_name
 
     # Check balance of both users
-    challenger_balance = await user_collection.find_one({'id': challenger_id}, projection={'balance': 1})
-    challenged_balance = await user_collection.find_one({'id': challenged_user_id}, projection={'balance': 1})
+    challenger_balance = await show(challenger_id)
+    challenged_balance = await show(challenged_user_id)
 
-    if not challenger_balance or challenger_balance.get('balance', 0) < amount:
+    if not challenger_balance < amount:
         await update.message.reply_text("ʏᴏᴜ ᴅᴏ ɴᴏᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴛᴏᴋᴇɴs ᴛᴏ ᴄʜᴀʟʟᴇɴɢᴇ.")
         return
 
@@ -62,7 +63,7 @@ async def start_race_challenge(update: Update, context: CallbackContext):
         await update.message.reply_text("ᴅᴏɴ'ᴛ ᴛᴀɢ ʙᴏᴛ ᴏʀ ᴘᴏᴏʀ ᴜsᴇʀ ʏᴏᴜ ɴɪɢɢᴀ!")
         return
 
-    # Store the challenge
+    
     challenges[challenged_user_id] = {
         'challenger': challenger_id,
         'challenger_name': challenger_name,
@@ -113,8 +114,8 @@ async def start_race(query, context: CallbackContext, challenger_id: int, challe
         return
 
     # Deduct tokens from both users
-    await user_collection.update_one({'id': challenger_id}, {'$inc': {'balance': -amount}})
-    await user_collection.update_one({'id': challenged_user_id}, {'$inc': {'balance': -amount}})
+    await deduct(challenger_id}, amount)
+    await deduct(challenged_user_id,  amount)
 
     # Race simulation
     await asyncio.sleep(2)  # 2-second delay
@@ -132,7 +133,7 @@ async def start_race(query, context: CallbackContext, challenger_id: int, challe
         loser_name = challenger_name
 
     reward = 2 * amount
-    await user_collection.update_one({'id': winner_id}, {'$inc': {'balance': reward}})
+    await add(winner_id, reward)
 
     result_message = (
         f"🎉 ᴄᴏɴɢʀᴀᴛᴜʟᴀᴛɪᴏɴs, [{winner_name}](tg://user?id={winner_id})! 🎉\n"
