@@ -88,6 +88,7 @@ async def dick_button(update: Update, context: CallbackContext) -> None:
         user_tokens[user_id] = user_tokens.get(user_id, 0) + tokens_awarded
         await user_collection.update_one(
             {'id': user_id},
+            {'$inc' : {'rk' : 1}}, 
             upsert=True
         )
         await add(user_id, tokens_awarded)
