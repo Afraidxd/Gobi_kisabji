@@ -106,7 +106,7 @@ async def sbet(update, context):
                 '$set': {'module_last_bet_time': current_time, 'last_profit': profit_percentage}
             }
         )
-        updated_balance = show(user_id) + won_amount
+        updated_balance = await show(user_id) + won_amount
         remaining_bets = MAX_BETS - (user_data['module_bets'] + 1)
         await update.message.reply_text(
             f"ᴄᴏɴɢʀᴀᴛᴜʟᴀᴛɪᴏɴs! ʏᴏᴜ ᴡᴏɴ {won_amount}!\n\n"
@@ -124,7 +124,7 @@ async def sbet(update, context):
                 '$set': {'module_last_bet_time': current_time}
             }
         )
-        updated_balance = show(user_id) - amount
+        updated_balance = await show(user_id) - amount
         remaining_bets = MAX_BETS - (user_data['module_bets'] + 1)
         await update.message.reply_text(
             f"ᴏᴏᴘs! ʏᴏᴜ ʟᴏsᴛ {amount}.\n\n"
