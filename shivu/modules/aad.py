@@ -19,7 +19,7 @@ async def addt(update, context):
         return
 
     # Update the user's balance with the provided amount
-    await add_balance({user_id, amount)
+    await add_balance(user_id, amount)
 
     # Fetch the updated user balance
     user = await show_balance(user_id)
