@@ -13,7 +13,7 @@ async def propose(update, context):
 
     user_balance = await show(user_id)
 
-    if not user_balance < 20000:
+    if user_balance < 20000:
         await update.message.reply_text("You need at least 20000 tokens to challenge.")
         proposing_users[user_id] = False  # Setting to False if balance requirement is not met
         return
