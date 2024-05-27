@@ -114,7 +114,7 @@ async def start_race(query, context: CallbackContext, challenger_id: int, challe
         return
 
     # Deduct tokens from both users
-    await deduct(challenger_id}, amount)
+    await deduct(challenger_id, amount)
     await deduct(challenged_user_id,  amount)
 
     # Race simulation
