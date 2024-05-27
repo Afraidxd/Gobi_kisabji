@@ -99,7 +99,7 @@ async def pay(update, context):
         return
 
     sender_balance = await show(sender_id)
-    if not sender_balance < amount:
+    if sender_balance < amount:
         await update.message.reply_text("❌ Insufficient balance to make the payment.")
         return
 
