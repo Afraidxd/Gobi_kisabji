@@ -15,7 +15,7 @@ else:
     OWNER_ID = 7197403656
     sudo_users = ["7197403656", "6747352706", "5757833536", "1415682205", "7091293075", "7087814148"]
     GROUP_ID = -1002010613171
-    TOKEN = "7370830643:AAHEs4YVTQFVewa7v7JsyDDGzktLZ52fS7c"
+    TOKEN = "7399716144:AAGJ3TKy0C2Yt69x3p5w1U2k4yTdaLvZ31E"
     mongo_url = "mongodb+srv://Afraid:LhLMqfRcOadZMK4L@cluster0.g4r9uxr.mongodb.net/"
     PHOTO_URL = ["https://telegra.ph/file/2ed20f2783ebb9cbfd04c.jpg", "https://telegra.ph/file/ed9d1302a7d58b2b2f2a2.jpg", "https://telegra.ph/file/578547d3f14979d82e1ae.jpg"]
     SUPPORT_CHAT = "https://t.me/BotsupportXD"
