@@ -119,7 +119,7 @@ async def sbet(update, context):
             {'id': user_id},
             {
                 '$inc': {
-                    module_bets': 1
+                    'module_bets': 1
                 },
                 '$set': {'module_last_bet_time': current_time}
             }
