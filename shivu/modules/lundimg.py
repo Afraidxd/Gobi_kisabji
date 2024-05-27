@@ -6,7 +6,7 @@ from telegram.ext import Application, CommandHandler, CallbackContext, CallbackQ
 from shivu import user_collection
 from shivu.modules import ALL_MODULES
 from shivu import application  # Import application from shivu
-
+from . import add_balance as add
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
