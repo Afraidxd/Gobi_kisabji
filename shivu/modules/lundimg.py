@@ -84,7 +84,7 @@ async def dick_button(update: Update, context: CallbackContext) -> None:
     if guess == current_guess.get(chat_id):
         tokens_awarded = random.randint(5000, 10000)
         user_tokens[user_id] = show(user_id, 0) + tokens_awarded
-        await add(user_id}, tokens_awarded)
+        await add(user_id, tokens_awarded)
         await query.answer(text=f'Cᴏʀʀᴇᴄᴛ! Yᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴡᴀʀᴅᴇᴅ {tokens_awarded} ᴛᴏᴋᴇɴs!', show_alert=True)
         await query.edit_message_caption(
             caption=f"🎉 Cᴏʀʀᴇᴄᴛ! Tʜᴇ ᴀɴsᴡᴇʀ ɪs {guess}. Gᴜᴇssᴇᴅ ʙʏ {query.from_user.first_name} ᴀɴᴅ ʀᴇᴡᴀʀᴅᴇᴅ ᴡɪᴛʜ {tokens_awarded} ᴛᴏᴋᴇɴs."
