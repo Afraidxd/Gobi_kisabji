@@ -88,9 +88,9 @@ async def dick_button(update: Update, context: CallbackContext) -> None:
         user_tokens[user_id] = user_tokens.get(user_id, 0) + tokens_awarded
         await user_collection.update_one(
             {'id': user_id},
-            {'$inc': {'balance': tokens_awarded}},
             upsert=True
         )
+        await add(user_id, tokens_awarded)
         await query.answer(text=f'Cᴏʀʀᴇᴄᴛ! Yᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴡᴀʀᴅᴇᴅ {tokens_awarded} ᴛᴏᴋᴇɴs!', show_alert=True)
         await query.edit_message_caption(
             caption=f"🎉 Cᴏʀʀᴇᴄᴛ! Tʜᴇ ᴀɴsᴡᴇʀ ɪs {guess}. Gᴜᴇssᴇᴅ ʙʏ {query.from_user.first_name} ᴀɴᴅ ʀᴇᴡᴀʀᴅᴇᴅ ᴡɪᴛʜ {tokens_awarded} ᴛᴏᴋᴇɴs."
