@@ -2,11 +2,11 @@ import importlib
 import random
 import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, filters
+from telegram.ext import Application, CommandHandler, CallbackContext, CallbackQueryHandler, MessageHandler, filters
 from shivu import user_collection
 from shivu.modules import ALL_MODULES
-from shivu import application
-from . import add_balance as add, show_balance as show
+from shivu import application  # Import application from shivu
+
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -53,7 +53,9 @@ async def suck_it(update: Update, context: CallbackContext) -> None:
         await update.message.reply_text("Yᴏᴜ ᴀʀᴇ ɴᴏᴛ ᴀᴜᴛʜᴏʀɪᴢᴇᴅ ᴛᴏ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ.")
         return
 
-    chat_id = chat.id
+    await send_random_image(context, chat.id)
+
+async def send_random_image(context: CallbackContext, chat_id: int) -> None:
     image_path, correct_answer = get_random_image()
     current_guess[chat_id] = correct_answer
 
@@ -83,8 +85,12 @@ async def dick_button(update: Update, context: CallbackContext) -> None:
 
     if guess == current_guess.get(chat_id):
         tokens_awarded = random.randint(5000, 10000)
-        user_tokens[user_id] = show(user_id, 0) + tokens_awarded
-        await add(user_id, tokens_awarded)
+        user_tokens[user_id] = user_tokens.get(user_id, 0) + tokens_awarded
+        await user_collection.update_one(
+            {'id': user_id},
+            {'$inc': {'balance': tokens_awarded}},
+            upsert=True
+        )
         await query.answer(text=f'Cᴏʀʀᴇᴄᴛ! Yᴏᴜ ʜᴀᴠᴇ ʙᴇᴇɴ ᴀᴡᴀʀᴅᴇᴅ {tokens_awarded} ᴛᴏᴋᴇɴs!', show_alert=True)
         await query.edit_message_caption(
             caption=f"🎉 Cᴏʀʀᴇᴄᴛ! Tʜᴇ ᴀɴsᴡᴇʀ ɪs {guess}. Gᴜᴇssᴇᴅ ʙʏ {query.from_user.first_name} ᴀɴᴅ ʀᴇᴡᴀʀᴅᴇᴅ ᴡɪᴛʜ {tokens_awarded} ᴛᴏᴋᴇɴs."
@@ -100,7 +106,7 @@ async def handle_message(update: Update, context: CallbackContext) -> None:
 
     if message_counts[chat_id] >= message_threshold:
         message_counts[chat_id] = 0
-        await suck_it(update, context)
+        await send_random_image(context, chat_id)
 
 async def set_threshold(update: Update, context: CallbackContext) -> None:
     logger.info("set_threshold command called")
