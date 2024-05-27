@@ -55,11 +55,11 @@ async def start_race_challenge(update: Update, context: CallbackContext):
     challenger_balance = await show(challenger_id)
     challenged_balance = await show(challenged_user_id)
 
-    if not challenger_balance < amount:
+    if challenger_balance < amount:
         await update.message.reply_text("ʏᴏᴜ ᴅᴏ ɴᴏᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴛᴏᴋᴇɴs ᴛᴏ ᴄʜᴀʟʟᴇɴɢᴇ.")
         return
 
-    if not challenged_balance or challenged_balance.get('balance', 0) < amount:
+    if challenged_balance or challenged_balance.get('balance', 0) < amount:
         await update.message.reply_text("ᴅᴏɴ'ᴛ ᴛᴀɢ ʙᴏᴛ ᴏʀ ᴘᴏᴏʀ ᴜsᴇʀ ʏᴏᴜ ɴɪɢɢᴀ!")
         return
 
