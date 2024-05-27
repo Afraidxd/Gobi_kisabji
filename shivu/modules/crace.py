@@ -215,7 +215,7 @@ async def handle_shoot(update: Update, context: CallbackContext):
         else:
             await query.edit_message_text(text=f"{result_message}")
             await asyncio.sleep(5)  # Wait for 5 seconds before proceeding
-            await display_status_and_prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenge_data['challenger'], challenge_data['challenged'])
+            await display_status_and_prompt_shoot(context, challenge_data['turn'], challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenge_data['challenger'], challenged_user_id)
 
 async def match_decline(update: Update, context: CallbackContext):
     query = update.callback_query
@@ -234,4 +234,3 @@ application.add_handler(CommandHandler("match", start_match_challenge))
 application.add_handler(CallbackQueryHandler(match_accept, pattern=r"^match_accept_"))
 application.add_handler(CallbackQueryHandler(match_decline, pattern=r"^match_decline_"))
 application.add_handler(CallbackQueryHandler(handle_shoot, pattern=r"^shoot_"))
-
