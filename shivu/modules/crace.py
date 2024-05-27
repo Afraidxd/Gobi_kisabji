@@ -211,7 +211,7 @@ async def handle_shoot(update: Update, context: CallbackContext):
         last_match_time[challenged_user_id] = datetime.now()
     else:
         if len(bullets) == 0:
-            await reload_bullets_and_start(context, challenge_data, challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenge_data['challenger'], challenge_data['challenged'])
+            await reload_bullets_and_start(context, challenge_data, challenge_data['chat_id'], challenge_data['challenger_name'], challenge_data['challenged_name'], challenge_data['challenger'], challenged_user_id)
         else:
             await query.edit_message_text(text=f"{result_message}")
             await asyncio.sleep(5)  # Wait for 5 seconds before proceeding
