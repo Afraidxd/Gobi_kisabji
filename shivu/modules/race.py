@@ -59,7 +59,7 @@ async def start_race_challenge(update: Update, context: CallbackContext):
         await update.message.reply_text("ʏᴏᴜ ᴅᴏ ɴᴏᴛ ʜᴀᴠᴇ ᴇɴᴏᴜɢʜ ᴛᴏᴋᴇɴs ᴛᴏ ᴄʜᴀʟʟᴇɴɢᴇ.")
         return
 
-    if challenged_balance or challenged_balance.get('balance', 0) < amount:
+    if challenged_balance < amount:
         await update.message.reply_text("ᴅᴏɴ'ᴛ ᴛᴀɢ ʙᴏᴛ ᴏʀ ᴘᴏᴏʀ ᴜsᴇʀ ʏᴏᴜ ɴɪɢɢᴀ!")
         return
 
