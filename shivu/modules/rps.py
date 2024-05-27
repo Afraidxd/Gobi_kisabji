@@ -16,7 +16,7 @@ async def rps(update, context):
     user_id = update.effective_user.id
     user_balance = await show(user_id)
 
-    if not user_balance < amount:
+    if user_balance < amount:
         await update.message.reply_text("Insufficient balance to make the bet.")
         return
 
@@ -43,7 +43,7 @@ async def rps_button(update, context):
     user_id = update.effective_user.id
     user_balance = await show(user_id)
 
-    if not user_balance < amount:
+    if user_balance < amount:
         await query.answer("Insufficient balance to make the bet.")
         return
 
@@ -64,7 +64,7 @@ async def rps_button(update, context):
     updated_balance = await show(user_id)
 
     await query.message.edit_text(
-        f"You chose {choice.capitalize()} and the computer chose {computer_choice.capitalize()}\n\n\n{result_message}\nYour updated balance is {updated_balance['balance']}\n\nPlay again?",
+        f"You chose {choice.capitalize()} and the computer chose {computer_choice.capitalize()}\n\n\n{result_message}\nYour updated balance is {updated_balance}\n\nPlay again?",
         reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("Play Again 🔄", callback_data='play_again')]])
     )
 
