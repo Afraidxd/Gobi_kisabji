@@ -4,7 +4,7 @@ import random
 import re
 import asyncio
 from html import escape
-from . import add_balance as add, deduct_balane as deduct, show_balance as show
+from . import add_balance as add, deduct_balance as deduct, show_balance as show
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext, MessageHandler, CallbackQueryHandler, filters
