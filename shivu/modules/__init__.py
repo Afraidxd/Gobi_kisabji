@@ -4,6 +4,29 @@ import time
 
 StartTime = time.time()
 
+async def show_balance(user_id):
+    user = await user_collection.find_one({"id": user_id})
+    if user:
+        return int(user.get("balance", 0))
+    return 0
+
+async def add_balance(user_id, balance):
+    x = await user_collection.find_one({'id': user_id})
+    if not x:
+        return
+    x['balance'] = str(int(x.get('balance', 0)) + balance)
+    x.pop('_id')
+    await user_collection.update_one({'id': user_id}, {'$set': x}, upsert=True)
+
+async def deduct_balance(user_id, balance):
+    x = await user_collection.find_one({'id': user_id})
+    if not x:
+        return
+    x['balance'] = str(int(x.get('balance')) - balance)
+    x.pop('_id')
+    await user_collection.update_one({'id': user_id}, {'$set': x}, upsert=True)
+
+
 # enable logging
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
