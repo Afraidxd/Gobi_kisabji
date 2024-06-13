@@ -10,7 +10,7 @@ from .saleslist import sales_list_callback
 from .owner import button_handler
 from .rps import rps_button
 from .inlinequery import check
-from .lundimg import dick_button
+#from .lundimg import dick_button
 
 # Race challenge imports
 from .race import race_accept, race_decline
@@ -45,8 +45,8 @@ async def cbq(update: Update, context: CallbackContext):
         await race_accept(update, context)
     elif data.startswith('race_decline_'):
         await race_decline(update, context)
-    elif data.startswith('dick_button'):
-        await dick_button(update, context)
+    #elif data.startswith('dick_button'):
+        #await dick_button(update, context)
 
 # Add callback query handler for buttons
 application.add_handler(CallbackQueryHandler(cbq, pattern='.*'))
